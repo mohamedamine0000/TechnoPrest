@@ -22,7 +22,75 @@ body {
 }
 
 
+.form-buttons {
+    display: flex; /* Makes buttons line up horizontally */
+    justify-content: space-around; /* Distributes space evenly around items */
+    gap: 15px; /* Adds space between the buttons */
+    margin-top: 25px; /* Adds some space above the buttons, adjust as needed */
+}
 
+/* Adjust the existing Log In button's width */
+.login-form button {
+    background-color: #007bff;
+    color: #fff;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+
+    /* Adjust width to fit alongside the other button */
+    width: 45%; /* Takes up 45% of the container width */
+    box-sizing: border-box; /* Ensures padding is included in the width */
+}
+
+/* Hover and active states for Log In button remain the same */
+.login-form button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.login-form button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* Styling for the new Sign Up button (the <a> tag) */
+.signup-button {
+    /* Inherit/mimic button styles */
+    background-color: #6c757d; /* A different color for distinction, e.g., gray */
+    color: #fff;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    text-decoration: none; /* Remove underline from the link */
+    display: inline-block; /* Important for padding and width to work correctly on <a> */
+    text-align: center; /* Centers the text inside the link */
+
+    /* Smooth transition for hover effects */
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+
+    /* Adjust width to fit alongside the other button */
+    width: 45%; /* Takes up 45% of the container width */
+    box-sizing: border-box; /* Ensures padding is included in the width */
+}
+
+/* Hover effect for Sign Up button */
+.signup-button:hover {
+    background-color: #5a6268; /* Darker gray on hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Optional: Active (click) effect for Sign Up button */
+.signup-button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
 .login-container {
     width: 1200px; /* Adjust as needed */
     height: 800px; /* Adjust as needed */
