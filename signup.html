@@ -5,13 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - My Website</title>
     <link rel="stylesheet" href="assets/css/main.css">
-    </head>
+    <style>
+        /* Basic styling for invalid input feedback */
+        .is-invalid {
+            border: 2px solid red !important; /* Red border for invalid input */
+        }
+        /* Style for the error message */
+        .error-message {
+            color: red;
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: block; /* Ensure it takes its own line */
+        }
+    </style>
+</head>
 <body class="is-preload">
     <div id="wrapper">
         <div id="main">
             <div class="inner">
                 <header id="header">
-                    </header>
+                    <!-- You might want to add content here, e.g., a logo or navigation -->
+                </header>
 
                 <section>
                     <header class="main">
@@ -20,7 +34,8 @@
 
                     <p>Please fill out the form below to sign up.</p>
 
-                    <form method="post" action="#"> <div class="row gtr-uniform">
+                    <form method="post" action="#" id="signup-form"> <!-- Added an ID to the form -->
+                        <div class="row gtr-uniform">
                             <div class="col-6 col-12-xsmall">
                                 <input type="text" name="username" id="username" value="" placeholder="Username" required />
                             </div>
@@ -33,7 +48,13 @@
                             <div class="col-12">
                                 <input type="password" name="confirm-password" id="confirm-password" value="" placeholder="Confirm Password" required />
                             </div>
-                          
+
+                            <div class="col-12">
+                                <!-- CIN input field -->
+                                <input type="text" name="CIN" id="CIN" value="" placeholder="CIN (8 digits)" required />
+                                <span id="cin-error" class="error-message" style="display: none;"></span> <!-- Error message span -->
+                            </div>
+
                             <div class="col-12">
                                 <ul class="actions">
                                     <li><input type="submit" value="Sign Up" class="primary" /></li>
@@ -43,12 +64,73 @@
                         </div>
                     </form>
 
-                    <hr class="major" /> <p>Already have an account? <a href="index.html">Log In here</a></p>
+                    <hr class="major" />
+                    <p>Already have an account? <a href="index.html">Log In here</a></p>
 
                 </section>
             </div>
         </div>
-        </div>
+    </div>
 
-    </body>
+    <!-- JavaScript for CIN input validation -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const signupForm = document.getElementById('signup-form'); // Reference to the signup form
+            const cinInput = document.getElementById('CIN');
+            const cinErrorSpan = document.getElementById('cin-error');
+
+            // Function to validate CIN input
+            function validateCin() {
+                const value = cinInput.value.trim(); // Get current value and remove leading/trailing spaces
+                let errorMessage = '';
+                let isValid = true;
+
+                // If the field is empty, hide our custom error message.
+                // The 'required' attribute will handle the emptiness validation on form submission.
+                if (value === '') {
+                    errorMessage = ''; // No custom error message for empty
+                    isValid = true;    // Treat as valid for *our* custom message display
+                } else if (/[^0-9]/.test(value)) {
+                    errorMessage = 'CIN can only contain numbers.';
+                    isValid = false;
+                } else if (value.length !== 8) {
+                    errorMessage = 'CIN must be exactly 8 digits.';
+                    isValid = false;
+                }
+
+                // Update error message display and input styling
+                if (errorMessage) {
+                    cinErrorSpan.textContent = errorMessage;
+                    cinErrorSpan.style.display = 'block'; // Show the error message
+                    cinInput.classList.add('is-invalid'); // Add red border
+                } else {
+                    cinErrorSpan.textContent = '';
+                    cinErrorSpan.style.display = 'none'; // Hide the error message
+                    cinInput.classList.remove('is-invalid'); // Remove red border
+                }
+
+                return isValid;
+            }
+
+            if (cinInput && cinErrorSpan && signupForm) {
+                // Attach validation to the 'input' event to clear message when user starts typing/empties field
+                cinInput.addEventListener('input', validateCin); // Re-enabled this line
+
+                // Prevent form submission if CIN is invalid
+                signupForm.addEventListener('submit', function(event) {
+                    // Run validation when the form is submitted
+                    const isCinValid = validateCin();
+
+                    // If our custom validation fails, prevent submission
+                    if (!isCinValid) {
+                        event.preventDefault(); // Stop the form from submitting
+                        cinInput.focus(); // Focus on the CIN field
+                    }
+                    // If isCinValid is true, the form will submit normally.
+                    // The browser's built-in 'required' validation will handle empty fields.
+                });
+            }
+        });
+    </script>
+</body>
 </html>
