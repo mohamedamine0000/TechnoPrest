@@ -17,6 +17,15 @@
             margin-top: 5px;
             display: block; /* Ensure it takes its own line */
         }
+        /* Style for image preview */
+        .image-preview {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            padding: 5px;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body class="is-preload">
@@ -34,7 +43,7 @@
 
                     <p>Please fill out the form below to sign up.</p>
 
-                    <form method="post" action="#" id="signup-form"> <!-- Added an ID to the form -->
+                    <form method="post" action="#" id="signup-form">
                         <div class="row gtr-uniform">
                             <div class="col-6 col-12-xsmall">
                                 <input type="text" name="username" id="username" value="" placeholder="Username" required />
@@ -50,10 +59,31 @@
                             </div>
 
                             <div class="col-12">
-                                <!-- CIN input field -->
                                 <input type="text" name="CIN" id="CIN" value="" placeholder="CIN (8 digits)" required />
-                                <span id="cin-error" class="error-message" style="display: none;"></span> <!-- Error message span -->
+                                <span id="cin-error" class="error-message" style="display: none;"></span>
                             </div>
+
+                            <!-- NEW: Speciality Dropdown -->
+                            <div class="col-12">
+                                <label for="speciality">Speciality</label>
+                                <select name="speciality" id="speciality" required>
+                                    <option value="">-- Select Speciality --</option>
+                                    <!-- Options will be loaded dynamically by JavaScript -->
+                                </select>
+                                <span id="speciality-error" class="error-message" style="display: none;"></span>
+                            </div>
+                            <!-- END NEW -->
+
+                            <!-- NEW: Diploma Proof Upload Section -->
+                            <div class="col-12">
+                                <label for="diploma-proof">Upload Diploma/Proof of Speciality (Image only)</label>
+                                <input type="file" name="diplomaProof" id="diploma-proof" accept="image/*" />
+                                <img id="diploma-preview" class="image-preview" style="display: none;" alt="Diploma Preview" />
+                                <!-- Hidden input to store Base64 string for submission -->
+                                <input type="hidden" name="diplomaProofBase64" id="diploma-proof-base64" />
+                                <span id="diploma-error" class="error-message" style="display: none;"></span>
+                            </div>
+                            <!-- END NEW -->
 
                             <div class="col-12">
                                 <ul class="actions">
@@ -72,24 +102,32 @@
         </div>
     </div>
 
-    <!-- JavaScript for CIN input validation -->
+    <!-- JavaScript for form handling -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const signupForm = document.getElementById('signup-form'); // Reference to the signup form
+            const signupForm = document.getElementById('signup-form');
+            const usernameInput = document.getElementById('username');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirm-password');
             const cinInput = document.getElementById('CIN');
             const cinErrorSpan = document.getElementById('cin-error');
+            const specialitySelect = document.getElementById('speciality'); // NEW
+            const specialityErrorSpan = document.getElementById('speciality-error'); // NEW
+            const diplomaProofInput = document.getElementById('diploma-proof');
+            const diplomaPreview = document.getElementById('diploma-preview');
+            const diplomaProofBase64Hidden = document.getElementById('diploma-proof-base64');
+            const diplomaErrorSpan = document.getElementById('diploma-error'); // NEW
 
-            // Function to validate CIN input
+            // --- CIN Validation Function ---
             function validateCin() {
-                const value = cinInput.value.trim(); // Get current value and remove leading/trailing spaces
+                const value = cinInput.value.trim();
                 let errorMessage = '';
                 let isValid = true;
 
-                // If the field is empty, hide our custom error message.
-                // The 'required' attribute will handle the emptiness validation on form submission.
                 if (value === '') {
-                    errorMessage = ''; // No custom error message for empty
-                    isValid = true;    // Treat as valid for *our* custom message display
+                    errorMessage = '';
+                    isValid = true;
                 } else if (/[^0-9]/.test(value)) {
                     errorMessage = 'CIN can only contain numbers.';
                     isValid = false;
@@ -98,36 +136,178 @@
                     isValid = false;
                 }
 
-                // Update error message display and input styling
                 if (errorMessage) {
                     cinErrorSpan.textContent = errorMessage;
-                    cinErrorSpan.style.display = 'block'; // Show the error message
-                    cinInput.classList.add('is-invalid'); // Add red border
+                    cinErrorSpan.style.display = 'block';
+                    cinInput.classList.add('is-invalid');
                 } else {
                     cinErrorSpan.textContent = '';
-                    cinErrorSpan.style.display = 'none'; // Hide the error message
-                    cinInput.classList.remove('is-invalid'); // Remove red border
+                    cinErrorSpan.style.display = 'none';
+                    cinInput.classList.remove('is-invalid');
                 }
-
                 return isValid;
             }
 
-            if (cinInput && cinErrorSpan && signupForm) {
-                // Attach validation to the 'input' event to clear message when user starts typing/empties field
-                cinInput.addEventListener('input', validateCin); // Re-enabled this line
-
-                // Prevent form submission if CIN is invalid
-                signupForm.addEventListener('submit', function(event) {
-                    // Run validation when the form is submitted
-                    const isCinValid = validateCin();
-
-                    // If our custom validation fails, prevent submission
-                    if (!isCinValid) {
-                        event.preventDefault(); // Stop the form from submitting
-                        cinInput.focus(); // Focus on the CIN field
+            // --- NEW: Speciality Dropdown Population ---
+            async function loadSpecialities() {
+                try {
+                    const response = await fetch('/api/specialites'); // Fetch from the public endpoint
+                    if (response.ok) {
+                        const specialities = await response.json();
+                        specialities.forEach(speciality => {
+                            const option = document.createElement('option');
+                            option.value = speciality.id;
+                            option.textContent = speciality.name;
+                            specialitySelect.appendChild(option);
+                        });
+                    } else {
+                        console.error('Failed to load specialities:', response.statusText);
+                        specialityErrorSpan.textContent = 'Failed to load specialities.';
+                        specialityErrorSpan.style.display = 'block';
                     }
-                    // If isCinValid is true, the form will submit normally.
-                    // The browser's built-in 'required' validation will handle empty fields.
+                } catch (error) {
+                    console.error('Error fetching specialities:', error);
+                    specialityErrorSpan.textContent = 'Network error loading specialities.';
+                    specialityErrorSpan.style.display = 'block';
+                }
+            }
+
+            // --- NEW: Diploma File Handling and Preview ---
+            if (diplomaProofInput && diplomaPreview && diplomaProofBase64Hidden && diplomaErrorSpan) {
+                diplomaProofInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    diplomaErrorSpan.style.display = 'none'; // Clear previous error
+
+                    if (file) {
+                        // Basic file type validation (can be more robust)
+                        if (!file.type.startsWith('image/')) {
+                            diplomaErrorSpan.textContent = 'Please upload an image file (e.g., JPG, PNG).';
+                            diplomaErrorSpan.style.display = 'block';
+                            diplomaPreview.src = '';
+                            diplomaPreview.style.display = 'none';
+                            diplomaProofBase64Hidden.value = '';
+                            return;
+                        }
+
+                        const reader = new FileReader();
+
+                        reader.onload = function(e) {
+                            diplomaPreview.src = e.target.result;
+                            diplomaPreview.style.display = 'block';
+                            // Extract just the Base64 string (remove "data:image/jpeg;base64," prefix)
+                            const base64String = e.target.result.split(',')[1];
+                            diplomaProofBase64Hidden.value = base64String;
+                        };
+
+                        reader.onerror = function() {
+                            diplomaErrorSpan.textContent = 'Could not read file. Please try again.';
+                            diplomaErrorSpan.style.display = 'block';
+                            diplomaPreview.src = '';
+                            diplomaPreview.style.display = 'none';
+                            diplomaProofBase64Hidden.value = '';
+                        };
+
+                        reader.readAsDataURL(file); // Read the file as a Data URL (Base64)
+                    } else {
+                        diplomaPreview.src = '';
+                        diplomaPreview.style.display = 'none';
+                        diplomaProofBase64Hidden.value = '';
+                    }
+                });
+            }
+
+            // --- Form Submission Logic ---
+            if (signupForm && cinInput && cinErrorSpan && specialitySelect && diplomaProofInput) {
+                // Initial load of specialities
+                loadSpecialities();
+
+                // Attach CIN validation to input event
+                cinInput.addEventListener('input', validateCin);
+
+                signupForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+
+                    // Client-side validation checks
+                    const isCinValid = validateCin();
+                    const isUsernameValid = usernameInput.value.trim() !== '';
+                    const isEmailValid = emailInput.value.trim() !== '' && emailInput.checkValidity();
+                    const isPasswordValid = passwordInput.value.trim() !== '';
+                    const isConfirmPasswordValid = confirmPasswordInput.value === passwordInput.value && confirmPasswordInput.value.trim() !== '';
+                    const isSpecialitySelected = specialitySelect.value !== ''; // Check if a speciality is selected
+                    const isDiplomaProofUploaded = diplomaProofInput.files.length > 0; // Check if a file is selected
+
+                    // Display speciality error if not selected
+                    if (!isSpecialitySelected) {
+                        specialityErrorSpan.textContent = 'Please select your speciality.';
+                        specialityErrorSpan.style.display = 'block';
+                    } else {
+                        specialityErrorSpan.textContent = '';
+                        specialityErrorSpan.style.display = 'none';
+                    }
+
+                    // Display diploma error if not uploaded
+                    if (!isDiplomaProofUploaded) {
+                        diplomaErrorSpan.textContent = 'Please upload your diploma proof.';
+                        diplomaErrorSpan.style.display = 'block';
+                    } else {
+                        diplomaErrorSpan.textContent = '';
+                        diplomaErrorSpan.style.display = 'none';
+                    }
+
+
+                    if (!isUsernameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid || !isCinValid || !isSpecialitySelected || !isDiplomaProofUploaded) {
+                        alert('Please fill in all required fields correctly and upload your diploma proof.');
+                        // Focus on the first invalid field for better UX
+                        if (!isUsernameValid) usernameInput.focus();
+                        else if (!isEmailValid) emailInput.focus();
+                        else if (!isPasswordValid) passwordInput.focus();
+                        else if (!isConfirmPasswordValid) confirmPasswordInput.focus();
+                        else if (!isCinValid) cinInput.focus();
+                        else if (!isSpecialitySelected) specialitySelect.focus();
+                        else if (!isDiplomaProofUploaded) diplomaProofInput.focus();
+                        return;
+                    }
+
+                    // Collect all form data
+                    const userData = {
+                        username: usernameInput.value.trim(),
+                        email: emailInput.value.trim(),
+                        password: passwordInput.value,
+                        cin: cinInput.value.trim(),
+                        specialiteId: parseInt(specialitySelect.value), // Get selected Specialite ID
+                        diplomaProof: diplomaProofBase64Hidden.value
+                    };
+
+                    // --- API CALL SCRIPT START ---
+                    try {
+                        const response = await fetch('/api/users', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(userData)
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log('User registered successfully:', data);
+                            alert('Account created successfully! You can now log in.');
+                            signupForm.reset(); // Clear the form
+                            diplomaPreview.src = '';
+                            diplomaPreview.style.display = 'none';
+                            specialitySelect.value = ''; // Reset dropdown
+                            // Optionally redirect to login page
+                            // window.location.href = '/index.html';
+                        } else {
+                            const errorData = await response.json();
+                            console.error('Registration failed:', errorData);
+                            alert('Registration failed: ' + (errorData.message || 'Please check your input.'));
+                        }
+                    } catch (error) {
+                        console.error('Error during registration fetch:', error);
+                        alert('An unexpected error occurred during registration. Please try again later.');
+                    }
+                    // --- API CALL SCRIPT END ---
                 });
             }
         });
