@@ -21,6 +21,11 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "specialite")
     private Specialite specialite;
+
+    @ManyToOne
+    @JoinColumn(name = "role")
+    private UserRole role;
+
     @Lob
     @Column(name = "diploma_proof", columnDefinition = "LONGBLOB")
     private byte[] diplomaProof;

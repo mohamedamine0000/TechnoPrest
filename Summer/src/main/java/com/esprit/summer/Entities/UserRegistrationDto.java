@@ -14,6 +14,15 @@ public class UserRegistrationDto {
         private String cin;
         private Long specialiteId;
         private String diplomaProof;
+        private Long roleId;
+
+    public Long getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(Long roleId) {
+        this.roleId = roleId;
+    }
 
     public String getDiplomaProof() {
         return diplomaProof;

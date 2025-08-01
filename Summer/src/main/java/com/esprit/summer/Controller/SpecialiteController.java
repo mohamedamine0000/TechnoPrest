@@ -11,19 +11,13 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api") // Base path for general API endpoints
-public class SpecialiteController { // Renamed from previous SpecialiteController to avoid conflict if both exist
+@RequestMapping("/api")
+public class SpecialiteController {
 
     @Autowired
     private SpecialiteRepo specialiteRepository;
 
-    /**
-     * Endpoint to add a new Specialite.
-     * This would typically be an ADMIN-only endpoint.
-     * @param specialite The Specialite object to add (expects JSON like: {"name": "Cardiology"})
-     * @return The saved Specialite object with its generated ID.
-     */
-    @PostMapping("/admin/specialites") // Specific path for admin
+    @PostMapping("/admin/specialites")
     public ResponseEntity<Specialite> addSpecialite(@RequestBody Specialite specialite) {
         Optional<Specialite> existingSpecialite = specialiteRepository.findAll().stream()
                 .filter(s -> s.getName().equalsIgnoreCase(specialite.getName()))
@@ -37,12 +31,7 @@ public class SpecialiteController { // Renamed from previous SpecialiteControlle
         return ResponseEntity.status(HttpStatus.CREATED).body(savedSpecialite);
     }
 
-    /**
-     * Endpoint to get all existing Specialites.
-     * This endpoint is public for the frontend to populate dropdowns.
-     * @return A list of all Specialite objects.
-     */
-    @GetMapping("/specialites") // Public endpoint for fetching specialities
+    @GetMapping("/specialites")
     public List<Specialite> getAllSpecialites() {
         return specialiteRepository.findAll();
     }

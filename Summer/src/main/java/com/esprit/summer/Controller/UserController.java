@@ -3,16 +3,18 @@ package com.esprit.summer.Controller;
 import com.esprit.summer.Entities.UserRegistrationDto;
 import com.esprit.summer.Entities.Specialite;
 import com.esprit.summer.Entities.User;
+import com.esprit.summer.Entities.UserRole;
 import com.esprit.summer.Repositories.SpecialiteRepo;
 import com.esprit.summer.Repositories.UserRepo;
+import com.esprit.summer.Repositories.UserRoleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Base64;
-import java.util.Collections; // Import for Collections.singletonMap
-import java.util.Map; // Import Map
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -25,10 +27,11 @@ public class UserController {
     @Autowired
     private SpecialiteRepo specialiteRepository;
 
+    @Autowired
+    private UserRoleRepo roleRepo;
+
     @PostMapping
     public ResponseEntity<Map<String, String>> registerUser(@RequestBody UserRegistrationDto registrationDto) {
-        // Changed return type to ResponseEntity<Map<String, String>> for consistent JSON error messages
-
         if (userRepository.findByUsername(registrationDto.getUsername()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Collections.singletonMap("message", "Username already exists."));
@@ -41,9 +44,9 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Collections.singletonMap("message", "CIN already registered."));
         }
-        if (registrationDto.getPassword() == null || registrationDto.getPassword().length() < 6) {
+        if (registrationDto.getPassword() == null ) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Collections.singletonMap("message", "Password must be at least 6 characters."));
+                    .body(Collections.singletonMap("message", "Password must be not null"));
         }
 
         User newUser = new User();
@@ -61,9 +64,21 @@ public class UserController {
                         .body(Collections.singletonMap("message", "Invalid Specialite ID provided."));
             }
         } else {
-            // If specialite is required and not provided, you might want to return an error here
-            // For now, it proceeds without a specialite if null.
+
         }
+
+        if (registrationDto.getRoleId() != null) {
+            Optional<UserRole> roleOptional = roleRepo.findById(registrationDto.getRoleId());
+            if (roleOptional.isPresent()) {
+                newUser.setRole(roleOptional.get());
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Collections.singletonMap("message", "Invalid Role ID provided."));
+            }
+        } else {
+
+        }
+
 
         if (registrationDto.getDiplomaProof() != null && !registrationDto.getDiplomaProof().isEmpty()) {
             try {
