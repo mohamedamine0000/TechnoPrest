@@ -1,9 +1,6 @@
 package com.esprit.summer.Controller;
 
-import com.esprit.summer.Entities.UserRegistrationDto;
-import com.esprit.summer.Entities.Specialite;
-import com.esprit.summer.Entities.User;
-import com.esprit.summer.Entities.UserRole;
+import com.esprit.summer.Entities.*;
 import com.esprit.summer.Repositories.SpecialiteRepo;
 import com.esprit.summer.Repositories.UserRepo;
 import com.esprit.summer.Repositories.UserRoleRepo;
@@ -89,6 +86,10 @@ public class UserController {
                         .body(Collections.singletonMap("message", "Invalid Base64 image data."));
             }
         }
+
+        newUser.setStatus(Status.Waiting); // Set status to Waiting by default
+
+
 
         userRepository.save(newUser);
         return ResponseEntity.status(HttpStatus.CREATED)

@@ -72,7 +72,17 @@
                                 </select>
                                 <span id="speciality-error" class="error-message" style="display: none;"></span>
                             </div>
-                            <!-- END NEW -->
+                           
+                            <!-- NEW: Role Dropdown -->
+                            <div class="col-12">
+                                <label for="role">Role</label>
+                                <select name="role" id="role" required>
+                                    <option value="">-- Select Role --</option>
+                                    <!-- Options will be loaded dynamically by JavaScript -->
+                                </select>
+                                <span id="role-error" class="error-message" style="display: none;"></span>
+                            </div>
+                            
 
                             <!-- NEW: Diploma Proof Upload Section -->
                             <div class="col-12">
@@ -118,6 +128,8 @@
             const diplomaPreview = document.getElementById('diploma-preview');
             const diplomaProofBase64Hidden = document.getElementById('diploma-proof-base64');
             const diplomaErrorSpan = document.getElementById('diploma-error'); // NEW
+            const roleSelect = document.getElementById('role'); // NEW
+            const roleErrorSpan = document.getElementById('role-error');   // NEW   
 
             // --- CIN Validation Function ---
             function validateCin() {
@@ -172,8 +184,33 @@
                 }
             }
 
+
+            // NEW: Load Roles Function
+            async function loadRoles() {
+                try {
+                    const response = await fetch('/api/roles'); // Fetch from the new public endpoint
+                    if (response.ok) {
+                        const roles = await response.json();
+                        roles.forEach(role => {
+                            const option = document.createElement('option');
+                            option.value = role.id;
+                            option.textContent = role.name;
+                            roleSelect.appendChild(option);
+                        });
+                    } else {
+                        console.error('Failed to load roles:', response.statusText);
+                        roleErrorSpan.textContent = 'Failed to load roles.';
+                        roleErrorSpan.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Error fetching roles:', error);
+                    roleErrorSpan.textContent = 'Network error loading roles.';
+                    roleErrorSpan.style.display = 'block';
+                }
+            }
+
             // --- NEW: Diploma File Handling and Preview ---
-            if (diplomaProofInput && diplomaPreview && diplomaProofBase64Hidden && diplomaErrorSpan) {
+            if (diplomaProofInput && diplomaPreview && diplomaProofBase64Hidden && diplomaErrorSpan ) {
                 diplomaProofInput.addEventListener('change', function(event) {
                     const file = event.target.files[0];
                     diplomaErrorSpan.style.display = 'none'; // Clear previous error
@@ -217,10 +254,10 @@
             }
 
             // --- Form Submission Logic ---
-            if (signupForm && cinInput && cinErrorSpan && specialitySelect && diplomaProofInput) {
+            if (signupForm && cinInput && cinErrorSpan && specialitySelect && diplomaProofInput && roleSelect ) {
                 // Initial load of specialities
                 loadSpecialities();
-
+                loadRoles();
                 // Attach CIN validation to input event
                 cinInput.addEventListener('input', validateCin);
 
@@ -235,6 +272,7 @@
                     const isConfirmPasswordValid = confirmPasswordInput.value === passwordInput.value && confirmPasswordInput.value.trim() !== '';
                     const isSpecialitySelected = specialitySelect.value !== ''; // Check if a speciality is selected
                     const isDiplomaProofUploaded = diplomaProofInput.files.length > 0; // Check if a file is selected
+                    const isRoleSelected = roleSelect.value !== ''; 
 
                     // Display speciality error if not selected
                     if (!isSpecialitySelected) {
@@ -254,8 +292,16 @@
                         diplomaErrorSpan.style.display = 'none';
                     }
 
+                      if (!isRoleSelected) { // NEW: Display role error
+                        roleErrorSpan.textContent = 'Please select your role.';
+                        roleErrorSpan.style.display = 'block';
+                    } else {
+                        roleErrorSpan.textContent = '';
+                        roleErrorSpan.style.display = 'none';
+                    }
 
-                    if (!isUsernameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid || !isCinValid || !isSpecialitySelected || !isDiplomaProofUploaded) {
+
+                    if ( !isRoleSelected || !isUsernameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid || !isCinValid || !isSpecialitySelected || !isDiplomaProofUploaded) {
                         alert('Please fill in all required fields correctly and upload your diploma proof.');
                         // Focus on the first invalid field for better UX
                         if (!isUsernameValid) usernameInput.focus();
@@ -265,6 +311,8 @@
                         else if (!isCinValid) cinInput.focus();
                         else if (!isSpecialitySelected) specialitySelect.focus();
                         else if (!isDiplomaProofUploaded) diplomaProofInput.focus();
+                        else if (!isRoleSelected)  roleSelect.focus();
+                       
                         return;
                     }
 
@@ -275,7 +323,8 @@
                         password: passwordInput.value,
                         cin: cinInput.value.trim(),
                         specialiteId: parseInt(specialitySelect.value), // Get selected Specialite ID
-                        diplomaProof: diplomaProofBase64Hidden.value
+                        diplomaProof: diplomaProofBase64Hidden.value,
+                        roleId: parseInt(roleSelect.value)
                     };
 
                     // --- API CALL SCRIPT START ---
@@ -295,7 +344,9 @@
                             signupForm.reset(); // Clear the form
                             diplomaPreview.src = '';
                             diplomaPreview.style.display = 'none';
-                            specialitySelect.value = ''; // Reset dropdown
+                            specialitySelect.value = '';
+                            roleSelect.value = ''; // NEW: Reset role dropdown
+                            //  // Reset dropdown
                             // Optionally redirect to login page
                             // window.location.href = '/index.html';
                         } else {

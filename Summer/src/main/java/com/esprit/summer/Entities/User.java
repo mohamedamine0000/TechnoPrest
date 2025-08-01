@@ -26,12 +26,39 @@ public class User {
     @JoinColumn(name = "role")
     private UserRole role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status;
+
     @Lob
     @Column(name = "diploma_proof", columnDefinition = "LONGBLOB")
     private byte[] diplomaProof;
     @Column(unique = true, length = 8)
     private String cin;
 
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public String getCin() {
+        return cin;
+    }
+
+    public void setCin(String cin) {
+        this.cin = cin;
+    }
 
     public Long getUserId() {
         return userId;
