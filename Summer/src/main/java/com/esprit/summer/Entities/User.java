@@ -18,9 +18,7 @@ public class User {
     private String username;
     private String password;
     private String email;
-    @ManyToOne
-    @JoinColumn(name = "specialite")
-    private Specialite specialite;
+
 
     @ManyToOne
     @JoinColumn(name = "role")
@@ -92,13 +90,7 @@ public class User {
         this.email = email;
     }
 
-    public Specialite getSpecialite() {
-        return specialite;
-    }
 
-    public void setSpecialite(Specialite specialite) {
-        this.specialite = specialite;
-    }
 
     public byte[] getDiplomaProof() {
         return diplomaProof;

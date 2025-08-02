@@ -1,8 +1,6 @@
 package com.esprit.summer.Controller;
 
-import com.esprit.summer.Entities.Specialite;
 import com.esprit.summer.Entities.UserRole;
-import com.esprit.summer.Repositories.SpecialiteRepo;
 import com.esprit.summer.Repositories.UserRoleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

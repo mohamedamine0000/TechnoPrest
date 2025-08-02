@@ -102,28 +102,40 @@
 
                     // --- API CALL SCRIPT START ---
                     try {
-                        const response = await fetch('/api/login', {
-                            method: 'POST',
+                        const response = await fetch('/api/users/login', {
+                         method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({ cin: cin, password: password })
                         });
 
-                        if (response.ok) {
-                            const data = await response.json();
-                            console.log('Login successful:', data);
-                            alert('Login successful! Welcome.');
+                        let responseData;
+                        const contentType = response.headers.get("content-type");
+                        if (contentType && contentType.includes("application/json")) {
+                            responseData = await response.json();
                         } else {
-                            const errorData = await response.json();
-                            console.error('Login failed:', errorData);
-                            alert('Login failed: ' + (errorData.message || 'Invalid credentials.'));
+                            responseData = { message: await response.text() };
+                        }
+
+                        if (response.ok) {
+                            const loggedInUserId = responseData.userId;
+
+                            if (loggedInUserId) {
+                                sessionStorage.setItem('loggedInUserId', loggedInUserId);
+                                window.location.href = '/profile.html';
+                            } else {
+                                alert('Login successful, but user ID not received.');
+                            }
+
+                        } else {
+                            console.error('Login failed:', responseData);
+                            alert('Login failed: ' + (responseData.message || 'Invalid credentials.'));
                         }
                     } catch (error) {
                         console.error('Error during login fetch:', error);
                         alert('An unexpected error occurred. Please try again later.');
                     }
-                    // --- API CALL SCRIPT END ---
                 });
             }
         });

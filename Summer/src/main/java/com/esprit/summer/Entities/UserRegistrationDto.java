@@ -12,7 +12,7 @@ public class UserRegistrationDto {
         private String password;
         private String email;
         private String cin;
-        private Long specialiteId;
+
         private String diplomaProof;
         private Long roleId;
 
@@ -32,13 +32,7 @@ public class UserRegistrationDto {
         this.diplomaProof = diplomaProof;
     }
 
-    public Long getSpecialiteId() {
-        return specialiteId;
-    }
 
-    public void setSpecialiteId(Long specialiteId) {
-        this.specialiteId = specialiteId;
-    }
 
     public String getCin() {
         return cin;

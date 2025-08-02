@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <style>
+        .profile-container {
+            background-color: #333; /* Dark background for the profile card */
+            color: #fff; /* White text */
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 400px; /* Adjusted max-width for simpler content */
+            margin: 50px auto; /* Center the card */
+            text-align: center;
+        }
+        .profile-header {
+            margin-bottom: 20px;
+        }
+        .profile-header h2 {
+            color: #4CAF50; /* Green highlight for name */
+            margin-bottom: 10px;
+        }
+        .profile-details p {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        .profile-details strong {
+            color: #ddd;
+            display: inline-block;
+            width: 80px; /* Align labels */
+            text-align: right;
+            margin-right: 10px;
+        }
+        .profile-details span {
+            text-align: left;
+            display: inline-block;
+        }
+        .logout-button {
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #f44336; /* Red for logout */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        .logout-button:hover {
+            background-color: #d32f2f;
+        }
+        .loading-message {
+            color: #fff;
+            font-size: 1.2em;
+            margin-top: 50px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="is-preload">
+    <div id="wrapper">
+        <div id="main">
+            <div class="inner">
+                <section>
+                    <header class="main">
+                        <h1>Your Profile</h1>
+                    </header>
+
+                    <div id="profile-content" style="display: none;">
+                        <div class="profile-container">
+                            <div class="profile-header">
+                                <h2 id="profile-username"></h2>
+                            </div>
+                            <div class="profile-details">
+                                <p><strong>User ID:</strong> <span id="profile-userid"></span></p>
+                                <p><strong>Role:</strong> <span id="profile-role"></span></p>
+                            </div>
+                            <button id="logout-button" class="logout-button">Logout</button>
+                        </div>
+                    </div>
+                    <div id="loading-message" class="loading-message">
+                        Loading profile data...
+                    </div>
+                    <div id="error-message" class="error-message" style="display: none;">
+                        Could not load profile. Please try logging in again.
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const loggedInUserId = sessionStorage.getItem('loggedInUserId');
+            const profileContent = document.getElementById('profile-content');
+            const loadingMessage = document.getElementById('loading-message');
+            const errorMessage = document.getElementById('error-message');
+            const logoutButton = document.getElementById('logout-button');
+
+            if (!loggedInUserId) {
+                errorMessage.textContent = 'No user logged in. Redirecting to login...';
+                errorMessage.style.display = 'block';
+                loadingMessage.style.display = 'none';
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 2000);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/users/${loggedInUserId}`);
+                let responseData;
+                const contentType = response.headers.get("content-type");
+
+                if (contentType && contentType.includes("application/json")) {
+                    responseData = await response.json();
+                } else {
+                    responseData = { message: await response.text() };
+                }
+
+                if (response.ok) {
+                    document.getElementById('profile-userid').textContent = responseData.userId;
+                    document.getElementById('profile-username').textContent = responseData.username;
+                    document.getElementById('profile-role').textContent = responseData.roleName;
+
+                    loadingMessage.style.display = 'none';
+                    profileContent.style.display = 'block'; // Show profile content
+                } else {
+                    console.error('Failed to fetch user profile:', responseData);
+                    errorMessage.textContent = 'Failed to load profile: ' + (responseData.message || 'Unknown error.');
+                    errorMessage.style.display = 'block';
+                    loadingMessage.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error during profile fetch:', error);
+                errorMessage.textContent = 'An unexpected error occurred while loading profile. Please try again.';
+                errorMessage.style.display = 'block';
+                loadingMessage.style.display = 'none';
+            }
+
+            logoutButton.addEventListener('click', function() {
+                sessionStorage.removeItem('loggedInUserId'); // Clear stored user ID
+                window.location.href = '/index.html'; // Redirect to login page
+            });
+        });
+    </script>
+</body>
+</html>

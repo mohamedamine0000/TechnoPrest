@@ -63,15 +63,7 @@
                                 <span id="cin-error" class="error-message" style="display: none;"></span>
                             </div>
 
-                            <!-- NEW: Speciality Dropdown -->
-                            <div class="col-12">
-                                <label for="speciality">Speciality</label>
-                                <select name="speciality" id="speciality" required>
-                                    <option value="">-- Select Speciality --</option>
-                                    <!-- Options will be loaded dynamically by JavaScript -->
-                                </select>
-                                <span id="speciality-error" class="error-message" style="display: none;"></span>
-                            </div>
+                        
                            
                             <!-- NEW: Role Dropdown -->
                             <div class="col-12">
@@ -122,8 +114,7 @@
             const confirmPasswordInput = document.getElementById('confirm-password');
             const cinInput = document.getElementById('CIN');
             const cinErrorSpan = document.getElementById('cin-error');
-            const specialitySelect = document.getElementById('speciality'); // NEW
-            const specialityErrorSpan = document.getElementById('speciality-error'); // NEW
+            
             const diplomaProofInput = document.getElementById('diploma-proof');
             const diplomaPreview = document.getElementById('diploma-preview');
             const diplomaProofBase64Hidden = document.getElementById('diploma-proof-base64');
@@ -160,29 +151,7 @@
                 return isValid;
             }
 
-            // --- NEW: Speciality Dropdown Population ---
-            async function loadSpecialities() {
-                try {
-                    const response = await fetch('/api/specialites'); // Fetch from the public endpoint
-                    if (response.ok) {
-                        const specialities = await response.json();
-                        specialities.forEach(speciality => {
-                            const option = document.createElement('option');
-                            option.value = speciality.id;
-                            option.textContent = speciality.name;
-                            specialitySelect.appendChild(option);
-                        });
-                    } else {
-                        console.error('Failed to load specialities:', response.statusText);
-                        specialityErrorSpan.textContent = 'Failed to load specialities.';
-                        specialityErrorSpan.style.display = 'block';
-                    }
-                } catch (error) {
-                    console.error('Error fetching specialities:', error);
-                    specialityErrorSpan.textContent = 'Network error loading specialities.';
-                    specialityErrorSpan.style.display = 'block';
-                }
-            }
+          
 
 
             // NEW: Load Roles Function
@@ -254,9 +223,9 @@
             }
 
             // --- Form Submission Logic ---
-            if (signupForm && cinInput && cinErrorSpan && specialitySelect && diplomaProofInput && roleSelect ) {
-                // Initial load of specialities
-                loadSpecialities();
+            if (signupForm && cinInput && cinErrorSpan  && diplomaProofInput && roleSelect ) {
+              
+               
                 loadRoles();
                 // Attach CIN validation to input event
                 cinInput.addEventListener('input', validateCin);
@@ -270,18 +239,11 @@
                     const isEmailValid = emailInput.value.trim() !== '' && emailInput.checkValidity();
                     const isPasswordValid = passwordInput.value.trim() !== '';
                     const isConfirmPasswordValid = confirmPasswordInput.value === passwordInput.value && confirmPasswordInput.value.trim() !== '';
-                    const isSpecialitySelected = specialitySelect.value !== ''; // Check if a speciality is selected
+               
                     const isDiplomaProofUploaded = diplomaProofInput.files.length > 0; // Check if a file is selected
                     const isRoleSelected = roleSelect.value !== ''; 
 
-                    // Display speciality error if not selected
-                    if (!isSpecialitySelected) {
-                        specialityErrorSpan.textContent = 'Please select your speciality.';
-                        specialityErrorSpan.style.display = 'block';
-                    } else {
-                        specialityErrorSpan.textContent = '';
-                        specialityErrorSpan.style.display = 'none';
-                    }
+                   
 
                     // Display diploma error if not uploaded
                     if (!isDiplomaProofUploaded) {
@@ -301,7 +263,7 @@
                     }
 
 
-                    if ( !isRoleSelected || !isUsernameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid || !isCinValid || !isSpecialitySelected || !isDiplomaProofUploaded) {
+                    if ( !isRoleSelected || !isUsernameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid || !isCinValid  || !isDiplomaProofUploaded) {
                         alert('Please fill in all required fields correctly and upload your diploma proof.');
                         // Focus on the first invalid field for better UX
                         if (!isUsernameValid) usernameInput.focus();
@@ -309,7 +271,7 @@
                         else if (!isPasswordValid) passwordInput.focus();
                         else if (!isConfirmPasswordValid) confirmPasswordInput.focus();
                         else if (!isCinValid) cinInput.focus();
-                        else if (!isSpecialitySelected) specialitySelect.focus();
+                        
                         else if (!isDiplomaProofUploaded) diplomaProofInput.focus();
                         else if (!isRoleSelected)  roleSelect.focus();
                        
@@ -322,7 +284,7 @@
                         email: emailInput.value.trim(),
                         password: passwordInput.value,
                         cin: cinInput.value.trim(),
-                        specialiteId: parseInt(specialitySelect.value), // Get selected Specialite ID
+                       
                         diplomaProof: diplomaProofBase64Hidden.value,
                         roleId: parseInt(roleSelect.value)
                     };
@@ -344,7 +306,7 @@
                             signupForm.reset(); // Clear the form
                             diplomaPreview.src = '';
                             diplomaPreview.style.display = 'none';
-                            specialitySelect.value = '';
+                            
                             roleSelect.value = ''; // NEW: Reset role dropdown
                             //  // Reset dropdown
                             // Optionally redirect to login page

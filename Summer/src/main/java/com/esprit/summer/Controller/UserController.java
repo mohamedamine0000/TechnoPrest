@@ -1,7 +1,6 @@
 package com.esprit.summer.Controller;
 
 import com.esprit.summer.Entities.*;
-import com.esprit.summer.Repositories.SpecialiteRepo;
 import com.esprit.summer.Repositories.UserRepo;
 import com.esprit.summer.Repositories.UserRoleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,10 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/users")
@@ -21,8 +17,7 @@ public class UserController {
     @Autowired
     private UserRepo userRepository;
 
-    @Autowired
-    private SpecialiteRepo specialiteRepository;
+
 
     @Autowired
     private UserRoleRepo roleRepo;
@@ -52,17 +47,7 @@ public class UserController {
         newUser.setEmail(registrationDto.getEmail());
         newUser.setCIN(registrationDto.getCin());
 
-        if (registrationDto.getSpecialiteId() != null) {
-            Optional<Specialite> specialiteOptional = specialiteRepository.findById(registrationDto.getSpecialiteId());
-            if (specialiteOptional.isPresent()) {
-                newUser.setSpecialite(specialiteOptional.get());
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Collections.singletonMap("message", "Invalid Specialite ID provided."));
-            }
-        } else {
 
-        }
 
         if (registrationDto.getRoleId() != null) {
             Optional<UserRole> roleOptional = roleRepo.findById(registrationDto.getRoleId());
@@ -87,7 +72,7 @@ public class UserController {
             }
         }
 
-        newUser.setStatus(Status.Waiting); // Set status to Waiting by default
+        newUser.setStatus(Status.Waiting);
 
 
 
@@ -106,5 +91,56 @@ public class UserController {
                     .body(imageData);
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Map<String, String> loginRequest) {
+        String cin = loginRequest.get("cin");
+        String password = loginRequest.get("password");
+
+        if (cin == null || password == null || cin.isEmpty() || password.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", (Object)"CIN and password are required."));
+        }
+
+        Optional<User> userOptional = userRepository.findByCin(cin);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            // In a real app, you MUST compare hashed passwords using a PasswordEncoder!
+            // Example: if (passwordEncoder.matches(password, user.getPassword())) { ... }
+            if (user.getPassword().equals(password)) { // For demonstration, direct comparison
+                // Login successful, return user ID
+                return ResponseEntity.ok(Map.of(
+                        "message", "Login successful!",
+                        "userId", user.getUserId() // IMPORTANT: Return the userId
+                ));
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Collections.singletonMap("message", (Object)"Invalid CIN or password."));
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("message", (Object)"Invalid CIN or password."));
+        }
+    }
+
+
+    // Endpoint to get user details by ID
+    @GetMapping("{userId}") // Maps GET requests to /api/users/{userId}
+    public ResponseEntity<Map<String, Object>> getUserById(@PathVariable Long userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            Map<String, Object> userData = new HashMap<>(); // Use HashMap for mutable map
+            userData.put("userId", user.getUserId());
+            userData.put("username", user.getUsername());
+            userData.put("roleName", user.getRole() != null ? user.getRole().getName() : "N/A"); // Get role name
+
+            return ResponseEntity.ok(userData); // Return 200 OK with user data
+        } else {
+            return ResponseEntity.notFound().build(); // Return 404 Not Found if user doesn't exist
+        }
     }
 }
