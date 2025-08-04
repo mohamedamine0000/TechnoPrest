@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -146,4 +147,61 @@ public class UserController {
             return ResponseEntity.notFound().build(); // Return 404 Not Found if user doesn't exist
         }
     }
+
+    @GetMapping("/waiting")
+    public ResponseEntity<List<Map<String, Object>>> getWaitingUsers() {
+        List<User> waitingUsers = userRepository.findByStatus(Status.Waiting);
+        List<Map<String, Object>> userList = waitingUsers.stream()
+                .map(user -> {
+                    Map<String, Object> userData = new HashMap<>();
+                    userData.put("userId", user.getUserId()); // Include userId for frontend actions (accept/deny)
+                    userData.put("username", user.getUsername());
+                    userData.put("roleName", user.getRole() != null ? user.getRole().getName() : "N/A");
+                    userData.put("userCin",user.getCin());
+                    userData.put("userEmail",user.getEmail());
+                    userData.put("userStatus",user.getStatus());
+
+                    return userData;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(userList);
+    }
+
+    @PutMapping("/{userId}/status")
+    public ResponseEntity<Map<String, String>> updateUserStatus(@PathVariable Long userId, @RequestBody Map<String, String> request) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("message", "User not found."));
+        }
+
+        User user = userOptional.get();
+        String statusString = request.get("status"); // Expecting "Accepted" or "Refused"
+        if (statusString == null || statusString.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", "Status field is required."));
+        }
+
+        try {
+            Status newStatus = Status.valueOf(statusString); // Convert string to Status enum
+            user.setStatus(newStatus);
+            userRepository.save(user);
+            return ResponseEntity.ok(Collections.singletonMap("message", "User status updated successfully."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", "Invalid status provided. Valid values are Accepted, Waiting, Refused."));
+        }
+    }
+
+    // NEW ENDPOINT: Delete user
+    @DeleteMapping("/delete/{userId}")
+    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Long userId) {
+        if (!userRepository.existsById(userId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("message", "User not found."));
+        }
+        userRepository.deleteById(userId);
+        return ResponseEntity.ok(Collections.singletonMap("message", "User deleted successfully."));
+    }
 }
+
