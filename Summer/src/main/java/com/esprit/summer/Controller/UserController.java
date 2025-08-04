@@ -136,7 +136,10 @@ public class UserController {
             Map<String, Object> userData = new HashMap<>(); // Use HashMap for mutable map
             userData.put("userId", user.getUserId());
             userData.put("username", user.getUsername());
-            userData.put("roleName", user.getRole() != null ? user.getRole().getName() : "N/A"); // Get role name
+            userData.put("roleName", user.getRole() != null ? user.getRole().getName() : "N/A");
+            userData.put("userCin",user.getCin());
+            userData.put("userEmail",user.getEmail());
+            userData.put("userStatus",user.getStatus());
 
             return ResponseEntity.ok(userData); // Return 200 OK with user data
         } else {
