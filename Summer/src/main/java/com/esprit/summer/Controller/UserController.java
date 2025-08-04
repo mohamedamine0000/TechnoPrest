@@ -160,7 +160,7 @@ public class UserController {
                     userData.put("userCin",user.getCin());
                     userData.put("userEmail",user.getEmail());
                     userData.put("userStatus",user.getStatus());
-                    
+
 
                     return userData;
                 })
