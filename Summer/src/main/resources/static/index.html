@@ -7,14 +7,28 @@
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/login.css">
     <style>
+        /* Basic styling for invalid input feedback */
         .is-invalid {
-            border: 2px solid red !important;
+            border: 2px solid red !important; /* Red border for invalid input */
         }
+        /* Style for the error message (CIN specific) */
         .error-message {
             color: red;
             font-size: 0.85em;
             margin-top: 5px;
-            display: block;
+            display: block; /* Ensure it takes its own line */
+        }
+        /* Style for general login messages (new) */
+        #login-general-message {
+            color: red; /* Default to red for errors */
+            font-size: 0.9em;
+            margin-top: 15px;
+            text-align: center;
+            display: none; /* Hidden by default */
+        }
+        /* Style for success messages (optional, if you want green for success) */
+        #login-general-message.success {
+            color: green;
         }
     </style>
 </head>
@@ -40,6 +54,7 @@
                                 </ul>
                             </div>
                         </div>
+                        <span id="login-general-message" style="display: none;"></span> <!-- New: General login message area -->
                         <p class="mt-4" style="color: white;">Forgot your password? <a href="#">Reset here</a></p>
                     </form>
                 </div>
@@ -53,6 +68,21 @@
             const cinInput = document.getElementById('CIN');
             const passwordInput = document.getElementById('password');
             const cinErrorSpan = document.getElementById('cin-error');
+            const loginGeneralMessageSpan = document.getElementById('login-general-message'); // New: Reference to general message span
+
+            // Function to display general login messages
+            function displayLoginMessage(message, type = 'error') {
+                loginGeneralMessageSpan.textContent = message;
+                loginGeneralMessageSpan.className = ''; // Clear existing classes
+                loginGeneralMessageSpan.classList.add(type); // Add type class (e.g., 'success', 'error')
+                loginGeneralMessageSpan.style.display = 'block';
+            }
+
+            // Function to hide general login messages
+            function hideLoginMessage() {
+                loginGeneralMessageSpan.textContent = '';
+                loginGeneralMessageSpan.style.display = 'none';
+            }
 
             function validateCin() {
                 const value = cinInput.value.trim();
@@ -82,11 +112,17 @@
                 return isValid;
             }
 
-            if (cinInput && cinErrorSpan && loginForm && passwordInput) {
+            if (cinInput && cinErrorSpan && loginForm && passwordInput && loginGeneralMessageSpan) {
                 cinInput.addEventListener('input', validateCin);
+                // Clear general message when user starts typing in either field
+                cinInput.addEventListener('input', hideLoginMessage);
+                passwordInput.addEventListener('input', hideLoginMessage);
+
 
                 loginForm.addEventListener('submit', async function(event) {
-                    event.preventDefault();
+                    event.preventDefault(); // Prevent default form submission
+
+                    hideLoginMessage(); // Clear previous messages on new submission
 
                     const isCinValid = validateCin();
                     const isPasswordValid = passwordInput.value.trim() !== '';
@@ -94,16 +130,16 @@
                     if (!isCinValid || !isPasswordValid) {
                         if (!isCinValid) cinInput.focus();
                         else if (!isPasswordValid) passwordInput.focus();
+                        displayLoginMessage('Please correct the highlighted fields.', 'error'); // Generic error for client-side validation
                         return;
                     }
 
                     const cin = cinInput.value.trim();
                     const password = passwordInput.value;
 
-                    // --- API CALL SCRIPT START ---
                     try {
-                        const response = await fetch('/api/users/login', {
-                         method: 'POST',
+                        const response = await fetch('/api/users/login', { // Corrected endpoint to /api/users/login
+                            method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
                             },
@@ -118,23 +154,28 @@
                             responseData = { message: await response.text() };
                         }
 
-                        if (response.ok) {
+                        if (response.ok) { // HTTP status 200 OK (User Accepted)
                             const loggedInUserId = responseData.userId;
-
                             if (loggedInUserId) {
                                 sessionStorage.setItem('loggedInUserId', loggedInUserId);
-                                window.location.href = '/profile.html';
+                                displayLoginMessage('Login successful! Redirecting...', 'success');
+                                setTimeout(() => {
+                                    window.location.href = '/profile.html';
+                                }, 1000); // Redirect after 1 second
                             } else {
-                                alert('Login successful, but user ID not received.');
+                                displayLoginMessage('Login successful, but user ID not received.', 'error');
                             }
-
-                        } else {
-                            console.error('Login failed:', responseData);
-                            alert('Login failed: ' + (responseData.message || 'Invalid credentials.'));
+                        } else if (response.status === 403) { // Specifically handle 403 Forbidden for "Waiting" status
+                            displayLoginMessage(responseData.message || 'Access denied. You are in the waiting list.', 'error');
+                        } else if (response.status === 401) { // Handle 401 Unauthorized for invalid creds or other inactive statuses
+                            displayLoginMessage(responseData.message || 'Invalid CIN or password.', 'error');
+                        } else { // Generic error for other HTTP errors
+                            console.error('Login failed with status ' + response.status + ':', responseData);
+                            displayLoginMessage('Login failed: ' + (responseData.message || 'An unexpected error occurred.'), 'error');
                         }
                     } catch (error) {
                         console.error('Error during login fetch:', error);
-                        alert('An unexpected error occurred. Please try again later.');
+                        displayLoginMessage('An unexpected error occurred. Please try again later.', 'error');
                     }
                 });
             }

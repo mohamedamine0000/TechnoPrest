@@ -109,18 +109,31 @@ public class UserController {
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             // In a real app, you MUST compare hashed passwords using a PasswordEncoder!
-            // Example: if (passwordEncoder.matches(password, user.getPassword())) { ... }
-            if (user.getPassword().equals(password)) { // For demonstration, direct comparison
-                // Login successful, return user ID
-                return ResponseEntity.ok(Map.of(
-                        "message", "Login successful!",
-                        "userId", user.getUserId() // IMPORTANT: Return the userId
-                ));
+            // For demonstration, direct comparison
+            if (user.getPassword().equals(password)) {
+                // Check user status
+                if (user.getStatus() == Status.Accepted) {
+                    // Login successful, return user ID
+                    return ResponseEntity.ok(Map.of(
+                            "message", "Login successful!",
+                            "userId", user.getUserId()
+                    ));
+                } else if (user.getStatus() == Status.Waiting) {
+                    // User is in waiting list
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN) // Using 403 Forbidden
+                            .body(Collections.singletonMap("message", (Object)"You are in the waiting list."));
+                } else {
+                    // Status is Refused or any other unexpected status
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                            .body(Collections.singletonMap("message", (Object)"Your account is not active. Please contact support."));
+                }
             } else {
+                // Invalid password
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Collections.singletonMap("message", (Object)"Invalid CIN or password."));
             }
         } else {
+            // User not found
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Collections.singletonMap("message", (Object)"Invalid CIN or password."));
         }

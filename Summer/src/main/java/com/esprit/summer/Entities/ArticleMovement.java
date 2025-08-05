@@ -32,4 +32,69 @@ public class ArticleMovement {
     private LocalDateTime timestamp; // When the movement occurred (e.g., sale date, purchase date)
 
     private String recordedBy;
+
+
+    public Long getMovementId() {
+        return movementId;
+    }
+
+    public void setMovementId(Long movementId) {
+        this.movementId = movementId;
+    }
+
+    public Article getArticle() {
+        return article;
+    }
+
+    public void setArticle(Article article) {
+        this.article = article;
+    }
+
+    public int getQuantityChange() {
+        return quantityChange;
+    }
+
+    public void setQuantityChange(int quantityChange) {
+        this.quantityChange = quantityChange;
+    }
+
+    public Reason getReason() {
+        return reason;
+    }
+
+    public void setReason(Reason reason) {
+        this.reason = reason;
+    }
+
+    public String getFromLocation() {
+        return fromLocation;
+    }
+
+    public void setFromLocation(String fromLocation) {
+        this.fromLocation = fromLocation;
+    }
+
+    public String getToLocation() {
+        return toLocation;
+    }
+
+    public void setToLocation(String toLocation) {
+        this.toLocation = toLocation;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getRecordedBy() {
+        return recordedBy;
+    }
+
+    public void setRecordedBy(String recordedBy) {
+        this.recordedBy = recordedBy;
+    }
 }

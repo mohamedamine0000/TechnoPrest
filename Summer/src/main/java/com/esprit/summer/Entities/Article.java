@@ -29,5 +29,112 @@ public class Article {
     private int minmumStock;
     private String addedBy;
     private String unite;
+    @ManyToOne
+    @JoinColumn(name = "role")
+    private UserRole role;
 
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
+    }
+
+    public String getCodeArticle() {
+        return codeArticle;
+    }
+
+    public void setCodeArticle(String codeArticle) {
+        this.codeArticle = codeArticle;
+    }
+
+    public Long getArticleId() {
+        return articleId;
+    }
+
+    public void setArticleId(Long articleId) {
+        this.articleId = articleId;
+    }
+
+    public String getDesignation() {
+        return designation;
+    }
+
+    public void setDesignation(String designation) {
+        this.designation = designation;
+    }
+
+    public String getUnite() {
+        return unite;
+    }
+
+    public void setUnite(String unite) {
+        this.unite = unite;
+    }
+
+    public String getAddedBy() {
+        return addedBy;
+    }
+
+    public void setAddedBy(String addedBy) {
+        this.addedBy = addedBy;
+    }
+
+    public int getMinmumStock() {
+        return minmumStock;
+    }
+
+    public void setMinmumStock(int minmumStock) {
+        this.minmumStock = minmumStock;
+    }
+
+    public EtatArticle getEtat() {
+        return etat;
+    }
+
+    public void setEtat(EtatArticle etat) {
+        this.etat = etat;
+    }
+
+    public String getEtagere() {
+        return etagere;
+    }
+
+    public void setEtagere(String etagere) {
+        this.etagere = etagere;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+
+    public String getUm() {
+        return um;
+    }
+
+    public void setUm(String um) {
+        this.um = um;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public int getQte() {
+        return qte;
+    }
+
+    public void setQte(int qte) {
+        this.qte = qte;
+    }
 }
