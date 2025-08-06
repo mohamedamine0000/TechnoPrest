@@ -5,53 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile</title>
     <link rel="stylesheet" href="assets/css/main.css">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>
-        /* Styles for the profile summary within the sidebar */
+  <style>
+        /* Specific styles for the sidebar profile section, as requested */
         .sidebar-profile-summary {
-            margin-bottom: 2em; /* Spacing below the profile summary */
-            padding: 1em 0; /* Add some vertical padding */
-            border-bottom: solid 1px rgba(144, 144, 144, 0.25); /* Separator line */
-            display: flex; /* Use flexbox to align items horizontally */
-            align-items: flex-start; /* Align items to the top (username starts at top) */
-            justify-content: space-between; /* Pushes profile info to left, bell to right */
-            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1em 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .sidebar-profile-summary .profile-info {
-            text-align: left; /* Align text within this div to the left */
-            flex-grow: 1; /* Allow it to take available space */
+        .sidebar-profile-summary .profile-info h3 {
+            margin: 0 0 0.25em 0;
+            color: darkgreen;
+            font-size: 1.25em;
         }
 
-        .sidebar-profile-summary h3 {
-            color: #4CAF50; /* Green highlight for username */
-            margin: 0 0 0.2em 0; /* Adjusted margin for better stacking */
-            font-size: 1.5em; /* Larger font for username */
-            line-height: 1.2; /* Adjust line height for better spacing */
-            display: block; /* Ensure it takes its own line */
-        }
-
-        .sidebar-profile-summary p {
-            margin: 0; /* Remove default paragraph margin */
+        .sidebar-profile-summary .profile-info p {
+            margin: 0;
+            color: darkgrey;
             font-size: 0.9em;
-            color: #777; /* Slightly muted text for details */
-            text-align: left; /* Ensure these are also left-aligned */
-            width: 100%; /* Ensure they take full width below username */
-            padding-left: 0; /* Reset padding */
-            box-sizing: border-box;
         }
 
-        .sidebar-profile-summary strong {
-            color: #555; /* Darker strong text */
-        }
-
-        /* --- Notification Bell Styling (within sidebar profile summary, next to name) --- */
         .notification-bell-wrapper {
-            position: relative; /* For positioning the badge */
-            flex-shrink: 0; /* Prevent shrinking on smaller screens */
-            margin-top: 0.2em; /* Align vertically with username */
-            /* REMOVED: display: none; -> Now visible by default */
+            position: relative;
+            flex-shrink: 0;
+            margin-top: 0.2em;
         }
 
         .notification-bell-wrapper .notification-icon-link {
@@ -59,25 +39,25 @@
             border: none;
             cursor: pointer;
             padding: 0;
-            color: #555; /* Match sidebar text color */
+            color: #555;
             text-decoration: none;
             display: inline-block;
-            font-size: 2.2em; /* Made the bell icon even bigger */
+            font-size: 2.2em;
             transition: color 0.3s ease;
         }
 
         .notification-bell-wrapper .notification-icon-link:hover {
-            color: #007bff; /* Example hover color */
+            color: #007bff;
         }
 
         .notification-badge {
             position: absolute;
-            top: -8px; /* Adjusted vertical position for bigger icon */
-            right: -10px; /* Adjusted horizontal position for bigger icon */
-            background-color: #dc3545; /* Red badge */
+            top: -8px;
+            right: -10px;
+            background-color: #dc3545;
             color: white;
             border-radius: 50%;
-            padding: 4px 8px; /* Adjusted padding for size */
+            padding: 4px 8px;
             font-size: 0.75em;
             font-weight: bold;
             min-width: 15px;
@@ -87,80 +67,32 @@
             z-index: 1;
         }
 
-        /* Loading and error messages for the main content area */
-        .loading-message, .error-message {
-            color: #555; /* Default text color from main.css */
-            font-size: 1.2em;
-            margin-top: 50px;
-            text-align: center;
-        }
-
-        /* Style for the logout button in the main header */
-        #logout-button-main-header {
-            background-color: #f44336; /* Red background */
-            color: white; /* White text/icon color */
-            border: none;
-            border-radius: 5px; /* Slightly rounded corners */
-            cursor: pointer;
-            padding: 8px 15px; /* Padding for button appearance */
-            font-size: 1em; /* Adjust font size as needed */
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            display: inline-flex; /* Use flex to align icon and text */
-            align-items: center;
-            gap: 5px; /* Space between icon and text */
-            margin-left: auto; /* Pushes the button to the right */
-        }
-
-        #logout-button-main-header:hover {
-            background-color: #d32f2f; /* Darker red on hover */
-            transform: translateY(-1px); /* Slight lift effect */
-        }
-
-        /* Ensure the main header itself uses flexbox for alignment */
-        #header {
-            display: flex;
-            justify-content: space-between; /* Distribute space between logo and icons */
-            align-items: center; /* Vertically align items */
-            padding: 1.5em 0; /* Adjust padding as needed for overall header */
-        }
-        #header .icons {
-            margin: 0; /* Remove default margin from ul.icons */
-            padding: 0; /* Remove default padding from ul.icons */
-            list-style: none; /* Remove list bullets */
-            display: flex; /* Make icons/buttons line up horizontally */
-            align-items: center;
-            gap: 15px; /* Space between icons/buttons */
-        }
-        #header .icons li {
-            margin: 0; /* Remove default li margin */
-        }
-
         /* Modal specific styles */
         .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 2000; /* Sit on top of everything */
+            display: none;
+            position: fixed;
+            z-index: 2000;
             left: 0;
             top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
-            justify-content: center; /* Center horizontally */
-            align-items: center; /* Center vertically */
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
         }
 
         .modal-content {
             background-color: #fefefe;
-            margin: auto; /* Center the modal */
+            margin: auto;
             padding: 20px;
             border: 1px solid #888;
-            width: 80%; /* Could be responsive */
-            max-width: 600px; /* Max width for larger screens */
+            width: 80%;
+            max-width: 600px;
             border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             position: relative;
-            color: #333; /* Dark text for modal content */
+            color: #333;
         }
 
         .close-button {
@@ -181,6 +113,7 @@
             cursor: pointer;
         }
 
+        /* This is kept to style the user list within the modal, which is not part of the main template's default styles */
         .user-list-item {
             padding: 10px 0;
             border-bottom: 1px solid #eee;
@@ -206,83 +139,15 @@
             cursor: pointer;
             font-size: 0.9em;
         }
-        .accept-button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-        }
-        .deny-button {
-            background-color: #f44336;
-            color: white;
-            border: none;
-        }
-
-        /* User Detail Modal Specifics */
-        .user-detail-modal-content {
-            padding: 30px;
-            text-align: center; /* Center content within the modal */
-        }
-        .user-detail-modal-content h3 {
-            color: #333;
-            margin-bottom: 15px;
-        }
-        .user-detail-modal-content p {
-            margin-bottom: 8px;
-            font-size: 1em;
-            text-align: left; /* Align text details to the left */
-            padding-left: 20px; /* Add some padding for readability */
-            padding-right: 20px;
-        }
-        .user-detail-modal-content strong {
-            color: #555;
-        }
-        .user-detail-actions {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .user-detail-actions button {
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            margin: 0 10px;
-        }
-
-        /* Diploma Proof Image Styling */
-        #detail-diploma-proof {
-            max-width: 100%; /* Ensure image fits within modal */
-            height: auto; /* Maintain aspect ratio */
-            border-radius: 8px; /* Rounded corners for the image */
-            margin-top: 15px; /* Space above the image */
-            margin-bottom: 20px; /* Space below the image */
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* Subtle shadow */
-            display: block; /* Ensure it takes its own line and centers with margin auto */
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .diploma-proof-container {
-            text-align: center; /* Center the image and its label */
-            margin-top: 15px;
-            margin-bottom: 15px;
-        }
-        .diploma-proof-container p {
-            font-style: italic;
-            color: #888;
-            margin-top: 5px;
-            text-align: center; /* Center the "No image available" text */
-        }
     </style>
 </head>
 <body class="is-preload">
     <div id="wrapper">
-        <!-- Main Content Area -->
         <div id="main">
             <div class="inner">
-                <!-- Header for the main content area (now includes logout button) -->
                 <header id="header">
                     <a href="/profile.html" class="logo"><strong>My App</strong> Main Content</a>
                     <ul class="icons">
-                        <!-- Logout Button in Main Header -->
                         <li>
                             <button id="logout-button-main-header" class="fas fa-sign-out-alt">
                                 <span class="label">Logout</span>
@@ -308,17 +173,14 @@
             </div>
         </div>
 
-        <!-- Sidebar -->
         <div id="sidebar">
             <div class="inner">
-                <!-- User Profile Section - Placed at the very top of the sidebar inner -->
                 <section id="user-profile-sidebar-section" style="display: none;">
                     <div class="sidebar-profile-summary">
                         <div class="profile-info">
                             <h3 id="profile-username-sidebar"></h3>
                             <p>Role: <span id="profile-role-sidebar"></span></p>
                         </div>
-                        <!-- Notification Bell (MOVED TO BE A DIRECT SIBLING OF profile-info) -->
                         <div class="notification-bell-wrapper">
                             <a href="#" class="notification-icon-link" id="notification-bell-button">
                                 <i class="fas fa-bell"></i>
@@ -328,14 +190,12 @@
                     </div>
                 </section>
 
-                <!-- Existing Search -->
                 <section id="search" class="alt">
                     <form method="post" action="#">
                         <input type="text" name="query" id="query" placeholder="Search" />
                     </form>
                 </section>
 
-                <!-- Existing Menu -->
                 <nav id="menu">
                     <header class="major">
                         <h2>Menu</h2>
@@ -370,7 +230,6 @@
                     </ul>
                 </nav>
 
-                <!-- Existing Footer -->
                 <footer id="footer">
                     <p class="copyright">&copy; Untitled. All rights reserved. Demo Images: <a href="https://unsplash.com">Unsplash</a>. Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
                 </footer>
@@ -378,18 +237,15 @@
         </div>
     </div>
 
-    <!-- The Modal for User List -->
     <div id="userListModal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="closeUserListModal">&times;</span>
             <h2>Users with 'Waiting' Status</h2>
             <div id="waitingUsersList">
-                <!-- User list will be loaded here -->
-            </div>
+                </div>
         </div>
     </div>
 
-    <!-- The Modal for User Details -->
     <div id="userDetailsModal" class="modal">
         <div class="modal-content user-detail-modal-content">
             <span class="close-button" id="closeUserDetailsModal">&times;</span>
@@ -421,7 +277,7 @@
             const logoutButtonMainHeader = document.getElementById('logout-button-main-header');
             const notificationCountSpan = document.getElementById('notification-count');
             const notificationBellButton = document.getElementById('notification-bell-button');
-            const notificationBellWrapper = document.querySelector('.notification-bell-wrapper'); // Still good to have this reference
+            const notificationBellWrapper = document.querySelector('.notification-bell-wrapper');
 
             const userListModal = document.getElementById('userListModal');
             const closeUserListModal = document.getElementById('closeUserListModal');
@@ -440,9 +296,8 @@
             const detailDenyButton = document.getElementById('detail-deny-button');
 
             let currentDiplomaProofUrl = null;
-            let currentUserRole = ''; // To store the role fetched from the backend
+            let currentUserRole = '';
 
-            // Function to fetch and display waiting users (Admin-specific)
             async function fetchWaitingUsers() {
                 try {
                     const response = await fetch('/api/users/waiting');
@@ -500,7 +355,6 @@
                 }
             }
 
-            // Function to show user details modal
             async function showUserDetails(userId) {
                 detailDiplomaProof.style.display = 'none';
                 detailDiplomaProof.src = '';
@@ -555,7 +409,6 @@
                 }
             }
 
-            // Function to update user status
             async function updateStatus(userId, newStatus) {
                 displayConfirmationBox(`Are you sure you want to set this user's status to ${newStatus}?`, async () => {
                     try {
@@ -572,7 +425,6 @@
                         displayMessageBox(`User status updated to ${newStatus}!`, 'success');
                         userDetailsModal.style.display = 'none';
                         userListModal.style.display = 'none';
-                        // Re-fetch waiting users only if the current user is an Admin
                         if (currentUserRole === 'Admin') {
                             fetchWaitingUsers();
                         }
@@ -583,7 +435,6 @@
                 });
             }
 
-            // Function to delete user
             async function deleteUser(userId) {
                 displayConfirmationBox('Are you sure you want to deny and delete this user?', async () => {
                     try {
@@ -596,7 +447,6 @@
                         displayMessageBox('User denied and deleted successfully!', 'success');
                         userDetailsModal.style.display = 'none';
                         userListModal.style.display = 'none';
-                        // Re-fetch waiting users only if the current user is an Admin
                         if (currentUserRole === 'Admin') {
                             fetchWaitingUsers();
                         }
@@ -607,7 +457,6 @@
                 });
             }
 
-            // --- Custom Message Box Functions (instead of alert/confirm) ---
             function displayMessageBox(message, type = 'info') {
                 const messageBox = document.createElement('div');
                 messageBox.style.position = 'fixed';
@@ -684,10 +533,7 @@
                 });
                 confirmationBox.appendChild(cancelBtn);
             }
-            // --- End Custom Message Box Functions ---
 
-
-            // Initial load of profile data
             if (!loggedInUserId) {
                 errorMessage.textContent = 'No user logged in. Redirecting to login...';
                 errorMessage.style.display = 'block';
@@ -712,37 +558,25 @@
                 if (response.ok) {
                     document.getElementById('profile-username-sidebar').textContent = responseData.username;
                     document.getElementById('profile-role-sidebar').textContent = responseData.roleName;
-                    currentUserRole = responseData.roleName; // Store the user's role
+                    currentUserRole = responseData.roleName;
 
                     loadingMessage.style.display = 'none';
                     userProfileSidebarSection.style.display = 'block';
 
-                    // The notification bell wrapper is always visible now (CSS handles this)
-
-                    // Attach event listener for the bell
                     notificationBellButton.addEventListener('click', function(event) {
                         event.preventDefault();
                         if (currentUserRole === 'Admin') {
-                            // If admin, show the waiting users list
                             fetchWaitingUsers();
                             userListModal.style.display = 'flex';
                         } else {
-                            // If not admin, show a placeholder message or future general notifications
-                            // For now, let's just show a simple message box for non-admins
                             displayMessageBox('No specific notifications for your role at this time. Stay tuned for future alerts!', 'info');
-                            // In the future, you'd fetch other types of notifications here
-                            // e.g., fetchGeneralAlerts();
-                            // and then display them in a different modal or section.
                         }
                     });
 
-                    // Only fetch waiting users count if the user is an Admin
                     if (currentUserRole === 'Admin') {
-                        fetchWaitingUsers(); // This will update the badge count
+                        fetchWaitingUsers();
                     } else {
-                        notificationCountSpan.textContent = '0'; // No admin notifications, so count is 0
-                        // You could also hide the badge if no general notifications are present
-                        // notificationCountSpan.style.display = 'none';
+                        notificationCountSpan.textContent = '0';
                     }
 
                 } else {
@@ -758,7 +592,6 @@
                 loadingMessage.style.display = 'none';
             }
 
-            // Event listeners for closing modals (these apply to all users, regardless of role)
             closeUserListModal.addEventListener('click', function() {
                 userListModal.style.display = 'none';
             });
@@ -771,7 +604,6 @@
                 }
             });
 
-            // Close modals if clicked outside
             window.addEventListener('click', function(event) {
                 if (event.target == userListModal) {
                     userListModal.style.display = 'none';
@@ -785,7 +617,6 @@
                 }
             });
 
-            // Event listener for the logout button in the main header
             logoutButtonMainHeader.addEventListener('click', function() {
                 sessionStorage.removeItem('loggedInUserId');
                 window.location.href = '/index.html';
