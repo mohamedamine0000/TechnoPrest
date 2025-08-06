@@ -32,6 +32,24 @@ public class Article {
     @ManyToOne
     @JoinColumn(name = "role")
     private UserRole role;
+    private String reservedByWho;
+    private String reservedToWho;
+
+    public String getReservedByWho() {
+        return reservedByWho;
+    }
+
+    public void setReservedByWho(String reservedByWho) {
+        this.reservedByWho = reservedByWho;
+    }
+
+    public String getReservedToWho() {
+        return reservedToWho;
+    }
+
+    public void setReservedToWho(String reservedToWho) {
+        this.reservedToWho = reservedToWho;
+    }
 
     public UserRole getRole() {
         return role;

@@ -373,6 +373,16 @@
                                 <option value="PartiellementDisponible">Partiellement Disponible</option>
                             </select>
                         </div>
+                        <div id="reserve-fields-container" style="display: none;">
+                            <div class="form-group">
+                                <label for="reservedByWho">Reserved By</label>
+                                <input type="text" id="reservedByWho" name="reservedByWho">
+                            </div>
+                            <div class="form-group">
+                                <label for="reservedToWho">Reserved To</label>
+                                <input type="text" id="reservedToWho" name="reservedToWho">
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label for="startDate">Date</label>
                             <input type="date" id="startDate" name="startDate" required>
@@ -537,6 +547,11 @@
             const dateInput = document.getElementById('startDate');
             const roleSelect = document.getElementById('role');
             const roleErrorSpan = document.getElementById('role-error');
+
+            // NEW: Reserve fields and their container
+            const reservedByWhoInput = document.getElementById('reservedByWho');
+            const reservedToWhoInput = document.getElementById('reservedToWho');
+            const reserveFieldsContainer = document.getElementById('reserve-fields-container');
             
             if (dateInput) {
                 const today = new Date();
@@ -549,6 +564,20 @@
 
             const roleApiUrl = '/api/roles';
             const userApiUrl = `/api/users/${loggedInUserId}`;
+
+            // NEW: Event listener to show/hide the reserve fields
+            if (etatInput) {
+                etatInput.addEventListener('change', function() {
+                    if (this.value === 'Reserve') {
+                        reserveFieldsContainer.style.display = 'flex'; // Use flex to match the form's grid layout
+                    } else {
+                        reserveFieldsContainer.style.display = 'none';
+                        // Clear the values when fields are hidden
+                        reservedByWhoInput.value = '';
+                        reservedToWhoInput.value = '';
+                    }
+                });
+            }
             
             async function initializeRoleDropdown() {
                 if (!loggedInUserId) {
@@ -616,12 +645,10 @@
                     return;
                 }
 
-                // NEW VALIDATION CHECK ADDED HERE
                 if (!roleSelect.value) {
                     displayMessageBox('Please select a role before submitting.', 'error');
                     return;
                 }
-                // END OF NEW VALIDATION CHECK
 
                 const articleData = {
                     codeArticle: codeArticleInput.value,
@@ -635,12 +662,17 @@
                     etat: etatInput.value,
                     date: dateInput.value,
                     role: {
-                        id: parseInt(roleSelect.value, 10) // Corrected field name from roleId to id
+                        id: parseInt(roleSelect.value, 10)
                     }
                 };
 
+                // NEW: Conditionally add the reserve fields
+                if (etatInput.value === 'Reserve') {
+                    articleData.reservedByWho = reservedByWhoInput.value;
+                    articleData.reservedToWho = reservedToWhoInput.value;
+                }
+
                 try {
-                    // Corrected endpoint URL to include the userId
                     const response = await fetch(`/api/users/${loggedInUserId}/articles`, {
                         method: 'POST',
                         headers: {
@@ -654,6 +686,8 @@
                         articleForm.reset();
                         dateInput.value = new Date().toISOString().split('T')[0];
                         await initializeRoleDropdown();
+                        // Hide reserve fields after successful submission
+                        reserveFieldsContainer.style.display = 'none';
                     } else {
                         let errorData = await response.json().catch(() => ({ message: 'Could not parse error response.' }));
                         displayMessageBox(`Error adding article: ${errorData.message || 'Unknown error.'}`, 'error');
