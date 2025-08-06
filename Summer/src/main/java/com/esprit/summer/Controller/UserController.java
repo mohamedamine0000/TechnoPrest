@@ -1,8 +1,11 @@
 package com.esprit.summer.Controller;
 
 import com.esprit.summer.Entities.*;
+import com.esprit.summer.Repositories.ArticleMovementRepo;
+import com.esprit.summer.Repositories.ArticleRepo;
 import com.esprit.summer.Repositories.UserRepo;
 import com.esprit.summer.Repositories.UserRoleRepo;
+import com.esprit.summer.Services.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +25,15 @@ public class UserController {
 
     @Autowired
     private UserRoleRepo roleRepo;
+
+    @Autowired
+    private ArticleRepo articleRepo;
+
+    @Autowired
+    private ArticleMovementRepo articleMovementRepo;
+    @Autowired
+    private ArticleService articleService;
+
 
     @PostMapping
     public ResponseEntity<Map<String, String>> registerUser(@RequestBody UserRegistrationDto registrationDto) {
@@ -216,6 +228,87 @@ public class UserController {
         }
         userRepository.deleteById(userId);
         return ResponseEntity.ok(Collections.singletonMap("message", "User deleted successfully."));
+    }
+
+
+
+
+
+
+    // API to add a new article
+    @PostMapping("/articles")
+    public ResponseEntity<Article> addArticle(@RequestBody Article article) {
+        // You'll need to decide how to get the 'addedBy' user, e.g., from a security context or request body
+        // For this example, let's assume it's passed in the request body or hardcoded
+        String addedBy = "admin_user"; // Replace with actual user
+        Article newArticle = articleService.addArticle(article, addedBy);
+        return new ResponseEntity<>(newArticle, HttpStatus.CREATED);
+    }
+
+    // API to get an article by ID
+    @GetMapping("/articles/{id}")
+    public ResponseEntity<Article> getArticleById(@PathVariable Long id) {
+        Optional<Article> article = articleService.getArticleById(id);
+        return article.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    // API to get all articles
+    @GetMapping("/articles")
+    public ResponseEntity<List<Article>> getAllArticles() {
+        List<Article> articles = articleService.getAllArticles();
+        return new ResponseEntity<>(articles, HttpStatus.OK);
+    }
+
+    // API to update an article's quantity
+    @PutMapping("/articles/{id}/quantity")
+    public ResponseEntity<Article> updateArticleQuantity(@PathVariable Long id, @RequestBody Map<String, Object> updateRequest) {
+        try {
+            Integer quantityChange = (Integer) updateRequest.get("quantityChange");
+            String reasonString = (String) updateRequest.get("reason");
+            String recordedBy = "system"; // Replace with actual user
+
+            if (quantityChange == null || reasonString == null) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
+            Reason reason = Reason.valueOf(reasonString);
+            Optional<Article> updatedArticle = articleService.updateArticleQuantity(id, quantityChange, reason, recordedBy);
+
+            return updatedArticle.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                    .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    // API to change an article's location
+    @PutMapping("/articles/{id}/location")
+    public ResponseEntity<Article> changeArticleLocation(@PathVariable Long id, @RequestBody Map<String, String> updateRequest) {
+        String newLocation = updateRequest.get("newLocation");
+        String recordedBy = "depot_manager"; // Replace with actual user
+
+        if (newLocation == null || newLocation.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        Optional<Article> updatedArticle = articleService.changeArticleLocation(id, newLocation, recordedBy);
+
+        return updatedArticle.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    // API to delete an article
+    @DeleteMapping("/articles/{id}")
+    public ResponseEntity<Void> deleteArticle(@PathVariable Long id) {
+        String recordedBy = "admin"; // Replace with actual user
+        boolean isDeleted = articleService.deleteArticle(id, recordedBy);
+        if (isDeleted) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 }
 
