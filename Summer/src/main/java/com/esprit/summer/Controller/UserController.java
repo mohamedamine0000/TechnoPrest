@@ -231,16 +231,37 @@ public class UserController {
     }
 
 
-
-
-
-
     // API to add a new article
-    @PostMapping("/articles")
-    public ResponseEntity<Article> addArticle(@RequestBody Article article) {
-        // You'll need to decide how to get the 'addedBy' user, e.g., from a security context or request body
-        // For this example, let's assume it's passed in the request body or hardcoded
-        String addedBy = "admin_user"; // Replace with actual user
+    @PostMapping("/{userId}/articles")
+    public ResponseEntity<Article> addArticle(@PathVariable Long userId, @RequestBody Article article) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        // --- UPDATED LOGIC HERE ---
+        // Explicitly check if the role object is present in the request body
+        if (article.getRole() == null || article.getRole().getId() == null) {
+            // Return a specific error message if the role is missing or invalid
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        // Get the role from the incoming article object
+        Long roleId = article.getRole().getId();
+        Optional<UserRole> roleOptional = roleRepo.findById(roleId);
+
+        if (roleOptional.isEmpty()) {
+            // Return an error if the role ID is invalid
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        // --- END OF UPDATED LOGIC ---
+
+        // Set the managed UserRole object on the article
+        article.setRole(roleOptional.get());
+
+        User user = userOptional.get();
+        String addedBy = user.getCin();
+
         Article newArticle = articleService.addArticle(article, addedBy);
         return new ResponseEntity<>(newArticle, HttpStatus.CREATED);
     }
@@ -311,4 +332,3 @@ public class UserController {
         }
     }
 }
-

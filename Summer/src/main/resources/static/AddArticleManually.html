@@ -347,6 +347,14 @@
                             <label for="qte">Quantity</label>
                             <input type="number" id="qte" name="qte" value="0" min="0" required>
                         </div>
+                         <div class="form-group">
+                            <label for="minmumStock">Minimum Stock</label>
+                            <input type="number" id="minmumStock" name="minmumStock" value="0" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="unite">Unit</label>
+                            <input type="text" id="unite" name="unite" required>
+                        </div>
                         <div class="form-group">
                             <label for="location">Location</label>
                             <input type="text" id="location" name="location" required>
@@ -358,8 +366,11 @@
                         <div class="form-group">
                             <label for="etat">State</label>
                             <select name="etat" id="etat" required>
-                                <option value="GOOD">GOOD</option>
-                                <option value="DAMAGED">DAMAGED</option>
+                                <option value="Disponible">Disponible</option>
+                                <option value="Rupture">Rupture</option>
+                                <option value="Reserve">Reserve</option>
+                                <option value="CommandeEnCours">CommandeEnCours</option>
+                                <option value="PartiellementDisponible">PartiellementDisponible</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -369,7 +380,8 @@
                         <div class="form-group">
                             <label for="role">Role</label>
                             <select name="role" id="role" required>
-                                </select>
+                                <option value="" disabled selected>Loading roles...</option>
+                            </select>
                             <span id="role-error" class="error-message" style="display: none;"></span>
                         </div>
                         <button type="submit">Add Article</button>
@@ -509,23 +521,23 @@
             const detailDenyButton = document.getElementById('detail-deny-button');
 
             let currentDiplomaProofUrl = null;
-            let currentUserRole = ''; // To store the role fetched from the backend
+            let currentUserRole = '';
+            let currentUserCin = '';
 
-            // --- Your existing code for the new article form elements ---
             const articleForm = document.getElementById('Article-form');
             const codeArticleInput = document.getElementById('codeArticle');
             const designationInput = document.getElementById('designation');
             const umInput = document.getElementById('um');
             const qteInput = document.getElementById('qte');
+            const minmumStockInput = document.getElementById('minmumStock');
+            const uniteInput = document.getElementById('unite');
             const locationInput = document.getElementById('location');
             const etagereInput = document.getElementById('etagere');
             const etatInput = document.getElementById('etat');
-            const etatErrorSpan = document.getElementById('etat-error');
+            const dateInput = document.getElementById('startDate');
             const roleSelect = document.getElementById('role');
             const roleErrorSpan = document.getElementById('role-error');
             
-            // --- NEW: Dynamic Date Field Initialization ---
-            const dateInput = document.getElementById('startDate');
             if (dateInput) {
                 const today = new Date();
                 const year = today.getFullYear();
@@ -535,7 +547,6 @@
                 dateInput.value = formattedDate;
             }
 
-            // --- NEW: Combined Logic for Role Dropdown ---
             const roleApiUrl = '/api/roles';
             const userApiUrl = `/api/users/${loggedInUserId}`;
             
@@ -552,6 +563,7 @@
                     }
                     const userData = await userResponse.json();
                     currentUserRole = userData.roleName;
+                    currentUserCin = userData.userCin;
 
                     const rolesResponse = await fetch(roleApiUrl);
                     if (!rolesResponse.ok) {
@@ -562,7 +574,6 @@
                     roleSelect.innerHTML = '';
                     
                     if (currentUserRole.toLowerCase() === 'admin') {
-                        // Admin user: Enable dropdown and show all roles except Admin
                         roles.forEach(role => {
                             if (role.name.toLowerCase() !== 'admin') {
                                 const option = document.createElement('option');
@@ -573,7 +584,6 @@
                         });
                         roleSelect.disabled = false;
                     } else {
-                        // Non-admin user: Disable dropdown and show only their own role
                         const userRoleData = roles.find(role => role.name === currentUserRole);
                         if (userRoleData) {
                             const option = document.createElement('option');
@@ -595,10 +605,66 @@
             }
             
             initializeRoleDropdown();
-            // --- END NEW Logic for Role Dropdown ---
+
+            articleForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                // Get the user ID from sessionStorage
+                const loggedInUserId = sessionStorage.getItem('loggedInUserId');
+                if (!loggedInUserId) {
+                    displayMessageBox('You must be logged in to add an article.', 'error');
+                    return;
+                }
+
+                // NEW VALIDATION CHECK ADDED HERE
+                if (!roleSelect.value) {
+                    displayMessageBox('Please select a role before submitting.', 'error');
+                    return;
+                }
+                // END OF NEW VALIDATION CHECK
+
+                const articleData = {
+                    codeArticle: codeArticleInput.value,
+                    designation: designationInput.value,
+                    um: umInput.value,
+                    qte: parseInt(qteInput.value, 10),
+                    minmumStock: parseInt(minmumStockInput.value, 10),
+                    unite: uniteInput.value,
+                    location: locationInput.value,
+                    etagere: etagereInput.value,
+                    etat: etatInput.value,
+                    date: dateInput.value,
+                    role: {
+                        id: parseInt(roleSelect.value, 10) // Corrected field name from roleId to id
+                    }
+                };
+
+                try {
+                    // Corrected endpoint URL to include the userId
+                    const response = await fetch(`/api/users/${loggedInUserId}/articles`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(articleData)
+                    });
+
+                    if (response.ok) {
+                        displayMessageBox('Article added successfully!', 'success');
+                        articleForm.reset();
+                        dateInput.value = new Date().toISOString().split('T')[0];
+                        await initializeRoleDropdown();
+                    } else {
+                        let errorData = await response.json().catch(() => ({ message: 'Could not parse error response.' }));
+                        displayMessageBox(`Error adding article: ${errorData.message || 'Unknown error.'}`, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error submitting form:', error);
+                    displayMessageBox('An unexpected network error occurred. Check if the server is running and the URL is correct.', 'error');
+                }
+            });
 
 
-            // Function to fetch and display waiting users (Admin-specific)
             async function fetchWaitingUsers() {
                 try {
                     const response = await fetch('/api/users/waiting');
@@ -656,7 +722,6 @@
                 }
             }
 
-            // Function to show user details modal
             async function showUserDetails(userId) {
                 detailDiplomaProof.style.display = 'none';
                 detailDiplomaProof.src = '';
@@ -711,7 +776,6 @@
                 }
             }
 
-            // Function to update user status
             async function updateStatus(userId, newStatus) {
                 displayConfirmationBox(`Are you sure you want to set this user's status to ${newStatus}?`, async () => {
                     try {
@@ -728,7 +792,6 @@
                         displayMessageBox(`User status updated to ${newStatus}!`, 'success');
                         userDetailsModal.style.display = 'none';
                         userListModal.style.display = 'none';
-                        // Re-fetch waiting users only if the current user is an Admin
                         if (currentUserRole === 'Admin') {
                             fetchWaitingUsers();
                         }
@@ -739,7 +802,6 @@
                 });
             }
 
-            // Function to delete user
             async function deleteUser(userId) {
                 displayConfirmationBox('Are you sure you want to deny and delete this user?', async () => {
                     try {
@@ -752,7 +814,6 @@
                         displayMessageBox('User denied and deleted successfully!', 'success');
                         userDetailsModal.style.display = 'none';
                         userListModal.style.display = 'none';
-                        // Re-fetch waiting users only if the current user is an Admin
                         if (currentUserRole === 'Admin') {
                             fetchWaitingUsers();
                         }
@@ -763,7 +824,6 @@
                 });
             }
 
-            // --- Custom Message Box Functions (instead of alert/confirm) ---
             function displayMessageBox(message, type = 'info') {
                 const messageBox = document.createElement('div');
                 messageBox.style.position = 'fixed';
@@ -840,10 +900,7 @@
                 });
                 confirmationBox.appendChild(cancelBtn);
             }
-            // --- End Custom Message Box Functions ---
 
-
-            // Initial load of profile data
             if (!loggedInUserId) {
                 errorMessage.textContent = 'No user logged in. Redirecting to login...';
                 errorMessage.style.display = 'block';
