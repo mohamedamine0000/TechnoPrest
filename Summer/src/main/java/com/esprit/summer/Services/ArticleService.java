@@ -25,6 +25,7 @@ public class ArticleService {
     // Method to add a new article (initial stock)
     @Transactional
     public Article addArticle(Article article, String addedBy) {
+        article.setAddedBy(addedBy);
         // Save the article first
         Article savedArticle = articleRepo.save(article);
 
