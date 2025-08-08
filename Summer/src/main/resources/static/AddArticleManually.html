@@ -83,39 +83,44 @@
         }
 
         .modal-content {
-            background-color: #fefefe;
+            background-color: #fff;
+            color: #333;
             margin: auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
+            padding: 2em;
+            border: none;
+            width: 90%;
             max-width: 600px;
             border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             position: relative;
+        }
+
+        .modal-content h2, .modal-content h3 {
             color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5em;
+            margin-bottom: 1em;
         }
 
         .close-button {
             color: #aaa;
-            float: right;
             font-size: 28px;
             font-weight: bold;
             position: absolute;
             top: 10px;
             right: 20px;
             cursor: pointer;
+            line-height: 1;
         }
 
         .close-button:hover,
         .close-button:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
+            color: #000;
         }
 
-        /* This is kept to style the user list within the modal, which is not part of the main template's default styles */
+        /* List and Button styles for modals */
         .user-list-item {
-            padding: 10px 0;
+            padding: 1em 0;
             border-bottom: 1px solid #eee;
             display: flex;
             justify-content: space-between;
@@ -127,17 +132,53 @@
             border-bottom: none;
         }
         .user-list-item:hover {
-            background-color: #f5f5f5;
+            background-color: #f9f9f9;
         }
         .user-list-item-info {
             flex-grow: 1;
         }
         .user-list-item-actions button {
-            margin-left: 10px;
-            padding: 5px 10px;
+            margin-left: 0.5em;
+            padding: 0.5em 1em;
             border-radius: 5px;
             cursor: pointer;
             font-size: 0.9em;
+            border: none;
+        }
+        .accept-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .deny-button {
+            background-color: #f44336;
+            color: white;
+        }
+
+        /* User Detail Modal Specifics */
+        .user-detail-modal-content p {
+            margin-bottom: 0.5em;
+            text-align: left;
+            padding: 0 1em;
+        }
+        .user-detail-actions {
+            margin-top: 2em;
+            text-align: center;
+        }
+        .user-detail-actions button {
+            padding: 0.75em 1.5em;
+            font-size: 1em;
+            margin: 0 0.5em;
+        }
+        .diploma-proof-container {
+            text-align: center;
+            margin: 1em 0;
+        }
+        #detail-diploma-proof {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 1em;
         }
     </style>
 </head>
@@ -205,6 +246,23 @@
                                         <option value="CommandeEnCours">Commande En Cours</option>
                                         <option value="PartiellementDisponible">Partiellement Disponible</option>
                                     </select>
+                                </div>
+                            </div>
+                             <div class="col-6 col-12-xsmall">
+                                <label for="reason">Movement Reason</label>
+                                <div class="select-wrapper">
+                                    <select name="reason" id="reason" required>
+                                        <option value="Bought" selected>Bought</option>
+                                        <option value="ChangeDepo">ChangeDepo</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="from-location-container" class="col-12" style="display: none;">
+                                <div class="row gtr-uniform">
+                                    <div class="col-12 col-12-xsmall">
+                                        <label for="fromLocation">From Location</label>
+                                        <input type="text" id="fromLocation" name="fromLocation">
+                                    </div>
                                 </div>
                             </div>
                             <div id="reserve-fields-container" class="col-12" style="display: none;">
@@ -370,7 +428,7 @@
             const closeUserDetailsModal = document.getElementById('closeUserDetailsModal');
             const detailUsername = document.getElementById('detail-username');
             const detailCin = document.getElementById('detail-cin');
-            const detailEmail = document.getElementById('detail-email');
+            const detailEmail = document.getElementById('detail-userEmail'); // Corrected ID
             const detailRole = document.getElementById('detail-role');
             const detailStatus = document.getElementById('detail-status');
             const detailDiplomaProof = document.getElementById('detail-diploma-proof');
@@ -396,6 +454,10 @@
             const roleSelect = document.getElementById('role');
             const roleErrorSpan = document.getElementById('role-error');
 
+            const reasonSelect = document.getElementById('reason');
+            const fromLocationContainer = document.getElementById('from-location-container');
+            const fromLocationInput = document.getElementById('fromLocation');
+
             const reservedByWhoInput = document.getElementById('reservedByWho');
             const reservedToWhoInput = document.getElementById('reservedToWho');
             const reserveFieldsContainer = document.getElementById('reserve-fields-container');
@@ -420,6 +482,19 @@
                         reserveFieldsContainer.style.display = 'none';
                         reservedByWhoInput.value = '';
                         reservedToWhoInput.value = '';
+                    }
+                });
+            }
+
+            if (reasonSelect) {
+                reasonSelect.addEventListener('change', function() {
+                    if (this.value === 'ChangeDepo') {
+                        fromLocationContainer.style.display = 'flex';
+                        fromLocationInput.required = true;
+                    } else {
+                        fromLocationContainer.style.display = 'none';
+                        fromLocationInput.required = false;
+                        fromLocationInput.value = '';
                     }
                 });
             }
@@ -494,6 +569,9 @@
                     return;
                 }
 
+                const selectedReason = reasonSelect.value;
+                const fromLocation = selectedReason === 'ChangeDepo' ? fromLocationInput.value : null;
+
                 const articleData = {
                     codeArticle: codeArticleInput.value,
                     designation: designationInput.value,
@@ -507,7 +585,9 @@
                     date: dateInput.value,
                     role: {
                         id: parseInt(roleSelect.value, 10)
-                    }
+                    },
+                    reason: selectedReason,
+                    fromLocation: fromLocation
                 };
 
                 if (etatInput.value === 'Reserve') {
@@ -530,6 +610,9 @@
                         dateInput.value = new Date().toISOString().split('T')[0];
                         await initializeRoleDropdown();
                         reserveFieldsContainer.style.display = 'none';
+                        fromLocationContainer.style.display = 'none';
+                        fromLocationInput.value = '';
+                        reasonSelect.value = 'Bought';
                     } else {
                         let errorData = await response.json().catch(() => ({ message: 'Could not parse error response.' }));
                         displayMessageBox(`Error adding article: ${errorData.message || 'Unknown error.'}`, 'error');
@@ -667,7 +750,7 @@
                         displayMessageBox(`User status updated to ${newStatus}!`, 'success');
                         userDetailsModal.style.display = 'none';
                         userListModal.style.display = 'none';
-                        if (currentUserRole === 'Admin') {
+                        if (currentUserRole.toLowerCase() === 'admin') {
                             fetchWaitingUsers();
                         }
                     } catch (error) {
@@ -689,7 +772,7 @@
                         displayMessageBox('User denied and deleted successfully!', 'success');
                         userDetailsModal.style.display = 'none';
                         userListModal.style.display = 'none';
-                        if (currentUserRole === 'Admin') {
+                        if (currentUserRole.toLowerCase() === 'admin') {
                             fetchWaitingUsers();
                         }
                     } catch (error) {
@@ -807,7 +890,7 @@
 
                     notificationBellButton.addEventListener('click', function(event) {
                         event.preventDefault();
-                        if (currentUserRole === 'Admin') {
+                        if (currentUserRole.toLowerCase() === 'admin') {
                             fetchWaitingUsers();
                             userListModal.style.display = 'flex';
                         } else {
@@ -815,7 +898,7 @@
                         }
                     });
 
-                    if (currentUserRole === 'Admin') {
+                    if (currentUserRole.toLowerCase() === 'admin') {
                         fetchWaitingUsers();
                     } else {
                         notificationCountSpan.textContent = '0';

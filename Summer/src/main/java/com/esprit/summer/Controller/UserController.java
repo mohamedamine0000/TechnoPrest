@@ -231,38 +231,63 @@ public class UserController {
     }
 
 
-    // API to add a new article
     @PostMapping("/{userId}/articles")
-    public ResponseEntity<Article> addArticle(@PathVariable Long userId, @RequestBody Article article) {
+    public ResponseEntity<Article> addArticle(@PathVariable Long userId, @RequestBody Map<String, Object> articleData) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        // --- UPDATED LOGIC HERE ---
-        // Explicitly check if the role object is present in the request body
-        if (article.getRole() == null || article.getRole().getId() == null) {
-            // Return a specific error message if the role is missing or invalid
+        // Extract article and movement data from the map
+        String reasonString = (String) articleData.get("reason");
+        String fromLocation = (String) articleData.get("fromLocation");
+
+        // Validate reason
+        Reason reason;
+        try {
+            reason = Reason.valueOf(reasonString);
+        } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        // Get the role from the incoming article object
-        Long roleId = article.getRole().getId();
+        // Build the Article object from the request data
+        Article article = new Article();
+        article.setCodeArticle((String) articleData.get("codeArticle"));
+        article.setDesignation((String) articleData.get("designation"));
+        article.setUm((String) articleData.get("um"));
+        article.setQte((Integer) articleData.get("qte"));
+        article.setMinmumStock((Integer) articleData.get("minmumStock"));
+        article.setUnite((String) articleData.get("unite"));
+        article.setLocation((String) articleData.get("location"));
+        article.setEtagere((String) articleData.get("etagere"));
+        article.setEtat(com.esprit.summer.Entities.EtatArticle.valueOf((String) articleData.get("etat")));
+        article.setDate(new Date()); // Assuming the date is the current date
+
+        // Handle the role relationship
+        Map<String, Object> roleData = (Map<String, Object>) articleData.get("role");
+        if (roleData == null || roleData.get("id") == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        Long roleId = ((Number) roleData.get("id")).longValue();
         Optional<UserRole> roleOptional = roleRepo.findById(roleId);
-
         if (roleOptional.isEmpty()) {
-            // Return an error if the role ID is invalid
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        // --- END OF UPDATED LOGIC ---
-
-        // Set the managed UserRole object on the article
         article.setRole(roleOptional.get());
+
+        // Handle reserved fields if applicable
+        if (articleData.containsKey("reservedByWho")) {
+            article.setReservedByWho((String) articleData.get("reservedByWho"));
+        }
+        if (articleData.containsKey("reservedToWho")) {
+            article.setReservedToWho((String) articleData.get("reservedToWho"));
+        }
 
         User user = userOptional.get();
         String addedBy = user.getCin();
 
-        Article newArticle = articleService.addArticle(article, addedBy);
+        // Call the service with the new parameters
+        Article newArticle = articleService.addArticle(article, addedBy, reason, fromLocation);
         return new ResponseEntity<>(newArticle, HttpStatus.CREATED);
     }
 

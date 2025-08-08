@@ -24,7 +24,7 @@ public class ArticleService {
 
     // Method to add a new article (initial stock)
     @Transactional
-    public Article addArticle(Article article, String addedBy) {
+    public Article addArticle(Article article, String addedBy, Reason reason, String fromLocation) {
         article.setAddedBy(addedBy);
         // Save the article first
         Article savedArticle = articleRepo.save(article);
@@ -33,8 +33,8 @@ public class ArticleService {
         ArticleMovement initialMovement = ArticleMovement.builder()
                 .article(savedArticle)
                 .quantityChange(savedArticle.getQte()) // Initial quantity is the change
-                .reason(Reason.Bought) // Assuming initial addition is a 'Bought' reason
-                .fromLocation(null) // No previous location
+                .reason(reason) // Use the reason provided in the request
+                .fromLocation(fromLocation) // Use the fromLocation provided in the request
                 .toLocation(savedArticle.getLocation())
                 .timestamp(LocalDateTime.now())
                 .recordedBy(addedBy)
