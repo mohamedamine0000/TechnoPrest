@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Article Manually</title>
+    <title>User Profile</title>
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-   <style>
+  <style>
         /* Specific styles for the sidebar profile section, as requested */
         .sidebar-profile-summary {
             display: flex;
@@ -156,108 +156,7 @@
                     </ul>
                 </header>
 
-                <section>
-                    <header class="main">
-                        <h1>Add Article Manually</h1>
-                    </header>
-
-                    <form id="Article-form">
-                        <div class="row gtr-uniform">
-                            <div class="col-6 col-12-xsmall">
-                                <label for="codeArticle">Article Code</label>
-                                <input type="text" id="codeArticle" name="codeArticle" required>
-                            </div>
-                            <div class="col-6 col-12-xsmall">
-                                <label for="designation">Designation</label>
-                                <input type="text" id="designation" name="designation" required>
-                            </div>
-                            <div class="col-6 col-12-xsmall">
-                                <label for="um">UM</label>
-                                <input type="text" id="um" name="um" required>
-                            </div>
-                            <div class="col-6 col-12-xsmall">
-                                <label for="qte">Quantity</label>
-                                <input type="number" id="qte" name="qte" value="0" min="0" required>
-                            </div>
-                            <div class="col-6 col-12-xsmall">
-                                <label for="minmumStock">Minimum Stock</label>
-                                <input type="number" id="minmumStock" name="minmumStock" value="0" min="0" required>
-                            </div>
-                            <div class="col-6 col-12-xsmall">
-                                <label for="unite">Unit</label>
-                                <input type="text" id="unite" name="unite" required>
-                            </div>
-                            <div class="col-6 col-12-xsmall">
-                                <label for="location">Location</label>
-                                <input type="text" id="location" name="location" required>
-                            </div>
-                            <div class="col-6 col-12-xsmall">
-                                <label for="etagere">Shelf</label>
-                                <input type="text" id="etagere" name="etagere" required>
-                            </div>
-                            <div class="col-6 col-12-xsmall">
-                                <label for="etat">State</label>
-                                <div class="select-wrapper">
-                                    <select name="etat" id="etat" required>
-                                        <option value="Disponible">Disponible</option>
-                                        <option value="Rupture">Rupture</option>
-                                        <option value="Reserve">Reserve</option>
-                                        <option value="CommandeEnCours">Commande En Cours</option>
-                                        <option value="PartiellementDisponible">Partiellement Disponible</option>
-                                    </select>
-                                </div>
-                            </div>
-                             <div class="col-6 col-12-xsmall">
-                                <label for="reason">Movement Reason</label>
-                                <div class="select-wrapper">
-                                    <select name="reason" id="reason" required>
-                                        <option value="Bought" selected>Bought</option>
-                                        <option value="ChangeDepo">ChangeDepo</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div id="from-location-container" class="col-12" style="display: none;">
-                                <div class="row gtr-uniform">
-                                    <div class="col-12 col-12-xsmall">
-                                        <label for="fromLocation">From Location</label>
-                                        <input type="text" id="fromLocation" name="fromLocation">
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="reserve-fields-container" class="col-12" style="display: none;">
-                                <div class="row gtr-uniform">
-                                    <div class="col-6 col-12-xsmall">
-                                        <label for="reservedByWho">Reserved By</label>
-                                        <input type="text" id="reservedByWho" name="reservedByWho">
-                                    </div>
-                                    <div class="col-6 col-12-xsmall">
-                                        <label for="reservedToWho">Reserved To</label>
-                                        <input type="text" id="reservedToWho" name="reservedToWho">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-6 col-12-xsmall">
-                                <label for="startDate">Date</label>
-                                <input type="date" id="startDate" name="startDate" required>
-                            </div>
-                            <div class="col-6 col-12-xsmall">
-                                <label for="role">Role</label>
-                                <div class="select-wrapper">
-                                    <select name="role" id="role" required>
-                                        <option value="" disabled selected>Loading roles...</option>
-                                    </select>
-                                </div>
-                                <span id="role-error" class="error-message" style="display: none;"></span>
-                            </div>
-                            <div class="col-12">
-                                <ul class="actions">
-                                    <li><input type="submit" value="Add Article" class="primary"></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </form>
-
-                </section>
+               
 
                 <div id="loading-message" class="loading-message">
                     Loading profile data...
@@ -361,13 +260,8 @@
         </div>
     </div>
 
-    <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/browser.min.js"></script>
-    <script src="assets/js/breakpoints.min.js"></script>
-    <script src="assets/js/util.js"></script>
-    <script src="assets/js/main.js"></script>
     <script>
-             document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             const loggedInUserId = sessionStorage.getItem('loggedInUserId');
             const userProfileSidebarSection = document.getElementById('user-profile-sidebar-section');
             const loadingMessage = document.getElementById('loading-message');
@@ -395,190 +289,6 @@
 
             let currentDiplomaProofUrl = null;
             let currentUserRole = '';
-            let currentUserCin = '';
-
-            const articleForm = document.getElementById('Article-form');
-            const codeArticleInput = document.getElementById('codeArticle');
-            const designationInput = document.getElementById('designation');
-            const umInput = document.getElementById('um');
-            const qteInput = document.getElementById('qte');
-            const minmumStockInput = document.getElementById('minmumStock');
-            const uniteInput = document.getElementById('unite');
-            const locationInput = document.getElementById('location');
-            const etagereInput = document.getElementById('etagere');
-            const etatInput = document.getElementById('etat');
-            const dateInput = document.getElementById('startDate');
-            const roleSelect = document.getElementById('role');
-            const roleErrorSpan = document.getElementById('role-error');
-
-            const reasonSelect = document.getElementById('reason');
-            const fromLocationContainer = document.getElementById('from-location-container');
-            const fromLocationInput = document.getElementById('fromLocation');
-
-            const reservedByWhoInput = document.getElementById('reservedByWho');
-            const reservedToWhoInput = document.getElementById('reservedToWho');
-            const reserveFieldsContainer = document.getElementById('reserve-fields-container');
-
-            if (dateInput) {
-                const today = new Date();
-                const year = today.getFullYear();
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                const formattedDate = `${year}-${month}-${day}`;
-                dateInput.value = formattedDate;
-            }
-
-            const roleApiUrl = '/api/roles';
-            const userApiUrl = `/api/users/${loggedInUserId}`;
-
-            if (etatInput) {
-                etatInput.addEventListener('change', function() {
-                    if (this.value === 'Reserve') {
-                        reserveFieldsContainer.style.display = 'flex';
-                    } else {
-                        reserveFieldsContainer.style.display = 'none';
-                        reservedByWhoInput.value = '';
-                        reservedToWhoInput.value = '';
-                    }
-                });
-            }
-
-            if (reasonSelect) {
-                reasonSelect.addEventListener('change', function() {
-                    if (this.value === 'ChangeDepo') {
-                        fromLocationContainer.style.display = 'flex';
-                        fromLocationInput.required = true;
-                    } else {
-                        fromLocationContainer.style.display = 'none';
-                        fromLocationInput.required = false;
-                        fromLocationInput.value = '';
-                    }
-                });
-            }
-
-            async function initializeRoleDropdown() {
-                if (!loggedInUserId) {
-                    console.error('No logged in user ID found in session storage.');
-                    return;
-                }
-
-                try {
-                    const userResponse = await fetch(userApiUrl);
-                    if (!userResponse.ok) {
-                        throw new Error(`Failed to fetch user data. Status: ${userResponse.status}`);
-                    }
-                    const userData = await userResponse.json();
-                    currentUserRole = userData.roleName;
-                    currentUserCin = userData.userCin;
-
-                    const rolesResponse = await fetch(roleApiUrl);
-                    if (!rolesResponse.ok) {
-                        throw new Error(`Failed to load roles. Status: ${rolesResponse.status}`);
-                    }
-                    const roles = await rolesResponse.json();
-
-                    roleSelect.innerHTML = '';
-
-                    if (currentUserRole.toLowerCase() === 'admin') {
-                        roles.forEach(role => {
-                            if (role.name.toLowerCase() !== 'admin') {
-                                const option = document.createElement('option');
-                                option.value = role.id;
-                                option.textContent = role.name;
-                                roleSelect.appendChild(option);
-                            }
-                        });
-                        roleSelect.disabled = false;
-                    } else {
-                        const userRoleData = roles.find(role => role.name === currentUserRole);
-                        if (userRoleData) {
-                            const option = document.createElement('option');
-                            option.value = userRoleData.id;
-                            option.textContent = userRoleData.name;
-                            option.selected = true;
-                            roleSelect.appendChild(option);
-                        }
-                        roleSelect.disabled = true;
-                    }
-
-                } catch (error) {
-                    console.error('Error initializing role dropdown:', error);
-                    if (roleErrorSpan) {
-                         roleErrorSpan.textContent = 'Failed to load roles.';
-                         roleErrorSpan.style.display = 'block';
-                    }
-                }
-            }
-
-            initializeRoleDropdown();
-
-            articleForm.addEventListener('submit', async function(event) {
-                event.preventDefault();
-
-                const loggedInUserId = sessionStorage.getItem('loggedInUserId');
-                if (!loggedInUserId) {
-                    displayMessageBox('You must be logged in to add an article.', 'error');
-                    return;
-                }
-
-                if (!roleSelect.value) {
-                    displayMessageBox('Please select a role before submitting.', 'error');
-                    return;
-                }
-
-                const selectedReason = reasonSelect.value;
-                const fromLocation = selectedReason === 'ChangeDepo' ? fromLocationInput.value : null;
-
-                const articleData = {
-                    codeArticle: codeArticleInput.value,
-                    designation: designationInput.value,
-                    um: umInput.value,
-                    qte: parseInt(qteInput.value, 10),
-                    minmumStock: parseInt(minmumStockInput.value, 10),
-                    unite: uniteInput.value,
-                    location: locationInput.value,
-                    etagere: etagereInput.value,
-                    etat: etatInput.value,
-                    date: dateInput.value,
-                    role: {
-                        id: parseInt(roleSelect.value, 10)
-                    },
-                    reason: selectedReason,
-                    fromLocation: fromLocation
-                };
-
-                if (etatInput.value === 'Reserve') {
-                    articleData.reservedByWho = reservedByWhoInput.value;
-                    articleData.reservedToWho = reservedToWhoInput.value;
-                }
-
-                try {
-                    const response = await fetch(`/api/users/${loggedInUserId}/articles`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(articleData)
-                    });
-
-                    if (response.ok) {
-                        displayMessageBox('Article added successfully!', 'success');
-                        articleForm.reset();
-                        dateInput.value = new Date().toISOString().split('T')[0];
-                        await initializeRoleDropdown();
-                        reserveFieldsContainer.style.display = 'none';
-                        fromLocationContainer.style.display = 'none';
-                        fromLocationInput.value = '';
-                        reasonSelect.value = 'Bought';
-                    } else {
-                        let errorData = await response.json().catch(() => ({ message: 'Could not parse error response.' }));
-                        displayMessageBox(`Error adding article: ${errorData.message || 'Unknown error.'}`, 'error');
-                    }
-                } catch (error) {
-                    console.error('Error submitting form:', error);
-                    displayMessageBox('An unexpected network error occurred. Check if the server is running and the URL is correct.', 'error');
-                }
-            });
 
             async function fetchWaitingUsers() {
                 try {
@@ -707,7 +417,7 @@
                         displayMessageBox(`User status updated to ${newStatus}!`, 'success');
                         userDetailsModal.style.display = 'none';
                         userListModal.style.display = 'none';
-                        if (currentUserRole.toLowerCase() === 'admin') {
+                        if (currentUserRole === 'Admin') {
                             fetchWaitingUsers();
                         }
                     } catch (error) {
@@ -729,7 +439,7 @@
                         displayMessageBox('User denied and deleted successfully!', 'success');
                         userDetailsModal.style.display = 'none';
                         userListModal.style.display = 'none';
-                        if (currentUserRole.toLowerCase() === 'admin') {
+                        if (currentUserRole === 'Admin') {
                             fetchWaitingUsers();
                         }
                     } catch (error) {
@@ -847,7 +557,7 @@
 
                     notificationBellButton.addEventListener('click', function(event) {
                         event.preventDefault();
-                        if (currentUserRole.toLowerCase() === 'admin') {
+                        if (currentUserRole === 'Admin') {
                             fetchWaitingUsers();
                             userListModal.style.display = 'flex';
                         } else {
@@ -855,7 +565,7 @@
                         }
                     });
 
-                    if (currentUserRole.toLowerCase() === 'admin') {
+                    if (currentUserRole === 'Admin') {
                         fetchWaitingUsers();
                     } else {
                         notificationCountSpan.textContent = '0';
