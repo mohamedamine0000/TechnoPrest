@@ -7,8 +7,9 @@
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        /* All your previous styles from sidebar.html would go here if you are combining the pages */
-        /* Basic styles for the article list page */
+        /* ... (Your existing styles) ... */
+
+        /* Specific styles for the article list page */
         .article-table-container {
             margin-top: 2em;
             overflow-x: auto;
@@ -57,6 +58,15 @@
         .filter-container label {
             display: block;
             margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+        
+        /* NEW: Styles for the selected role label */
+        .filter-container .selected-role {
+            background-color: #e0e0e0;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -125,14 +135,10 @@
             const loggedInUserId = sessionStorage.getItem('loggedInUserId');
             
             let allArticles = [];
+            let allRoles = [];
             let currentUserRole = '';
-
-            // This is a mock list of roles as your backend doesn't have an endpoint for this.
-            // In a real application, you would fetch this from a new API endpoint.
-            const allRoles = ['Admin', 'Manager', 'Client'];
             let selectedRoles = [];
 
-            // Helper function to render articles in the table
             function renderArticles(articlesToDisplay) {
                 articlesListBody.innerHTML = '';
                 if (articlesToDisplay.length === 0) {
@@ -152,7 +158,6 @@
                 });
             }
 
-            // Function to filter articles based on search input and selected roles
             function filterAndRenderArticles() {
                 const searchTerm = searchInput.value.toLowerCase();
                 let filteredArticles = allArticles.filter(article => {
@@ -167,7 +172,6 @@
                 renderArticles(filteredArticles);
             }
 
-            // Function to fetch articles from the backend API
             async function fetchArticles() {
                 loadingMessage.style.display = 'block';
                 errorMessage.style.display = 'none';
@@ -180,12 +184,10 @@
                     loadingMessage.style.display = 'none';
 
                     if (currentUserRole === 'Admin') {
-                        // Admins see all articles initially
-                        roleHeaderCol.style.display = 'table-cell'; // Show the Role column
+                        roleHeaderCol.style.display = 'table-cell';
                         document.querySelectorAll('.article-role-col').forEach(el => el.style.display = 'table-cell');
                         renderArticles(allArticles);
                     } else {
-                        // Non-admins only see articles for their role
                         const filteredByRole = allArticles.filter(article => 
                             article.role && article.role.name === currentUserRole
                         );
@@ -199,11 +201,9 @@
                     errorMessage.textContent = 'Failed to load articles. Please try again later.';
                 }
             }
-
-            // Function to fetch the logged-in user's role
+            
             async function fetchUserRole() {
                 if (!loggedInUserId) {
-                    // Redirect or handle unauthenticated state
                     console.error('No user logged in.');
                     errorMessage.textContent = 'Please log in to view articles.';
                     errorMessage.style.display = 'block';
@@ -227,40 +227,52 @@
                 }
             }
 
-            // Populate the roles dropdown with checkboxes
-            function populateRolesDropdown() {
-                rolesDropdown.innerHTML = ''; // Clear existing content
-                allRoles.forEach(role => {
-                    const label = document.createElement('label');
-                    label.innerHTML = `
-                        <input type="checkbox" name="role" value="${role}"> ${role}
-                    `;
-                    rolesDropdown.appendChild(label);
-                });
-
-                // Add event listener to each checkbox
-                rolesDropdown.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                    checkbox.addEventListener('change', function() {
-                        if (this.checked) {
-                            selectedRoles.push(this.value);
-                        } else {
-                            selectedRoles = selectedRoles.filter(role => role !== this.value);
-                        }
-                        filterAndRenderArticles();
+            // UPDATED: Fetch roles from the correct backend endpoint and populate the dropdown with CSS class toggling
+            async function fetchRolesAndPopulateDropdown() {
+                try {
+                    const response = await fetch('/api/roles');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    allRoles = await response.json();
+                    
+                    rolesDropdown.innerHTML = '';
+                    allRoles.forEach(role => {
+                        const label = document.createElement('label');
+                        label.innerHTML = `
+                            <input type="checkbox" name="role" value="${role.name}"> ${role.name}
+                        `;
+                        rolesDropdown.appendChild(label);
                     });
-                });
+
+                    rolesDropdown.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                        checkbox.addEventListener('change', function() {
+                            const label = this.closest('label');
+                            if (this.checked) {
+                                selectedRoles.push(this.value);
+                                label.classList.add('selected-role'); // Add class
+                            } else {
+                                selectedRoles = selectedRoles.filter(role => role !== this.value);
+                                label.classList.remove('selected-role'); // Remove class
+                            }
+                            filterAndRenderArticles();
+                        });
+                    });
+                } catch (error) {
+                    console.error('Error fetching roles:', error);
+                }
             }
 
-            // Event listeners
             searchInput.addEventListener('keyup', filterAndRenderArticles);
             toggleRolesButton.addEventListener('click', () => {
                 rolesDropdown.style.display = rolesDropdown.style.display === 'none' ? 'block' : 'none';
             });
             
-            // Initial setup
-            await fetchUserRole(); // First, get the user's role
-            await fetchArticles(); // Then, fetch the articles based on the role
-            populateRolesDropdown(); // Finally, populate the roles dropdown for admins
+            await fetchUserRole();
+            if (currentUserRole === 'Admin') {
+                await fetchRolesAndPopulateDropdown();
+            }
+            await fetchArticles();
         });
     </script>
 </body>
