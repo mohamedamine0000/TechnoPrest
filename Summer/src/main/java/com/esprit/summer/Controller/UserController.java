@@ -238,11 +238,9 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        // Extract article and movement data from the map
         String reasonString = (String) articleData.get("reason");
         String fromLocation = (String) articleData.get("fromLocation");
 
-        // Validate reason
         Reason reason;
         try {
             reason = Reason.valueOf(reasonString);
@@ -250,7 +248,6 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        // Build the Article object from the request data
         Article article = new Article();
         article.setCodeArticle((String) articleData.get("codeArticle"));
         article.setDesignation((String) articleData.get("designation"));
@@ -261,9 +258,24 @@ public class UserController {
         article.setLocation((String) articleData.get("location"));
         article.setEtagere((String) articleData.get("etagere"));
         article.setEtat(com.esprit.summer.Entities.EtatArticle.valueOf((String) articleData.get("etat")));
-        article.setDate(new Date()); // Assuming the date is the current date
+        article.setDate(new Date());
 
-        // Handle the role relationship
+        // Handle the new fields for sales movement tracking
+        String timeframeString = (String) articleData.get("movementTimeframe");
+        if (timeframeString != null) {
+            try {
+                article.setMovementTimeframe(Timeframe.valueOf(timeframeString));
+            } catch (IllegalArgumentException e) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+        }
+        if (articleData.containsKey("fastSalesThreshold")) {
+            article.setFastSalesThreshold((Integer) articleData.get("fastSalesThreshold"));
+        }
+        if (articleData.containsKey("mediumSalesThreshold")) {
+            article.setMediumSalesThreshold((Integer) articleData.get("mediumSalesThreshold"));
+        }
+
         Map<String, Object> roleData = (Map<String, Object>) articleData.get("role");
         if (roleData == null || roleData.get("id") == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -275,7 +287,6 @@ public class UserController {
         }
         article.setRole(roleOptional.get());
 
-        // Handle reserved fields if applicable
         if (articleData.containsKey("reservedByWho")) {
             article.setReservedByWho((String) articleData.get("reservedByWho"));
         }
@@ -286,7 +297,6 @@ public class UserController {
         User user = userOptional.get();
         String addedBy = user.getCin();
 
-        // Call the service with the new parameters
         Article newArticle = articleService.addArticle(article, addedBy, reason, fromLocation);
         return new ResponseEntity<>(newArticle, HttpStatus.CREATED);
     }

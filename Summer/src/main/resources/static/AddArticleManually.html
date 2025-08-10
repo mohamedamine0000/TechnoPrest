@@ -249,6 +249,25 @@
                                 </div>
                                 <span id="role-error" class="error-message" style="display: none;"></span>
                             </div>
+                            
+                            <div class="col-6 col-12-xsmall">
+                                <label for="movement-timeframe">Sales Movement Timeframe</label>
+                                <div class="select-wrapper">
+                                    <select id="movement-timeframe" name="movementTimeframe" required>
+                                        <option value="WEEK">Week</option>
+                                        <option value="MONTH">Month</option>
+                                        <option value="YEAR">Year</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-6 col-12-xsmall">
+                                <label for="fast-sales-threshold">Fast Sales Threshold</label>
+                                <input type="number" id="fast-sales-threshold" name="fastSalesThreshold" required>
+                            </div>
+                            <div class="col-6 col-12-xsmall">
+                                <label for="medium-sales-threshold">Medium Sales Threshold</label>
+                                <input type="number" id="medium-sales-threshold" name="mediumSalesThreshold" required>
+                            </div>
                             <div class="col-12">
                                 <ul class="actions">
                                     <li><input type="submit" value="Add Article" class="primary"></li>
@@ -418,6 +437,11 @@
             const reservedByWhoInput = document.getElementById('reservedByWho');
             const reservedToWhoInput = document.getElementById('reservedToWho');
             const reserveFieldsContainer = document.getElementById('reserve-fields-container');
+            
+            // NEW FIELDS FOR SALES MOVEMENT TRACKING
+            const movementTimeframeInput = document.getElementById('movement-timeframe');
+            const fastSalesThresholdInput = document.getElementById('fast-sales-threshold');
+            const mediumSalesThresholdInput = document.getElementById('medium-sales-threshold');
 
             if (dateInput) {
                 const today = new Date();
@@ -544,7 +568,12 @@
                         id: parseInt(roleSelect.value, 10)
                     },
                     reason: selectedReason,
-                    fromLocation: fromLocation
+                    fromLocation: fromLocation,
+                    
+                    // NEW FIELDS FOR SALES MOVEMENT TRACKING
+                    movementTimeframe: movementTimeframeInput.value,
+                    fastSalesThreshold: parseInt(fastSalesThresholdInput.value, 10),
+                    mediumSalesThreshold: parseInt(mediumSalesThresholdInput.value, 10)
                 };
 
                 if (etatInput.value === 'Reserve') {

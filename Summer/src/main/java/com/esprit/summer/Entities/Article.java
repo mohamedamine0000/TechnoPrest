@@ -35,6 +35,38 @@ public class Article {
     private String reservedByWho;
     private String reservedToWho;
 
+    @Enumerated(EnumType.STRING)
+    private Timeframe movementTimeframe;
+    private Integer fastSalesThreshold;
+    private Integer mediumSalesThreshold;
+
+
+
+
+    public Timeframe getMovementTimeframe() {
+        return movementTimeframe;
+    }
+
+    public void setMovementTimeframe(Timeframe movementTimeframe) {
+        this.movementTimeframe = movementTimeframe;
+    }
+
+    public Integer getFastSalesThreshold() {
+        return fastSalesThreshold;
+    }
+
+    public void setFastSalesThreshold(Integer fastSalesThreshold) {
+        this.fastSalesThreshold = fastSalesThreshold;
+    }
+
+    public Integer getMediumSalesThreshold() {
+        return mediumSalesThreshold;
+    }
+
+    public void setMediumSalesThreshold(Integer mediumSalesThreshold) {
+        this.mediumSalesThreshold = mediumSalesThreshold;
+    }
+
     public String getReservedByWho() {
         return reservedByWho;
     }

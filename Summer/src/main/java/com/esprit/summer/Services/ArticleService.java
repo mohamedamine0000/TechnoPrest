@@ -7,7 +7,7 @@ import com.esprit.summer.Repositories.ArticleMovementRepo;
 import com.esprit.summer.Repositories.ArticleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // Import for transactional operations
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -171,6 +171,7 @@ public class ArticleService {
         }
         return Optional.empty();
     }
+
     @Transactional
     public Optional<Article> changeDepoAndReduceQuantity(Long articleId, int quantityToChange, String newLocation, String recordedBy) {
         Optional<Article> articleOptional = articleRepo.findById(articleId);
