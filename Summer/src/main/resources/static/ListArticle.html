@@ -125,7 +125,7 @@
             font-weight: bold;
         }
 
-        .sold-button {
+        .sold-button, .change-depo-button {
             background-color: #e74c3c;
             color: white;
             border: none;
@@ -133,13 +133,22 @@
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin-right: 5px; /* Spacing between buttons */
+        }
+
+        .change-depo-button {
+            background-color: #3498db;
         }
 
         .sold-button:hover:not(:disabled) {
             background-color: #c0392b;
         }
+        
+        .change-depo-button:hover:not(:disabled) {
+            background-color: #2980b9;
+        }
 
-        .sold-button:disabled {
+        .sold-button:disabled, .change-depo-button:disabled {
             background-color: #bdc3c7;
             cursor: not-allowed;
         }
@@ -224,7 +233,6 @@
             let currentUserCin = ''; 
             let selectedRoles = [];
 
-            // Updated handleSellArticle to use the new dedicated backend endpoint
             window.handleSellArticle = async function(articleId, currentQte, userCin) {
                 if (currentQte <= 0) {
                     alert('Cannot sell an article with a quantity of 0.');
@@ -253,28 +261,84 @@
                     recordedBy: userCin
                 };
 
-              try {
-        // Change the fetch URL here to the new endpoint
-const response = await fetch(`/api/users/${articleId}/sell`, {
-                method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
+                try {
+                    const response = await fetch(`/api/users/${articleId}/sell`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
 
-        alert(`Successfully sold ${qte} units of the article.`);
-        fetchArticles();
-    } catch (error) {
-        console.error('Error selling article:', error);
-        alert('Failed to sell article. Please try again.');
-    }
-}
+                    alert(`Successfully sold ${qte} units of the article.`);
+                    fetchArticles();
+                } catch (error) {
+                    console.error('Error selling article:', error);
+                    alert('Failed to sell article. Please try again.');
+                }
+            }
 
+            // NEW FUNCTION to handle ChangeDepo
+            window.handleChangeDepo = async function(articleId, currentQte, userCin) {
+                if (currentQte <= 0) {
+                    alert('Cannot change depot for an article with a quantity of 0.');
+                    return;
+                }
+
+                if (!userCin) {
+                    alert('User information not available. Please refresh and try again.');
+                    return;
+                }
+
+                const quantityToMove = prompt(`Enter quantity to move (current: ${currentQte}):`);
+                if (quantityToMove === null || quantityToMove === '') {
+                    return;
+                }
+                
+                const qte = parseInt(quantityToMove, 10);
+
+                if (isNaN(qte) || qte <= 0 || qte > currentQte) {
+                    alert(`Invalid quantity. Please enter a positive number not greater than ${currentQte}.`);
+                    return;
+                }
+                
+                const newLocation = prompt('Enter the new depot location:');
+                if (newLocation === null || newLocation === '') {
+                    alert('New location cannot be empty.');
+                    return;
+                }
+
+                const payload = {
+                    quantityChange: qte,
+                    newLocation: newLocation,
+                    recordedBy: userCin
+                };
+
+                try {
+                    // This is a NEW API endpoint you will need to create on the backend
+                    const response = await fetch(`/api/users/articles/${articleId}/change-depo`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    alert(`Successfully moved ${qte} units of the article to ${newLocation}.`);
+                    fetchArticles();
+                } catch (error) {
+                    console.error('Error changing depot:', error);
+                    alert('Failed to change depot. Please try again.');
+                }
+            }
 
             function renderArticles(articlesToDisplay) {
                 articlesListBody.innerHTML = '';
@@ -286,14 +350,15 @@ const response = await fetch(`/api/users/${articleId}/sell`, {
                     const row = articlesListBody.insertRow();
                     const roleName = article.role && article.role.name ? article.role.name : 'N/A';
                     
-                    const sellButton = `<button class="sold-button" data-article-id="${article.articleId}" data-qte="${article.qte}" ${article.qte <= 0 ? 'disabled' : ''}>Sold</button>`;
+                    const soldButton = `<button class="sold-button" data-article-id="${article.articleId}" data-qte="${article.qte}" ${article.qte <= 0 ? 'disabled' : ''}>Sold</button>`;
+                    const changeDepoButton = `<button class="change-depo-button" data-article-id="${article.articleId}" data-qte="${article.qte}" ${article.qte <= 0 ? 'disabled' : ''}>Change Depo</button>`;
                     
                     row.innerHTML = `
                         <td>${article.codeArticle}</td>
                         <td>${article.designation}</td>
                         <td>${article.qte}</td>
                         <td class="article-role-col">${roleName}</td>
-                        <td class="actions-col">${sellButton}</td>
+                        <td class="actions-col">${soldButton} ${changeDepoButton}</td>
                     `;
                 });
             }
@@ -302,7 +367,7 @@ const response = await fetch(`/api/users/${articleId}/sell`, {
                 const searchTerm = searchInput.value.toLowerCase();
                 let filteredArticles = allArticles.filter(article => {
                     const matchesSearch = article.codeArticle.toLowerCase().includes(searchTerm) ||
-                                          article.designation.toLowerCase().includes(searchTerm);
+                                            article.designation.toLowerCase().includes(searchTerm);
                     
                     const articleRoleName = article.role && article.role.name ? article.role.name : 'N/A';
                     const matchesRole = selectedRoles.length === 0 || selectedRoles.includes(articleRoleName);
@@ -355,7 +420,7 @@ const response = await fetch(`/api/users/${articleId}/sell`, {
                     const user = await response.json();
                     currentUserRole = user.roleName;
                     currentUserCin = user.userCin;
-                    userInfoDisplay.textContent = `Logged in as: ${currentUserCin}`;
+                    userInfoDisplay.textContent = ``;
 
                     if (currentUserRole === 'Admin') {
                         roleFilterContainer.style.display = 'block';
@@ -408,6 +473,10 @@ const response = await fetch(`/api/users/${articleId}/sell`, {
                         const articleId = target.dataset.articleId;
                         const currentQte = target.dataset.qte;
                         handleSellArticle(articleId, currentQte, currentUserCin);
+                    } else if (target.classList.contains('change-depo-button')) {
+                        const articleId = target.dataset.articleId;
+                        const currentQte = target.dataset.qte;
+                        handleChangeDepo(articleId, currentQte, currentUserCin);
                     }
                 });
 

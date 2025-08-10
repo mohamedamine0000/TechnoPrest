@@ -171,5 +171,38 @@ public class ArticleService {
         }
         return Optional.empty();
     }
+    @Transactional
+    public Optional<Article> changeDepoAndReduceQuantity(Long articleId, int quantityToChange, String newLocation, String recordedBy) {
+        Optional<Article> articleOptional = articleRepo.findById(articleId);
+        if (articleOptional.isPresent()) {
+            Article article = articleOptional.get();
+            int currentQuantity = article.getQte();
 
+            if (quantityToChange <= 0 || quantityToChange > currentQuantity) {
+                throw new IllegalArgumentException("Invalid quantity for depot change.");
+            }
+
+            int newQuantity = currentQuantity - quantityToChange;
+            String oldLocation = article.getLocation();
+
+            article.setQte(newQuantity);
+            article.setLocation(newLocation);
+            Article updatedArticle = articleRepo.save(article);
+
+            // Record the movement with the ChangeDepo reason
+            ArticleMovement movement = ArticleMovement.builder()
+                    .article(updatedArticle)
+                    .quantityChange(-quantityToChange)
+                    .reason(Reason.ChangeDepo) // Set the correct reason
+                    .fromLocation(oldLocation)
+                    .toLocation(newLocation)
+                    .timestamp(LocalDateTime.now())
+                    .recordedBy(recordedBy)
+                    .build();
+            articleMovementRepo.save(movement);
+
+            return Optional.of(updatedArticle);
+        }
+        return Optional.empty();
+    }
 }
