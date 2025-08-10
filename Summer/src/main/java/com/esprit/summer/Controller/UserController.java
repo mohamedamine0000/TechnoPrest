@@ -356,4 +356,24 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    // Corrected sellArticle method
+    @PutMapping("/{articleId}/sell")
+    public ResponseEntity<?> sellArticle(@PathVariable Long articleId, @RequestBody Map<String, Object> payload) {
+        try {
+            Number quantityNumber = (Number) payload.get("quantityChange");
+            if (quantityNumber == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantity is required.");
+            }
+            int quantityToSell = quantityNumber.intValue();
+            String recordedBy = (String) payload.get("recordedBy");
+
+            articleService.sellArticle(articleId, quantityToSell, recordedBy);
+            return ResponseEntity.ok("Article quantity updated successfully.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while selling the article.");
+        }
+    }
 }

@@ -7,7 +7,63 @@
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        /* ... (Your existing styles) ... */
+        /* Your existing styles for the main layout */
+        body.is-preload #wrapper {
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        body #wrapper {
+            opacity: 1;
+        }
+
+        #wrapper {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        #main {
+            flex-grow: 1;
+        }
+
+        .inner {
+            padding: 2em;
+        }
+
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 1em;
+            margin-bottom: 2em;
+        }
+
+        #header .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            text-decoration: none;
+        }
+
+        #header .icons {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #header .icons li {
+            display: inline-block;
+        }
+
+        #header .icons button {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            color: #555;
+        }
 
         /* Specific styles for the article list page */
         .article-table-container {
@@ -62,11 +118,34 @@
             border-radius: 4px;
             transition: background-color 0.2s ease;
         }
-        
-        /* NEW: Styles for the selected role label */
+
+        /* Styles for the selected role label */
         .filter-container .selected-role {
             background-color: #e0e0e0;
             font-weight: bold;
+        }
+
+        .sold-button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .sold-button:hover:not(:disabled) {
+            background-color: #c0392b;
+        }
+
+        .sold-button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .actions-col {
+            width: 120px; /* Adjust width as needed */
         }
     </style>
 </head>
@@ -92,6 +171,8 @@
                     Could not load articles.
                 </div>
 
+                <p id="user-info-display">Loading user info...</p>
+                
                 <div class="search-container">
                     <input type="text" id="article-search" placeholder="Search by Code Article or Designation...">
                 </div>
@@ -99,7 +180,7 @@
                 <div id="role-filter-container" class="filter-container" style="display: none;">
                     <button id="toggle-roles-button">Filter by Role</button>
                     <div id="roles-dropdown" class="roles-dropdown" style="display: none;">
-                        </div>
+                    </div>
                 </div>
 
                 <div class="article-table-container">
@@ -110,20 +191,21 @@
                                 <th>Designation</th>
                                 <th>Quantity (Qte)</th>
                                 <th id="role-header-col" style="display: none;">Role</th>
+                                <th class="actions-col">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="articles-list-body">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
-
             </div>
         </div>
+    </div>
 
-        </div>
-    
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
+            document.body.classList.remove('is-preload');
+
             const articlesListBody = document.getElementById('articles-list-body');
             const searchInput = document.getElementById('article-search');
             const loadingMessage = document.getElementById('loading-message');
@@ -133,27 +215,85 @@
             const rolesDropdown = document.getElementById('roles-dropdown');
             const roleHeaderCol = document.getElementById('role-header-col');
             const loggedInUserId = sessionStorage.getItem('loggedInUserId');
-            
+            const userInfoDisplay = document.getElementById('user-info-display');
+            const logoutButtonMainHeader = document.getElementById('logout-button-main-header');
+
             let allArticles = [];
             let allRoles = [];
             let currentUserRole = '';
+            let currentUserCin = ''; 
             let selectedRoles = [];
+
+            // Updated handleSellArticle to use the new dedicated backend endpoint
+            window.handleSellArticle = async function(articleId, currentQte, userCin) {
+                if (currentQte <= 0) {
+                    alert('Cannot sell an article with a quantity of 0.');
+                    return;
+                }
+
+                if (!userCin) {
+                    alert('User information not available. Please refresh and try again.');
+                    return;
+                }
+
+                const quantityToSell = prompt(`Enter quantity to sell (current: ${currentQte}):`);
+                if (quantityToSell === null || quantityToSell === '') {
+                    return;
+                }
+                
+                const qte = parseInt(quantityToSell, 10);
+
+                if (isNaN(qte) || qte <= 0 || qte > currentQte) {
+                    alert(`Invalid quantity. Please enter a positive number not greater than ${currentQte}.`);
+                    return;
+                }
+
+                const payload = {
+                    quantityChange: qte,
+                    recordedBy: userCin
+                };
+
+              try {
+        // Change the fetch URL here to the new endpoint
+const response = await fetch(`/api/users/${articleId}/sell`, {
+                method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        alert(`Successfully sold ${qte} units of the article.`);
+        fetchArticles();
+    } catch (error) {
+        console.error('Error selling article:', error);
+        alert('Failed to sell article. Please try again.');
+    }
+}
+
 
             function renderArticles(articlesToDisplay) {
                 articlesListBody.innerHTML = '';
                 if (articlesToDisplay.length === 0) {
-                    articlesListBody.innerHTML = '<tr><td colspan="4">No articles found.</td></tr>';
+                    articlesListBody.innerHTML = '<tr><td colspan="5">No articles found.</td></tr>';
                     return;
                 }
                 articlesToDisplay.forEach(article => {
                     const row = articlesListBody.insertRow();
                     const roleName = article.role && article.role.name ? article.role.name : 'N/A';
                     
+                    const sellButton = `<button class="sold-button" data-article-id="${article.articleId}" data-qte="${article.qte}" ${article.qte <= 0 ? 'disabled' : ''}>Sold</button>`;
+                    
                     row.innerHTML = `
                         <td>${article.codeArticle}</td>
                         <td>${article.designation}</td>
                         <td>${article.qte}</td>
                         <td class="article-role-col">${roleName}</td>
+                        <td class="actions-col">${sellButton}</td>
                     `;
                 });
             }
@@ -193,7 +333,6 @@
                         );
                         renderArticles(filteredByRole);
                     }
-                    
                 } catch (error) {
                     console.error('Error fetching articles:', error);
                     loadingMessage.style.display = 'none';
@@ -205,9 +344,7 @@
             async function fetchUserRole() {
                 if (!loggedInUserId) {
                     console.error('No user logged in.');
-                    errorMessage.textContent = 'Please log in to view articles.';
-                    errorMessage.style.display = 'block';
-                    loadingMessage.style.display = 'none';
+                    userInfoDisplay.textContent = 'No user logged in.';
                     return;
                 }
                 try {
@@ -217,17 +354,18 @@
                     }
                     const user = await response.json();
                     currentUserRole = user.roleName;
+                    currentUserCin = user.userCin;
+                    userInfoDisplay.textContent = `Logged in as: ${currentUserCin}`;
 
                     if (currentUserRole === 'Admin') {
                         roleFilterContainer.style.display = 'block';
                     }
-
                 } catch (error) {
                     console.error('Error fetching user role:', error);
+                    userInfoDisplay.textContent = 'Error loading user info.';
                 }
             }
 
-            // UPDATED: Fetch roles from the correct backend endpoint and populate the dropdown with CSS class toggling
             async function fetchRolesAndPopulateDropdown() {
                 try {
                     const response = await fetch('/api/roles');
@@ -250,10 +388,10 @@
                             const label = this.closest('label');
                             if (this.checked) {
                                 selectedRoles.push(this.value);
-                                label.classList.add('selected-role'); // Add class
+                                label.classList.add('selected-role');
                             } else {
                                 selectedRoles = selectedRoles.filter(role => role !== this.value);
-                                label.classList.remove('selected-role'); // Remove class
+                                label.classList.remove('selected-role');
                             }
                             filterAndRenderArticles();
                         });
@@ -263,16 +401,33 @@
                 }
             }
 
-            searchInput.addEventListener('keyup', filterAndRenderArticles);
-            toggleRolesButton.addEventListener('click', () => {
-                rolesDropdown.style.display = rolesDropdown.style.display === 'none' ? 'block' : 'none';
-            });
-            
+            function setupEventListeners() {
+                articlesListBody.addEventListener('click', function(event) {
+                    const target = event.target;
+                    if (target.classList.contains('sold-button')) {
+                        const articleId = target.dataset.articleId;
+                        const currentQte = target.dataset.qte;
+                        handleSellArticle(articleId, currentQte, currentUserCin);
+                    }
+                });
+
+                searchInput.addEventListener('keyup', filterAndRenderArticles);
+                toggleRolesButton.addEventListener('click', () => {
+                    rolesDropdown.style.display = rolesDropdown.style.display === 'none' ? 'block' : 'none';
+                });
+                
+                logoutButtonMainHeader.addEventListener('click', function() {
+                    sessionStorage.removeItem('loggedInUserId');
+                    window.location.href = '/index.html';
+                });
+            }
+
             await fetchUserRole();
             if (currentUserRole === 'Admin') {
                 await fetchRolesAndPopulateDropdown();
             }
             await fetchArticles();
+            setupEventListeners();
         });
     </script>
 </body>

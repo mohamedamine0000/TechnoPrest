@@ -138,4 +138,38 @@ public class ArticleService {
     public List<Article> getAllArticles() {
         return articleRepo.findAll();
     }
+
+    // NEW METHOD FOR SELLING ARTICLES
+    @Transactional
+    public Optional<Article> sellArticle(Long articleId, int quantityToSell, String recordedBy) {
+        Optional<Article> articleOptional = articleRepo.findById(articleId);
+        if (articleOptional.isPresent()) {
+            Article article = articleOptional.get();
+            int currentQuantity = article.getQte();
+
+            if (quantityToSell <= 0 || quantityToSell > currentQuantity) {
+                throw new IllegalArgumentException("Invalid quantity for sale.");
+            }
+
+            int newQuantity = currentQuantity - quantityToSell;
+            article.setQte(newQuantity);
+            Article updatedArticle = articleRepo.save(article);
+
+            // Record the movement with the correct recordedBy and reason
+            ArticleMovement movement = ArticleMovement.builder()
+                    .article(updatedArticle)
+                    .quantityChange(-quantityToSell)
+                    .reason(Reason.Sold) // Explicitly set the reason to Sold
+                    .fromLocation(updatedArticle.getLocation())
+                    .toLocation(updatedArticle.getLocation())
+                    .timestamp(LocalDateTime.now())
+                    .recordedBy(recordedBy) // This will be the user's CIN
+                    .build();
+            articleMovementRepo.save(movement);
+
+            return Optional.of(updatedArticle);
+        }
+        return Optional.empty();
+    }
+
 }
