@@ -8,6 +8,23 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         /* Your existing styles for the main layout */
+        /* New styles for Movement Speed column */
+.movement-speed-cell {
+    font-weight: bold;
+    text-align: center;
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+}
+.slow-movement {
+    background-color: #f44336; /* Red */
+}
+.medium-movement {
+    background-color: #ff9800; /* Orange */
+}
+.fast-movement {
+    background-color: #4caf50; /* Green */
+}
         body.is-preload #wrapper {
             opacity: 0;
             transition: opacity 1s ease-in-out;
@@ -200,6 +217,7 @@
                                 <th>Designation</th>
                                 <th>Quantity (Qte)</th>
                                 <th id="role-header-col" style="display: none;">Role</th>
+                                <th>Movement Speed</th>
                                 <th class="actions-col">Actions</th>
                             </tr>
                         </thead>
@@ -340,10 +358,55 @@
                 }
             }
 
+            function calculateMovementSpeed(article, movements) {
+    if (!article.movementTimeframe || article.fastSalesThreshold === null || article.mediumSalesThreshold === null) {
+        return { speed: 'N/A', cssClass: '' };
+    }
+
+    let totalSales = 0;
+    let startDate = new Date();
+    
+    switch (article.movementTimeframe) {
+        case 'WEEK':
+            startDate.setDate(startDate.getDate() - 7);
+            break;
+        case 'MONTH':
+            startDate.setMonth(startDate.getMonth() - 1);
+            break;
+        case 'YEAR':
+            startDate.setFullYear(startDate.getFullYear() - 1);
+            break;
+        default:
+            return { speed: 'N/A', cssClass: '' };
+    }
+
+    movements.forEach(movement => {
+        const movementDate = new Date(movement.timestamp);
+        if (movement.article.articleId === article.articleId && movement.reason.toLowerCase() === 'sold' && movementDate >= startDate) {
+            totalSales += Math.abs(movement.quantityChange);
+        }
+    });
+
+    let speed = '';
+    let cssClass = '';
+    if (totalSales >= article.fastSalesThreshold) {
+        speed = 'Fast';
+        cssClass = 'fast-movement';
+    } else if (totalSales >= article.mediumSalesThreshold) {
+        speed = 'Medium';
+        cssClass = 'medium-movement';
+    } else {
+        speed = 'Slow';
+        cssClass = 'slow-movement';
+    }
+    
+    return { speed, cssClass };
+}
+
             function renderArticles(articlesToDisplay) {
                 articlesListBody.innerHTML = '';
                 if (articlesToDisplay.length === 0) {
-                    articlesListBody.innerHTML = '<tr><td colspan="5">No articles found.</td></tr>';
+                    articlesListBody.innerHTML = '<tr><td colspan="6">No articles found.</td></tr>';
                     return;
                 }
                 articlesToDisplay.forEach(article => {
@@ -352,12 +415,13 @@
                     
                     const soldButton = `<button class="sold-button" data-article-id="${article.articleId}" data-qte="${article.qte}" ${article.qte <= 0 ? 'disabled' : ''}>Sold</button>`;
                     const changeDepoButton = `<button class="change-depo-button" data-article-id="${article.articleId}" data-qte="${article.qte}" ${article.qte <= 0 ? 'disabled' : ''}>Change Depo</button>`;
-                    
+                    const { speed, cssClass } = calculateMovementSpeed(article, allMovements);
                     row.innerHTML = `
                         <td>${article.codeArticle}</td>
                         <td>${article.designation}</td>
                         <td>${article.qte}</td>
                         <td class="article-role-col">${roleName}</td>
+                        <td class="movement-speed-cell ${cssClass}">${speed}</td>
                         <td class="actions-col">${soldButton} ${changeDepoButton}</td>
                     `;
                 });
@@ -377,34 +441,43 @@
                 renderArticles(filteredArticles);
             }
 
-            async function fetchArticles() {
-                loadingMessage.style.display = 'block';
-                errorMessage.style.display = 'none';
-                try {
-                    const response = await fetch('/api/users/articles');
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    allArticles = await response.json();
-                    loadingMessage.style.display = 'none';
+async function fetchArticles() {
+    loadingMessage.style.display = 'block';
+    errorMessage.style.display = 'none';
+    try {
+        const [articlesResponse, movementsResponse] = await Promise.all([
+            fetch('/api/users/articles'),
+            fetch('/api/article-movements')
+        ]);
 
-                    if (currentUserRole === 'Admin') {
-                        roleHeaderCol.style.display = 'table-cell';
-                        document.querySelectorAll('.article-role-col').forEach(el => el.style.display = 'table-cell');
-                        renderArticles(allArticles);
-                    } else {
-                        const filteredByRole = allArticles.filter(article => 
-                            article.role && article.role.name === currentUserRole
-                        );
-                        renderArticles(filteredByRole);
-                    }
-                } catch (error) {
-                    console.error('Error fetching articles:', error);
-                    loadingMessage.style.display = 'none';
-                    errorMessage.style.display = 'block';
-                    errorMessage.textContent = 'Failed to load articles. Please try again later.';
-                }
-            }
+        if (!articlesResponse.ok) {
+            throw new Error(`HTTP error! status: ${articlesResponse.status}`);
+        }
+        if (!movementsResponse.ok) {
+            throw new Error(`HTTP error! status: ${movementsResponse.status}`);
+        }
+
+        allArticles = await articlesResponse.json();
+        allMovements = await movementsResponse.json();
+        loadingMessage.style.display = 'none';
+
+        if (currentUserRole === 'Admin') {
+            roleHeaderCol.style.display = 'table-cell';
+            document.querySelectorAll('.article-role-col').forEach(el => el.style.display = 'table-cell');
+            renderArticles(allArticles);
+        } else {
+            const filteredByRole = allArticles.filter(article => 
+                article.role && article.role.name === currentUserRole
+            );
+            renderArticles(filteredByRole);
+        }
+    } catch (error) {
+        console.error('Error fetching articles:', error);
+        loadingMessage.style.display = 'none';
+        errorMessage.style.display = 'block';
+        errorMessage.textContent = 'Failed to load articles. Please try again later.';
+    }
+}
             
             async function fetchUserRole() {
                 if (!loggedInUserId) {
