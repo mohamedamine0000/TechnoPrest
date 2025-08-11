@@ -152,6 +152,19 @@
             transition: background-color 0.3s;
             margin-right: 5px; /* Spacing between buttons */
         }
+        
+        .add-depo-button {
+            /* NEW style for the Add from Depo button */
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-right: 5px; /* Spacing between buttons */
+        }
+
 
         .change-depo-button {
             background-color: #3498db;
@@ -165,7 +178,13 @@
             background-color: #2980b9;
         }
 
-        .sold-button:disabled, .change-depo-button:disabled {
+        .add-depo-button:hover:not(:disabled) {
+            /* NEW hover style for the Add from Depo button */
+            background-color: #27ae60;
+        }
+
+
+        .sold-button:disabled, .change-depo-button:disabled, .add-depo-button:disabled {
             background-color: #bdc3c7;
             cursor: not-allowed;
         }
@@ -230,340 +249,415 @@
     </div>
 
     <script>
+        // Global variables moved here
+        let allArticles = [];
+        let allRoles = [];
+        let allMovements = []; // Moved to global scope
+        let currentUserRole = '';
+        let currentUserCin = ''; 
+        let selectedRoles = [];
+        let articlesListBody;
+        let searchInput;
+        let loadingMessage;
+        let errorMessage;
+        let roleFilterContainer;
+        let toggleRolesButton;
+        let rolesDropdown;
+        let roleHeaderCol;
+        let loggedInUserId;
+        let userInfoDisplay;
+        let logoutButtonMainHeader;
+
+        // Global functions for handling user actions
+        window.handleSellArticle = async function(articleId, currentQte, userCin) {
+            if (currentQte <= 0) {
+                alert('Cannot sell an article with a quantity of 0.');
+                return;
+            }
+
+            if (!userCin) {
+                alert('User information not available. Please refresh and try again.');
+                return;
+            }
+
+            const quantityToSell = prompt(`Enter quantity to sell (current: ${currentQte}):`);
+            if (quantityToSell === null || quantityToSell === '') {
+                return;
+            }
+            
+            const qte = parseInt(quantityToSell, 10);
+
+            if (isNaN(qte) || qte <= 0 || qte > currentQte) {
+                alert(`Invalid quantity. Please enter a positive number not greater than ${currentQte}.`);
+                return;
+            }
+
+            const payload = {
+                quantityChange: qte,
+                recordedBy: userCin
+            };
+
+            try {
+                const response = await fetch(`/api/users/${articleId}/sell`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                alert(`Successfully sold ${qte} units of the article.`);
+                fetchArticles(); // This now works because fetchArticles is global
+            } catch (error) {
+                console.error('Error selling article:', error);
+                alert('Failed to sell article. Please try again.');
+            }
+        }
+
+
+        window.handleChangeDepo = async function(articleId, currentQte, userCin) {
+            if (currentQte <= 0) {
+                alert('Cannot change depot for an article with a quantity of 0.');
+                return;
+            }
+
+            if (!userCin) {
+                alert('User information not available. Please refresh and try again.');
+                return;
+            }
+
+            const quantityToMove = prompt(`Enter quantity to move (current: ${currentQte}):`);
+            if (quantityToMove === null || quantityToMove === '') {
+                return;
+            }
+            
+            const qte = parseInt(quantityToMove, 10);
+
+            if (isNaN(qte) || qte <= 0 || qte > currentQte) {
+                alert(`Invalid quantity. Please enter a positive number not greater than ${currentQte}.`);
+                return;
+            }
+            
+            const newLocation = prompt('Enter the other depot location:');
+            if (newLocation === null || newLocation === '') {
+                alert('New location cannot be empty.');
+                return;
+            }
+
+            const payload = {
+                quantityChange: qte,
+                newLocation: newLocation,
+                recordedBy: userCin
+            };
+
+            try {
+                const response = await fetch(`/api/users/articles/${articleId}/change-depo`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                alert(`Successfully moved ${qte} units.`);
+                fetchArticles(); // This now works
+            } catch (error) {
+                console.error('Error changing depot:', error);
+                alert('Failed to change depot. Please try again.');
+            }
+        }
+        
+        window.handleAddFromDepo = async function(articleId, userCin) {
+            if (!userCin) {
+                alert('User information not available. Please refresh and try again.');
+                return;
+            }
+
+            const quantityToAdd = prompt('Enter quantity to add:');
+            if (quantityToAdd === null || quantityToAdd === '') {
+                return;
+            }
+
+            const qte = parseInt(quantityToAdd, 10);
+            if (isNaN(qte) || qte <= 0) {
+                alert('Invalid quantity. Please enter a positive number.');
+                return;
+            }
+
+            const newLocation = prompt('Enter the new depot location:');
+            if (newLocation === null || newLocation === '') {
+                alert('New location cannot be empty.');
+                return;
+            }
+
+            const payload = {
+                quantityChange: qte,
+                newLocation: newLocation,
+                recordedBy: userCin
+            };
+
+            try {
+                const response = await fetch(`/api/users/articles/${articleId}/add-from-depo`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                alert(`Successfully added ${qte} units of the article to ${newLocation}.`);
+                fetchArticles(); // This now works
+            } catch (error) {
+                console.error('Error adding from depot:', error);
+                alert('Failed to add from depot. Please try again.');
+            }
+        }
+        
+        // This function is now in the global scope
+        function calculateMovementSpeed(article, movements) {
+            if (!article.movementTimeframe || article.fastSalesThreshold === null || article.mediumSalesThreshold === null) {
+                return { speed: 'N/A', cssClass: '' };
+            }
+
+            let totalSales = 0;
+            let startDate = new Date();
+            
+            switch (article.movementTimeframe) {
+                case 'WEEK':
+                    startDate.setDate(startDate.getDate() - 7);
+                    break;
+                case 'MONTH':
+                    startDate.setMonth(startDate.getMonth() - 1);
+                    break;
+                case 'YEAR':
+                    startDate.setFullYear(startDate.getFullYear() - 1);
+                    break;
+                default:
+                    return { speed: 'N/A', cssClass: '' };
+            }
+
+            movements.forEach(movement => {
+                const movementDate = new Date(movement.timestamp);
+                if (movement.article.articleId === article.articleId && movement.reason.toLowerCase() === 'sold' && movementDate >= startDate) {
+                    totalSales += Math.abs(movement.quantityChange);
+                }
+            });
+
+            let speed = '';
+            let cssClass = '';
+            if (totalSales >= article.fastSalesThreshold) {
+                speed = 'Fast';
+                cssClass = 'fast-movement';
+            } else if (totalSales >= article.mediumSalesThreshold) {
+                speed = 'Medium';
+                cssClass = 'medium-movement';
+            } else {
+                speed = 'Slow';
+                cssClass = 'slow-movement';
+            }
+            
+            return { speed, cssClass };
+        }
+
+        // This function is now in the global scope
+        function renderArticles(articlesToDisplay) {
+            articlesListBody.innerHTML = '';
+            if (articlesToDisplay.length === 0) {
+                articlesListBody.innerHTML = '<tr><td colspan="6">No articles found.</td></tr>';
+                return;
+            }
+            articlesToDisplay.forEach(article => {
+                const row = articlesListBody.insertRow();
+                const roleName = article.role && article.role.name ? article.role.name : 'N/A';
+                
+                const soldButton = `<button class="sold-button" data-article-id="${article.articleId}" data-qte="${article.qte}" ${article.qte <= 0 ? 'disabled' : ''}>Sold</button>`;
+                const changeDepoButton = `<button class="change-depo-button" data-article-id="${article.articleId}" data-qte="${article.qte}" ${article.qte <= 0 ? 'disabled' : ''}>Change Depo</button>`;
+                const { speed, cssClass } = calculateMovementSpeed(article, allMovements);
+                const addDepoButton = `<button class="add-depo-button" data-article-id="${article.articleId}">Add from Depo</button>`;
+
+                row.innerHTML = `
+                    <td>${article.codeArticle}</td>
+                    <td>${article.designation}</td>
+                    <td>${article.qte}</td>
+                    <td class="article-role-col">${roleName}</td>
+                    <td class="movement-speed-cell ${cssClass}">${speed}</td>
+                    <td class="actions-col">${soldButton} ${changeDepoButton} ${addDepoButton}</td>
+                `;
+            });
+        }
+        
+        // This function is now in the global scope
+        function filterAndRenderArticles() {
+            const searchTerm = searchInput.value.toLowerCase();
+            let filteredArticles = allArticles.filter(article => {
+                const matchesSearch = article.codeArticle.toLowerCase().includes(searchTerm) ||
+                                        article.designation.toLowerCase().includes(searchTerm);
+                
+                const articleRoleName = article.role && article.role.name ? article.role.name : 'N/A';
+                const matchesRole = selectedRoles.length === 0 || selectedRoles.includes(articleRoleName);
+
+                return matchesSearch && matchesRole;
+            });
+            renderArticles(filteredArticles);
+        }
+
+        // This function is now in the global scope
+        async function fetchArticles() {
+            loadingMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+            try {
+                const [articlesResponse, movementsResponse] = await Promise.all([
+                    fetch('/api/users/articles'),
+                    fetch('/api/article-movements')
+                ]);
+
+                if (!articlesResponse.ok) {
+                    throw new Error(`HTTP error! status: ${articlesResponse.status}`);
+                }
+                if (!movementsResponse.ok) {
+                    throw new Error(`HTTP error! status: ${movementsResponse.status}`);
+                }
+
+                allArticles = await articlesResponse.json();
+                allMovements = await movementsResponse.json();
+                loadingMessage.style.display = 'none';
+
+                if (currentUserRole === 'Admin') {
+                    roleHeaderCol.style.display = 'table-cell';
+                    document.querySelectorAll('.article-role-col').forEach(el => el.style.display = 'table-cell');
+                    renderArticles(allArticles);
+                } else {
+                    const filteredByRole = allArticles.filter(article => 
+                        article.role && article.role.name === currentUserRole
+                    );
+                    renderArticles(filteredByRole);
+                }
+            } catch (error) {
+                console.error('Error fetching articles:', error);
+                loadingMessage.style.display = 'none';
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = 'Failed to load articles. Please try again later.';
+            }
+        }
+        
+        // This function is now in the global scope
+        async function fetchUserRole() {
+            if (!loggedInUserId) {
+                console.error('No user logged in.');
+                userInfoDisplay.textContent = 'No user logged in.';
+                return;
+            }
+            try {
+                const response = await fetch(`/api/users/${loggedInUserId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const user = await response.json();
+                currentUserRole = user.roleName;
+                currentUserCin = user.userCin;
+                userInfoDisplay.textContent = ``;
+
+                if (currentUserRole === 'Admin') {
+                    roleFilterContainer.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error fetching user role:', error);
+                userInfoDisplay.textContent = 'Error loading user info.';
+            }
+        }
+        
+        // This function is now in the global scope
+        async function fetchRolesAndPopulateDropdown() {
+            try {
+                const response = await fetch('/api/roles');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                allRoles = await response.json();
+                
+                rolesDropdown.innerHTML = '';
+                allRoles.forEach(role => {
+                    const label = document.createElement('label');
+                    label.innerHTML = `
+                        <input type="checkbox" name="role" value="${role.name}"> ${role.name}
+                    `;
+                    rolesDropdown.appendChild(label);
+                });
+
+                rolesDropdown.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const label = this.closest('label');
+                        if (this.checked) {
+                            selectedRoles.push(this.value);
+                            label.classList.add('selected-role');
+                        } else {
+                            selectedRoles = selectedRoles.filter(role => role !== this.value);
+                            label.classList.remove('selected-role');
+                        }
+                        filterAndRenderArticles();
+                    });
+                });
+            } catch (error) {
+                console.error('Error fetching roles:', error);
+            }
+        }
+        
+        // This function is now in the global scope
+        function setupEventListeners() {
+           articlesListBody.addEventListener('click', function(event) {
+                const target = event.target;
+                if (target.classList.contains('sold-button')) {
+                    const articleId = target.dataset.articleId;
+                    const currentQte = target.dataset.qte;
+                    window.handleSellArticle(articleId, currentQte, currentUserCin);
+                } else if (target.classList.contains('change-depo-button')) {
+                    const articleId = target.dataset.articleId;
+                    const currentQte = target.dataset.qte;
+                    window.handleChangeDepo(articleId, currentQte, currentUserCin);
+                } else if (target.classList.contains('add-depo-button')) { // Add this new block
+                    const articleId = target.dataset.articleId;
+                    window.handleAddFromDepo(articleId, currentUserCin);
+                }
+            });
+
+            searchInput.addEventListener('keyup', filterAndRenderArticles);
+            toggleRolesButton.addEventListener('click', () => {
+                rolesDropdown.style.display = rolesDropdown.style.display === 'none' ? 'block' : 'none';
+            });
+            
+            logoutButtonMainHeader.addEventListener('click', function() {
+                sessionStorage.removeItem('loggedInUserId');
+                window.location.href = '/index.html';
+            });
+        }
+        
         document.addEventListener('DOMContentLoaded', async function() {
             document.body.classList.remove('is-preload');
-
-            const articlesListBody = document.getElementById('articles-list-body');
-            const searchInput = document.getElementById('article-search');
-            const loadingMessage = document.getElementById('loading-message');
-            const errorMessage = document.getElementById('error-message');
-            const roleFilterContainer = document.getElementById('role-filter-container');
-            const toggleRolesButton = document.getElementById('toggle-roles-button');
-            const rolesDropdown = document.getElementById('roles-dropdown');
-            const roleHeaderCol = document.getElementById('role-header-col');
-            const loggedInUserId = sessionStorage.getItem('loggedInUserId');
-            const userInfoDisplay = document.getElementById('user-info-display');
-            const logoutButtonMainHeader = document.getElementById('logout-button-main-header');
-
-            let allArticles = [];
-            let allRoles = [];
-            let currentUserRole = '';
-            let currentUserCin = ''; 
-            let selectedRoles = [];
-
-            window.handleSellArticle = async function(articleId, currentQte, userCin) {
-                if (currentQte <= 0) {
-                    alert('Cannot sell an article with a quantity of 0.');
-                    return;
-                }
-
-                if (!userCin) {
-                    alert('User information not available. Please refresh and try again.');
-                    return;
-                }
-
-                const quantityToSell = prompt(`Enter quantity to sell (current: ${currentQte}):`);
-                if (quantityToSell === null || quantityToSell === '') {
-                    return;
-                }
-                
-                const qte = parseInt(quantityToSell, 10);
-
-                if (isNaN(qte) || qte <= 0 || qte > currentQte) {
-                    alert(`Invalid quantity. Please enter a positive number not greater than ${currentQte}.`);
-                    return;
-                }
-
-                const payload = {
-                    quantityChange: qte,
-                    recordedBy: userCin
-                };
-
-                try {
-                    const response = await fetch(`/api/users/${articleId}/sell`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    alert(`Successfully sold ${qte} units of the article.`);
-                    fetchArticles();
-                } catch (error) {
-                    console.error('Error selling article:', error);
-                    alert('Failed to sell article. Please try again.');
-                }
-            }
-
-            // NEW FUNCTION to handle ChangeDepo
-            window.handleChangeDepo = async function(articleId, currentQte, userCin) {
-                if (currentQte <= 0) {
-                    alert('Cannot change depot for an article with a quantity of 0.');
-                    return;
-                }
-
-                if (!userCin) {
-                    alert('User information not available. Please refresh and try again.');
-                    return;
-                }
-
-                const quantityToMove = prompt(`Enter quantity to move (current: ${currentQte}):`);
-                if (quantityToMove === null || quantityToMove === '') {
-                    return;
-                }
-                
-                const qte = parseInt(quantityToMove, 10);
-
-                if (isNaN(qte) || qte <= 0 || qte > currentQte) {
-                    alert(`Invalid quantity. Please enter a positive number not greater than ${currentQte}.`);
-                    return;
-                }
-                
-                const newLocation = prompt('Enter the new depot location:');
-                if (newLocation === null || newLocation === '') {
-                    alert('New location cannot be empty.');
-                    return;
-                }
-
-                const payload = {
-                    quantityChange: qte,
-                    newLocation: newLocation,
-                    recordedBy: userCin
-                };
-
-                try {
-                    // This is a NEW API endpoint you will need to create on the backend
-                    const response = await fetch(`/api/users/articles/${articleId}/change-depo`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    alert(`Successfully moved ${qte} units of the article to ${newLocation}.`);
-                    fetchArticles();
-                } catch (error) {
-                    console.error('Error changing depot:', error);
-                    alert('Failed to change depot. Please try again.');
-                }
-            }
-
-            function calculateMovementSpeed(article, movements) {
-    if (!article.movementTimeframe || article.fastSalesThreshold === null || article.mediumSalesThreshold === null) {
-        return { speed: 'N/A', cssClass: '' };
-    }
-
-    let totalSales = 0;
-    let startDate = new Date();
-    
-    switch (article.movementTimeframe) {
-        case 'WEEK':
-            startDate.setDate(startDate.getDate() - 7);
-            break;
-        case 'MONTH':
-            startDate.setMonth(startDate.getMonth() - 1);
-            break;
-        case 'YEAR':
-            startDate.setFullYear(startDate.getFullYear() - 1);
-            break;
-        default:
-            return { speed: 'N/A', cssClass: '' };
-    }
-
-    movements.forEach(movement => {
-        const movementDate = new Date(movement.timestamp);
-        if (movement.article.articleId === article.articleId && movement.reason.toLowerCase() === 'sold' && movementDate >= startDate) {
-            totalSales += Math.abs(movement.quantityChange);
-        }
-    });
-
-    let speed = '';
-    let cssClass = '';
-    if (totalSales >= article.fastSalesThreshold) {
-        speed = 'Fast';
-        cssClass = 'fast-movement';
-    } else if (totalSales >= article.mediumSalesThreshold) {
-        speed = 'Medium';
-        cssClass = 'medium-movement';
-    } else {
-        speed = 'Slow';
-        cssClass = 'slow-movement';
-    }
-    
-    return { speed, cssClass };
-}
-
-            function renderArticles(articlesToDisplay) {
-                articlesListBody.innerHTML = '';
-                if (articlesToDisplay.length === 0) {
-                    articlesListBody.innerHTML = '<tr><td colspan="6">No articles found.</td></tr>';
-                    return;
-                }
-                articlesToDisplay.forEach(article => {
-                    const row = articlesListBody.insertRow();
-                    const roleName = article.role && article.role.name ? article.role.name : 'N/A';
-                    
-                    const soldButton = `<button class="sold-button" data-article-id="${article.articleId}" data-qte="${article.qte}" ${article.qte <= 0 ? 'disabled' : ''}>Sold</button>`;
-                    const changeDepoButton = `<button class="change-depo-button" data-article-id="${article.articleId}" data-qte="${article.qte}" ${article.qte <= 0 ? 'disabled' : ''}>Change Depo</button>`;
-                    const { speed, cssClass } = calculateMovementSpeed(article, allMovements);
-                    row.innerHTML = `
-                        <td>${article.codeArticle}</td>
-                        <td>${article.designation}</td>
-                        <td>${article.qte}</td>
-                        <td class="article-role-col">${roleName}</td>
-                        <td class="movement-speed-cell ${cssClass}">${speed}</td>
-                        <td class="actions-col">${soldButton} ${changeDepoButton}</td>
-                    `;
-                });
-            }
-
-            function filterAndRenderArticles() {
-                const searchTerm = searchInput.value.toLowerCase();
-                let filteredArticles = allArticles.filter(article => {
-                    const matchesSearch = article.codeArticle.toLowerCase().includes(searchTerm) ||
-                                            article.designation.toLowerCase().includes(searchTerm);
-                    
-                    const articleRoleName = article.role && article.role.name ? article.role.name : 'N/A';
-                    const matchesRole = selectedRoles.length === 0 || selectedRoles.includes(articleRoleName);
-
-                    return matchesSearch && matchesRole;
-                });
-                renderArticles(filteredArticles);
-            }
-
-async function fetchArticles() {
-    loadingMessage.style.display = 'block';
-    errorMessage.style.display = 'none';
-    try {
-        const [articlesResponse, movementsResponse] = await Promise.all([
-            fetch('/api/users/articles'),
-            fetch('/api/article-movements')
-        ]);
-
-        if (!articlesResponse.ok) {
-            throw new Error(`HTTP error! status: ${articlesResponse.status}`);
-        }
-        if (!movementsResponse.ok) {
-            throw new Error(`HTTP error! status: ${movementsResponse.status}`);
-        }
-
-        allArticles = await articlesResponse.json();
-        allMovements = await movementsResponse.json();
-        loadingMessage.style.display = 'none';
-
-        if (currentUserRole === 'Admin') {
-            roleHeaderCol.style.display = 'table-cell';
-            document.querySelectorAll('.article-role-col').forEach(el => el.style.display = 'table-cell');
-            renderArticles(allArticles);
-        } else {
-            const filteredByRole = allArticles.filter(article => 
-                article.role && article.role.name === currentUserRole
-            );
-            renderArticles(filteredByRole);
-        }
-    } catch (error) {
-        console.error('Error fetching articles:', error);
-        loadingMessage.style.display = 'none';
-        errorMessage.style.display = 'block';
-        errorMessage.textContent = 'Failed to load articles. Please try again later.';
-    }
-}
-            
-            async function fetchUserRole() {
-                if (!loggedInUserId) {
-                    console.error('No user logged in.');
-                    userInfoDisplay.textContent = 'No user logged in.';
-                    return;
-                }
-                try {
-                    const response = await fetch(`/api/users/${loggedInUserId}`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const user = await response.json();
-                    currentUserRole = user.roleName;
-                    currentUserCin = user.userCin;
-                    userInfoDisplay.textContent = ``;
-
-                    if (currentUserRole === 'Admin') {
-                        roleFilterContainer.style.display = 'block';
-                    }
-                } catch (error) {
-                    console.error('Error fetching user role:', error);
-                    userInfoDisplay.textContent = 'Error loading user info.';
-                }
-            }
-
-            async function fetchRolesAndPopulateDropdown() {
-                try {
-                    const response = await fetch('/api/roles');
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    allRoles = await response.json();
-                    
-                    rolesDropdown.innerHTML = '';
-                    allRoles.forEach(role => {
-                        const label = document.createElement('label');
-                        label.innerHTML = `
-                            <input type="checkbox" name="role" value="${role.name}"> ${role.name}
-                        `;
-                        rolesDropdown.appendChild(label);
-                    });
-
-                    rolesDropdown.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                        checkbox.addEventListener('change', function() {
-                            const label = this.closest('label');
-                            if (this.checked) {
-                                selectedRoles.push(this.value);
-                                label.classList.add('selected-role');
-                            } else {
-                                selectedRoles = selectedRoles.filter(role => role !== this.value);
-                                label.classList.remove('selected-role');
-                            }
-                            filterAndRenderArticles();
-                        });
-                    });
-                } catch (error) {
-                    console.error('Error fetching roles:', error);
-                }
-            }
-
-            function setupEventListeners() {
-                articlesListBody.addEventListener('click', function(event) {
-                    const target = event.target;
-                    if (target.classList.contains('sold-button')) {
-                        const articleId = target.dataset.articleId;
-                        const currentQte = target.dataset.qte;
-                        handleSellArticle(articleId, currentQte, currentUserCin);
-                    } else if (target.classList.contains('change-depo-button')) {
-                        const articleId = target.dataset.articleId;
-                        const currentQte = target.dataset.qte;
-                        handleChangeDepo(articleId, currentQte, currentUserCin);
-                    }
-                });
-
-                searchInput.addEventListener('keyup', filterAndRenderArticles);
-                toggleRolesButton.addEventListener('click', () => {
-                    rolesDropdown.style.display = rolesDropdown.style.display === 'none' ? 'block' : 'none';
-                });
-                
-                logoutButtonMainHeader.addEventListener('click', function() {
-                    sessionStorage.removeItem('loggedInUserId');
-                    window.location.href = '/index.html';
-                });
-            }
-
+        
+            articlesListBody = document.getElementById('articles-list-body');
+            searchInput = document.getElementById('article-search');
+            loadingMessage = document.getElementById('loading-message');
+            errorMessage = document.getElementById('error-message');
+            roleFilterContainer = document.getElementById('role-filter-container');
+            toggleRolesButton = document.getElementById('toggle-roles-button');
+            rolesDropdown = document.getElementById('roles-dropdown');
+            roleHeaderCol = document.getElementById('role-header-col');
+            loggedInUserId = sessionStorage.getItem('loggedInUserId');
+            userInfoDisplay = document.getElementById('user-info-display');
+            logoutButtonMainHeader = document.getElementById('logout-button-main-header');
+        
             await fetchUserRole();
             if (currentUserRole === 'Admin') {
                 await fetchRolesAndPopulateDropdown();

@@ -409,4 +409,28 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while updating the article.");
         }
     }
+
+    @PutMapping("/articles/{articleId}/add-from-depo")
+    public ResponseEntity<?> addFromDepoAndIncreaseQuantity(@PathVariable Long articleId, @RequestBody Map<String, Object> payload) {
+        try {
+            Number quantityNumber = (Number) payload.get("quantityChange");
+            if (quantityNumber == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantity is required.");
+            }
+            int quantityToAdd = quantityNumber.intValue();
+            String newLocation = (String) payload.get("newLocation");
+            String recordedBy = (String) payload.get("recordedBy");
+
+            if (newLocation == null || newLocation.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("New location is required.");
+            }
+
+            articleService.addFromDepoAndIncreaseQuantity(articleId, quantityToAdd, newLocation, recordedBy);
+            return ResponseEntity.ok("Article quantity and location updated successfully.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while updating the article.");
+        }
+    }
 }
