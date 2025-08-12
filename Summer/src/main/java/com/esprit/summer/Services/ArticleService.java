@@ -174,95 +174,39 @@ public class ArticleService {
 
     @Transactional
     public Optional<Article> changeDepoAndReduceQuantity(Long articleId, int quantityToChange, String newLocation, String recordedBy) {
-        Optional<Article> sourceArticleOptional = articleRepo.findById(articleId);
-        if (sourceArticleOptional.isEmpty()) {
-            throw new IllegalArgumentException("Source article not found with ID: " + articleId);
+        Optional<Article> articleOptional = articleRepo.findById(articleId);
+        if (articleOptional.isEmpty()) {
+            throw new IllegalArgumentException("Article not found with ID: " + articleId);
         }
 
-        Article sourceArticle = sourceArticleOptional.get();
-        int currentQuantity = sourceArticle.getQte();
+        Article article = articleOptional.get();
+        int currentQuantity = article.getQte();
 
         if (quantityToChange <= 0 || quantityToChange > currentQuantity) {
             throw new IllegalArgumentException("Invalid quantity for depot change.");
         }
 
-        String oldLocation = sourceArticle.getLocation();
+        // Capture the original location before updating quantity
+        String oldLocation = article.getLocation();
 
-        // 1. Reduce quantity from the source article
-        int newSourceQuantity = currentQuantity - quantityToChange;
-        sourceArticle.setQte(newSourceQuantity);
-        articleRepo.save(sourceArticle);
+        // Reduce the quantity of the existing article
+        int newQuantity = currentQuantity - quantityToChange;
+        article.setQte(newQuantity);
+        Article updatedArticle = articleRepo.save(article);
 
-        // 2. Find or create the destination article
-        Optional<Article> destinationArticleOptional = articleRepo.findByCodeArticleAndLocation(sourceArticle.getCodeArticle(), newLocation);
-
-        if (destinationArticleOptional.isPresent()) {
-            // If the article already exists at the destination, just increase its quantity
-            Article destinationArticle = destinationArticleOptional.get();
-            destinationArticle.setQte(destinationArticle.getQte() + quantityToChange);
-            articleRepo.save(destinationArticle);
-
-            // Record the movement for the addition to the destination
-            ArticleMovement destinationMovement = ArticleMovement.builder()
-                    .article(destinationArticle)
-                    .quantityChange(quantityToChange)
-                    .reason(Reason.ChangeDepo)
-                    .fromLocation(oldLocation)
-                    .toLocation(newLocation)
-                    .timestamp(LocalDateTime.now())
-                    .recordedBy(recordedBy)
-                    .build();
-            articleMovementRepo.save(destinationMovement);
-
-        } else {
-            // If the article does not exist at the destination, create a new one
-            Article newArticle = new Article();
-            newArticle.setCodeArticle(sourceArticle.getCodeArticle());
-            newArticle.setDesignation(sourceArticle.getDesignation() + " (" + newLocation + ")");
-            newArticle.setUm(sourceArticle.getUm());
-            newArticle.setQte(quantityToChange);
-            newArticle.setMinmumStock(sourceArticle.getMinmumStock());
-            newArticle.setUnite(sourceArticle.getUnite());
-            newArticle.setLocation(newLocation);
-            newArticle.setEtagere(sourceArticle.getEtagere());
-            newArticle.setEtat(sourceArticle.getEtat());
-            newArticle.setDate(sourceArticle.getDate());
-            newArticle.setMovementTimeframe(sourceArticle.getMovementTimeframe());
-            newArticle.setFastSalesThreshold(sourceArticle.getFastSalesThreshold());
-            newArticle.setMediumSalesThreshold(sourceArticle.getMediumSalesThreshold());
-            newArticle.setRole(sourceArticle.getRole());
-            newArticle.setReservedByWho(sourceArticle.getReservedByWho());
-            newArticle.setReservedToWho(sourceArticle.getReservedToWho());
-            newArticle.setAddedBy(sourceArticle.getAddedBy());
-
-            Article savedNewArticle = articleRepo.save(newArticle);
-
-            // Record the movement for the creation of the new article
-            ArticleMovement creationMovement = ArticleMovement.builder()
-                    .article(savedNewArticle)
-                    .quantityChange(quantityToChange)
-                    .reason(Reason.ChangeDepo)
-                    .fromLocation(oldLocation)
-                    .toLocation(newLocation)
-                    .timestamp(LocalDateTime.now())
-                    .recordedBy(recordedBy)
-                    .build();
-            articleMovementRepo.save(creationMovement);
-        }
-
-        // Record the movement for the reduction from the source article
-        ArticleMovement sourceMovement = ArticleMovement.builder()
-                .article(sourceArticle)
-                .quantityChange(-quantityToChange)
+        // Record a single movement for the depot change
+        ArticleMovement movement = ArticleMovement.builder()
+                .article(updatedArticle)
+                .quantityChange(-quantityToChange) // Quantity is negative as it is leaving this location
                 .reason(Reason.ChangeDepo)
                 .fromLocation(oldLocation)
-                .toLocation(newLocation)
+                .toLocation(newLocation) // New location is recorded here
                 .timestamp(LocalDateTime.now())
                 .recordedBy(recordedBy)
                 .build();
-        articleMovementRepo.save(sourceMovement);
+        articleMovementRepo.save(movement);
 
-        return Optional.of(sourceArticle);
+        return Optional.of(updatedArticle);
     }
 
     @Transactional
