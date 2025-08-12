@@ -34,6 +34,50 @@ public class ArticleMovement {
     private String recordedBy;
 
 
+    private String client;
+    private String clientZone;
+    private String clientActivityDomain;
+    private String priseEnCharge;
+
+
+
+
+
+
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
+    }
+
+
+    public String getClientZone() {
+        return clientZone;
+    }
+
+    public void setClientZone(String clientZone) {
+        this.clientZone = clientZone;
+    }
+
+    public String getClientActivityDomain() {
+        return clientActivityDomain;
+    }
+
+    public void setClientActivityDomain(String clientActivityDomain) {
+        this.clientActivityDomain = clientActivityDomain;
+    }
+
+    public String getPriseEnCharge() {
+        return priseEnCharge;
+    }
+
+    public void setPriseEnCharge(String priseEnCharge) {
+        this.priseEnCharge = priseEnCharge;
+    }
+
     public Long getMovementId() {
         return movementId;
     }

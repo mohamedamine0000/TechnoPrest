@@ -367,7 +367,6 @@ public class UserController {
         }
     }
 
-    // Corrected sellArticle method
     @PutMapping("/{articleId}/sell")
     public ResponseEntity<?> sellArticle(@PathVariable Long articleId, @RequestBody Map<String, Object> payload) {
         try {
@@ -378,7 +377,14 @@ public class UserController {
             int quantityToSell = quantityNumber.intValue();
             String recordedBy = (String) payload.get("recordedBy");
 
-            articleService.sellArticle(articleId, quantityToSell, recordedBy);
+            // Extract the new fields from the payload
+            String client = (String) payload.get("client");
+            String clientZone = (String) payload.get("clientZone");
+            String clientActivityDomain = (String) payload.get("clientActivityDomain");
+            String priseEnCharge = (String) payload.get("priseEnCharge");
+
+            // Call the service method with all the new parameters
+            articleService.sellArticle(articleId, quantityToSell, recordedBy, client, clientZone, clientActivityDomain, priseEnCharge);
             return ResponseEntity.ok("Article quantity updated successfully.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

@@ -285,7 +285,33 @@
                 return;
             }
             
+            const client = prompt('Enter client name:');
+            if (client === null || client === '') {
+                alert('Client name cannot be empty.');
+                return;
+            }
+
+            const clientZone = prompt('Enter client zone:');
+            if (clientZone === null || clientZone === '') {
+                alert('Client zone cannot be empty.');
+                return;
+            }
+
+            const clientActivityDomain = prompt('Enter client activity domain:');
+            if (clientActivityDomain === null || clientActivityDomain === '') {
+                alert('Client activity domain cannot be empty.');
+                return;
+            }
+            
+            const priseEnCharge = prompt('Enter prise en charge:');
+            if (priseEnCharge === null || priseEnCharge === '') {
+                alert('Prise en charge cannot be empty.');
+                return;
+            }
+
             const qte = parseInt(quantityToSell, 10);
+
+            
 
             if (isNaN(qte) || qte <= 0 || qte > currentQte) {
                 alert(`Invalid quantity. Please enter a positive number not greater than ${currentQte}.`);
@@ -294,7 +320,11 @@
 
             const payload = {
                 quantityChange: qte,
-                recordedBy: userCin
+                recordedBy: userCin,
+                client: client,
+                clientZone: clientZone,
+                clientActivityDomain: clientActivityDomain,
+                priseEnCharge: priseEnCharge
             };
 
             try {

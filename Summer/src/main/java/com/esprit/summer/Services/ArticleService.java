@@ -139,9 +139,8 @@ public class ArticleService {
         return articleRepo.findAll();
     }
 
-    // NEW METHOD FOR SELLING ARTICLES
     @Transactional
-    public Optional<Article> sellArticle(Long articleId, int quantityToSell, String recordedBy) {
+    public Optional<Article> sellArticle(Long articleId, int quantityToSell, String recordedBy, String client, String clientZone, String clientActivityDomain, String priseEnCharge) {
         Optional<Article> articleOptional = articleRepo.findById(articleId);
         if (articleOptional.isPresent()) {
             Article article = articleOptional.get();
@@ -155,15 +154,19 @@ public class ArticleService {
             article.setQte(newQuantity);
             Article updatedArticle = articleRepo.save(article);
 
-            // Record the movement with the correct recordedBy and reason
+            // Record the movement with all the new fields
             ArticleMovement movement = ArticleMovement.builder()
                     .article(updatedArticle)
                     .quantityChange(-quantityToSell)
-                    .reason(Reason.Sold) // Explicitly set the reason to Sold
+                    .reason(Reason.Sold)
                     .fromLocation(updatedArticle.getLocation())
                     .toLocation(updatedArticle.getLocation())
                     .timestamp(LocalDateTime.now())
-                    .recordedBy(recordedBy) // This will be the user's CIN
+                    .recordedBy(recordedBy)
+                    .client(client)
+                    .clientZone(clientZone)
+                    .clientActivityDomain(clientActivityDomain)
+                    .priseEnCharge(priseEnCharge)
                     .build();
             articleMovementRepo.save(movement);
 
@@ -171,7 +174,6 @@ public class ArticleService {
         }
         return Optional.empty();
     }
-
     @Transactional
     public Optional<Article> changeDepoAndReduceQuantity(Long articleId, int quantityToChange, String newLocation, String recordedBy) {
         Optional<Article> articleOptional = articleRepo.findById(articleId);
