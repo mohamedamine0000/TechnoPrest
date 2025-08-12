@@ -510,6 +510,10 @@
             }
             articlesToDisplay.forEach(article => {
                 const row = articlesListBody.insertRow();
+                // Add a data-id attribute to the row for a click listener
+                row.dataset.articleId = article.articleId;
+                row.style.cursor = 'pointer'; // Add a cursor pointer to indicate it's clickable
+
                 const roleName = article.role && article.role.name ? article.role.name : 'N/A';
                 
                 const soldButton = `<button class="sold-button" data-article-id="${article.articleId}" data-qte="${article.qte}" ${article.qte <= 0 ? 'disabled' : ''}>Sold</button>`;
@@ -517,9 +521,11 @@
                 const { speed, cssClass } = calculateMovementSpeed(article, allMovements);
                 const addDepoButton = `<button class="add-depo-button" data-article-id="${article.articleId}">Add from Depo</button>`;
 
+                const designationWithLocation = article.location ? `${article.designation} (${article.location})` : article.designation;
+
                 row.innerHTML = `
                     <td>${article.codeArticle}</td>
-                    <td>${article.designation}</td>
+                    <td>${designationWithLocation}</td>
                     <td>${article.qte}</td>
                     <td class="article-role-col">${roleName}</td>
                     <td class="movement-speed-cell ${cssClass}">${speed}</td>
@@ -645,9 +651,18 @@
         }
         
         // This function is now in the global scope
-        function setupEventListeners() {
+       function setupEventListeners() {
            articlesListBody.addEventListener('click', function(event) {
                 const target = event.target;
+                
+                // Add new logic to handle clicks on the table row itself
+                const row = target.closest('tr');
+                if (row && row.dataset.articleId && !target.closest('button')) {
+                    window.location.href = `/ArticleDetail.html?id=${row.dataset.articleId}`;
+                    return; // Exit to prevent button actions from also being triggered
+                }
+
+                // Existing logic for buttons
                 if (target.classList.contains('sold-button')) {
                     const articleId = target.dataset.articleId;
                     const currentQte = target.dataset.qte;
@@ -656,7 +671,7 @@
                     const articleId = target.dataset.articleId;
                     const currentQte = target.dataset.qte;
                     window.handleChangeDepo(articleId, currentQte, currentUserCin);
-                } else if (target.classList.contains('add-depo-button')) { // Add this new block
+                } else if (target.classList.contains('add-depo-button')) {
                     const articleId = target.dataset.articleId;
                     window.handleAddFromDepo(articleId, currentUserCin);
                 }

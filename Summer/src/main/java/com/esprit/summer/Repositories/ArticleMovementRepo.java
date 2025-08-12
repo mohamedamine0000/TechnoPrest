@@ -13,4 +13,5 @@ public interface ArticleMovementRepo extends JpaRepository<ArticleMovement, Long
     List<ArticleMovement> findByArticleAndTimestampBetweenAndReasonIsNot(Article article, LocalDateTime startDate, LocalDateTime endDate, Reason reasonToExclude);
     List<ArticleMovement> findByArticleAndTimestampBetween(Article article, LocalDateTime startDate, LocalDateTime endDate);
     long countByArticleAndReasonAndTimestampBetween(Article article, Reason reason, LocalDateTime startDate, LocalDateTime endDate);
+    List<ArticleMovement> findByArticle(Article article);
 }

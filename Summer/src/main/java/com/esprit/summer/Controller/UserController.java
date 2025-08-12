@@ -439,4 +439,28 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while updating the article.");
         }
     }
+
+
+    @GetMapping("/articles/{articleId}/movements")
+    public ResponseEntity<List<ArticleMovement>> getArticleMovements(@PathVariable Long articleId) {
+        Optional<Article> articleOptional = articleRepo.findById(articleId);
+        if (articleOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Article article = articleOptional.get();
+        List<ArticleMovement> movements = articleMovementRepo.findByArticle(article);
+        return ResponseEntity.ok(movements);
+    }
+    @GetMapping("/articles/distribution/location")
+    public ResponseEntity<Map<String, Integer>> getArticleDistributionByLocation() {
+        List<Article> allArticles = articleRepo.findAll();
+        Map<String, Integer> distribution = new HashMap<>();
+
+        for (Article article : allArticles) {
+            String location = article.getLocation();
+            distribution.put(location, distribution.getOrDefault(location, 0) + article.getQte());
+        }
+
+        return ResponseEntity.ok(distribution);
+    }
 }
