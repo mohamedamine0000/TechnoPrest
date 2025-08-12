@@ -451,6 +451,30 @@ public class UserController {
         List<ArticleMovement> movements = articleMovementRepo.findByArticle(article);
         return ResponseEntity.ok(movements);
     }
+    @GetMapping("/articles/{articleId}/distribution/movements")
+    public ResponseEntity<Map<String, Integer>> getArticleMovementDistribution(@PathVariable Long articleId) {
+        Optional<Article> articleOptional = articleRepo.findById(articleId);
+        if (articleOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Article article = articleOptional.get();
+        List<ArticleMovement> movements = articleMovementRepo.findByArticle(article);
+
+        Map<String, Integer> distribution = new HashMap<>();
+        for (ArticleMovement movement : movements) {
+            // Only consider sales movements (negative quantity change)
+            if (movement.getQuantityChange() < 0) {
+                String clientZone = movement.getClientZone();
+                // Add a null and empty string check
+                if (clientZone != null && !clientZone.trim().isEmpty()) {
+                    int quantity = Math.abs(movement.getQuantityChange());
+                    distribution.put(clientZone, distribution.getOrDefault(clientZone, 0) + quantity);
+                }
+            }
+        }
+
+        return ResponseEntity.ok(distribution);
+    }
     @GetMapping("/articles/distribution/location")
     public ResponseEntity<Map<String, Integer>> getArticleDistributionByLocation() {
         List<Article> allArticles = articleRepo.findAll();

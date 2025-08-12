@@ -45,7 +45,7 @@
             color: #333;
             text-decoration: none;
         }
-        
+
         .article-details-container {
             max-width: 800px;
             margin: 0 auto;
@@ -60,14 +60,14 @@
             color: #333;
             margin-bottom: 1em;
         }
-        
+
         .detail-item {
             display: flex;
             justify-content: space-between;
             padding: 0.5em 0;
             border-bottom: 1px solid #eee;
         }
-        
+
         .detail-item:last-child {
             border-bottom: none;
         }
@@ -110,13 +110,13 @@
                 <div class="article-details-container">
                     <h2 id="article-designation">Loading...</h2>
                     <div id="article-details-content">
-                        </div>
+                    </div>
                 </div>
 
                 <div class="charts-container">
                     <div class="chart-box">
-                        <h3>Article Quantity Distribution by Location</h3>
-                        <canvas id="location-pie-chart"></canvas>
+                        <h3>Sales Distribution by Client Zone</h3>
+                        <canvas id="movement-pie-chart"></canvas>
                     </div>
                     <div class="chart-box">
                         <h3>Movement History</h3>
@@ -146,7 +146,7 @@
                 }
                 const article = await response.json();
                 renderArticleDetails(article);
-                renderGraphs(article.movementTimeframe);
+                renderGraphs(article.movementTimeframe, articleId);
 
             } catch (error) {
                 console.error('Error fetching article details:', error);
@@ -178,26 +178,26 @@
             `;
         }
 
-        async function renderGraphs(timeframe) {
+        async function renderGraphs(timeframe, articleId) {
             await Promise.all([
-                drawLocationPieChart(),
-                drawLineChart(timeframe)
+                drawMovementPieChart(articleId),
+                drawLineChart(timeframe, articleId)
             ]);
         }
 
-        async function drawLocationPieChart() {
+        async function drawMovementPieChart(articleId) {
             try {
-                // Corrected API URL
-                const response = await fetch('/api/users/articles/distribution/location');
+                // New API call to get sales distribution by client zone for the specific article
+                const response = await fetch(`/api/users/articles/${articleId}/distribution/movements`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                
+
                 const labels = Object.keys(data);
                 const values = Object.values(data);
 
-                const ctx = document.getElementById('location-pie-chart').getContext('2d');
+                const ctx = document.getElementById('movement-pie-chart').getContext('2d');
                 new Chart(ctx, {
                     type: 'pie',
                     data: {
@@ -222,23 +222,18 @@
                     }
                 });
             } catch (error) {
-                console.error('Error fetching location distribution data:', error);
+                console.error('Error fetching movement distribution data:', error);
             }
         }
-        
-        async function drawLineChart(timeframe) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const articleId = urlParams.get('id');
 
+        async function drawLineChart(timeframe, articleId) {
             try {
-                // Corrected API URL
                 const response = await fetch(`/api/users/articles/${articleId}/movements`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const movements = await response.json();
-                
-                // Aggregate data based on the timeframe
+
                 const aggregatedData = aggregateMovementsByTimeframe(movements, timeframe);
 
                 const ctx = document.getElementById('movement-line-chart').getContext('2d');
@@ -302,7 +297,6 @@
                     startDate = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
                     break;
                 default:
-                    // Default to month if no timeframe is specified
                     startDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
                     break;
             }
@@ -318,13 +312,13 @@
                     } else if (timeframe === 'YEAR') {
                         dateKey = `${movementDate.getFullYear()}-${movementDate.getMonth() + 1}`;
                     } else {
-                        dateKey = movementDate.toLocaleDateString(); // Default
+                        dateKey = movementDate.toLocaleDateString();
                     }
 
                     if (!data[dateKey]) {
                         data[dateKey] = { bought: 0, sold: 0 };
                     }
-                    
+
                     if (m.quantityChange > 0) {
                         data[dateKey].bought += m.quantityChange;
                     } else if (m.quantityChange < 0) {
