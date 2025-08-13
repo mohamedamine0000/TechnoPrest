@@ -514,6 +514,10 @@ public class UserController {
         existingArticle.setReservedByWho(updatedArticle.getReservedByWho());
         existingArticle.setReservedToWho(updatedArticle.getReservedToWho());
 
+        // CRITICAL FIX: The date and role fields were not being updated.
+        existingArticle.setDate(updatedArticle.getDate());
+        existingArticle.setRole(updatedArticle.getRole());
+
         Article savedArticle = articleRepo.save(existingArticle);
         return new ResponseEntity<>(savedArticle, HttpStatus.OK);
     }

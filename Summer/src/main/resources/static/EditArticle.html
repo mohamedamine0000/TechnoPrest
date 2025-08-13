@@ -207,15 +207,7 @@
                                     </select>
                                 </div>
                             </div>
-                             <div class="col-6 col-12-xsmall">
-                                <label for="reason">Movement Reason</label>
-                                <div class="select-wrapper">
-                                    <select name="reason" id="reason" required>
-                                        <option value="Bought" selected>Bought</option>
-                                        <option value="ChangeDepo">ChangeDepo</option>
-                                    </select>
-                                </div>
-                            </div>
+                            
                             <div id="from-location-container" class="col-12" style="display: none;">
                                 <div class="row gtr-uniform">
                                     <div class="col-12 col-12-xsmall">
@@ -420,7 +412,7 @@
             const roleSelect = document.getElementById('role');
             const roleErrorSpan = document.getElementById('role-error');
 
-            const reasonSelect = document.getElementById('reason');
+          
             const fromLocationContainer = document.getElementById('from-location-container');
             const fromLocationInput = document.getElementById('fromLocation');
 
@@ -431,6 +423,63 @@
             const movementTimeframeInput = document.getElementById('movement-timeframe');
             const fastSalesThresholdInput = document.getElementById('fast-sales-threshold');
             const mediumSalesThresholdInput = document.getElementById('medium-sales-threshold');
+
+
+            async function initializeRoleDropdown(articleRole) {
+                if (!loggedInUserId) {
+                    console.error('No logged in user ID found in session storage.');
+                    return;
+                }
+
+                try {
+                    const userResponse = await fetch(`/api/users/${loggedInUserId}`);
+                    if (!userResponse.ok) {
+                        throw new Error(`Failed to fetch user data. Status: ${userResponse.status}`);
+                    }
+                    const userData = await userResponse.json();
+                    currentUserRole = userData.roleName;
+
+                    const rolesResponse = await fetch('/api/roles');
+                    if (!rolesResponse.ok) {
+                        throw new Error(`Failed to load roles. Status: ${rolesResponse.status}`);
+                    }
+                    const roles = await rolesResponse.json();
+
+                    roleSelect.innerHTML = '';
+                    
+                    if (currentUserRole.toLowerCase() === 'admin') {
+                        roles.forEach(role => {
+                            const option = document.createElement('option');
+                            option.value = role.id;
+                            option.textContent = role.name;
+                            roleSelect.appendChild(option);
+                        });
+                        roleSelect.disabled = false;
+                    } else {
+                         const userRoleData = roles.find(role => role.name === currentUserRole);
+                         if (userRoleData) {
+                            const option = document.createElement('option');
+                            option.value = userRoleData.id;
+                            option.textContent = userRoleData.name;
+                            option.selected = true;
+                            roleSelect.appendChild(option);
+                         }
+                         roleSelect.disabled = true;
+                    }
+                    
+                    if (articleRole && articleRole.id) {
+                        roleSelect.value = articleRole.id;
+                    }
+
+                } catch (error) {
+                    console.error('Error initializing role dropdown:', error);
+                    if (roleErrorSpan) {
+                         roleErrorSpan.textContent = 'Failed to load roles.';
+                         roleErrorSpan.style.display = 'block';
+                    }
+                }
+            }
+
 
             // Fetch and populate article data
             try {
@@ -449,10 +498,18 @@
                 locationInput.value = article.location || '';
                 etagereInput.value = article.etagere || '';
                 etatInput.value = article.etat || 'Disponible';
-                dateInput.value = article.date || '';
                 
-                // You may need to handle the role field if it's part of the article model, but it's not in the provided AddArticleManually.html.
-                // Assuming it's the same as the current user's role for simplicity, as per the add page logic.
+                // Corrected date formatting
+                if (article.date) {
+                    const dateObj = new Date(article.date);
+                    // Ensure the date is in YYYY-MM-DD format
+                    const formattedDate = dateObj.toISOString().split('T')[0];
+                    dateInput.value = formattedDate;
+                } else {
+                    dateInput.value = '';
+                }
+                
+                initializeRoleDropdown(article.role);
                 
                 movementTimeframeInput.value = article.movementTimeframe || 'WEEK';
                 fastSalesThresholdInput.value = article.fastSalesThreshold || '';
@@ -463,9 +520,6 @@
                     reservedToWhoInput.value = article.reservedToWho || '';
                     reserveFieldsContainer.style.display = 'flex';
                 }
-                
-                // Assuming the reason and fromLocation fields are for the initial movement and not part of the persistent article state.
-                // The form will default to 'Bought' and hide the 'fromLocation' field, which is a reasonable approach for an edit page.
                 
             } catch (error) {
                 console.error('Error fetching article data:', error);
@@ -486,74 +540,7 @@
                 });
             }
 
-            if (reasonSelect) {
-                reasonSelect.addEventListener('change', function() {
-                    if (this.value === 'ChangeDepo') {
-                        fromLocationContainer.style.display = 'flex';
-                        fromLocationInput.required = true;
-                    } else {
-                        fromLocationContainer.style.display = 'none';
-                        fromLocationInput.required = false;
-                        fromLocationInput.value = '';
-                    }
-                });
-            }
-            
-            async function initializeRoleDropdown() {
-                if (!loggedInUserId) {
-                    console.error('No logged in user ID found in session storage.');
-                    return;
-                }
-
-                try {
-                    const userResponse = await fetch(`/api/users/${loggedInUserId}`);
-                    if (!userResponse.ok) {
-                        throw new Error(`Failed to fetch user data. Status: ${userResponse.status}`);
-                    }
-                    const userData = await userResponse.json();
-                    currentUserRole = userData.roleName;
-                    currentUserCin = userData.userCin;
-
-                    const rolesResponse = await fetch('/api/roles');
-                    if (!rolesResponse.ok) {
-                        throw new Error(`Failed to load roles. Status: ${rolesResponse.status}`);
-                    }
-                    const roles = await rolesResponse.json();
-
-                    roleSelect.innerHTML = '';
-
-                    if (currentUserRole.toLowerCase() === 'admin') {
-                        roles.forEach(role => {
-                            if (role.name.toLowerCase() !== 'admin') {
-                                const option = document.createElement('option');
-                                option.value = role.id;
-                                option.textContent = role.name;
-                                roleSelect.appendChild(option);
-                            }
-                        });
-                        roleSelect.disabled = false;
-                    } else {
-                        const userRoleData = roles.find(role => role.name === currentUserRole);
-                        if (userRoleData) {
-                            const option = document.createElement('option');
-                            option.value = userRoleData.id;
-                            option.textContent = userRoleData.name;
-                            option.selected = true;
-                            roleSelect.appendChild(option);
-                        }
-                        roleSelect.disabled = true;
-                    }
-
-                } catch (error) {
-                    console.error('Error initializing role dropdown:', error);
-                    if (roleErrorSpan) {
-                         roleErrorSpan.textContent = 'Failed to load roles.';
-                         roleErrorSpan.style.display = 'block';
-                    }
-                }
-            }
-            
-            initializeRoleDropdown();
+          
             
             articleForm.addEventListener('submit', async function(event) {
                 event.preventDefault();
@@ -578,12 +565,11 @@
                     location: locationInput.value,
                     etagere: etagereInput.value,
                     etat: etatInput.value,
-                    date: dateInput.value, // Keep the date from the original object
-                    role: { // Keep the role from the original object
+                    date: dateInput.value,
+                    role: {
                         id: parseInt(roleSelect.value, 10)
                     },
-                    // These fields are for adding, not editing, so we can omit them or set them to null.
-                    reason: null,
+                    
                     fromLocation: null,
                     
                     movementTimeframe: movementTimeframeInput.value,
