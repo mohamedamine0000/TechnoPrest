@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Article</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Specific styles for the sidebar profile section, as requested */
+        .sidebar-profile-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1em 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-profile-summary .profile-info h3 {
+            margin: 0 0 0.25em 0;
+            color: darkgreen;
+            font-size: 1.25em;
+        }
+
+        .sidebar-profile-summary .profile-info p {
+            margin: 0;
+            color: darkgrey;
+            font-size: 0.9em;
+        }
+
+        .notification-bell-wrapper {
+            position: relative;
+            flex-shrink: 0;
+            margin-top: 0.2em;
+        }
+
+        .notification-bell-wrapper .notification-icon-link {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            color: #555;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 2.2em;
+            transition: color 0.3s ease;
+        }
+
+        .notification-bell-wrapper .notification-icon-link:hover {
+            color: #007bff;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -10px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 4px 8px;
+            font-size: 0.75em;
+            font-weight: bold;
+            min-width: 15px;
+            text-align: center;
+            line-height: 1;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        /* Modal specific styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+            color: #333;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* This is kept to style the user list within the modal, which is not part of the main template's default styles */
+        .user-list-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .user-list-item:last-child {
+            border-bottom: none;
+        }
+        .user-list-item:hover {
+            background-color: #f5f5f5;
+        }
+        .user-list-item-info {
+            flex-grow: 1;
+        }
+        .user-list-item-actions button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body class="is-preload">
+    <div id="wrapper">
+        <div id="main">
+            <div class="inner">
+                <header id="header">
+                    <a href="/profile.html" class="logo"><strong>My App</strong> Main Content</a>
+                    <ul class="icons">
+                        <li>
+                            <button id="logout-button-main-header" class="fas fa-sign-out-alt">
+                                <span class="label">Logout</span>
+                            </button>
+                        </li>
+                    </ul>
+                </header>
+
+                <section>
+                    <header class="main">
+                        <h1>Edit Article</h1>
+                    </header>
+
+                    <form id="edit-article-form">
+                        <div class="row gtr-uniform">
+                            <div class="col-6 col-12-xsmall">
+                                <label for="codeArticle">Article Code</label>
+                                <input type="text" id="codeArticle" name="codeArticle" required>
+                            </div>
+                            <div class="col-6 col-12-xsmall">
+                                <label for="designation">Designation</label>
+                                <input type="text" id="designation" name="designation" required>
+                            </div>
+                            <div class="col-6 col-12-xsmall">
+                                <label for="um">UM</label>
+                                <input type="text" id="um" name="um" required>
+                            </div>
+                            <div class="col-6 col-12-xsmall">
+                                <label for="qte">Quantity</label>
+                                <input type="number" id="qte" name="qte" value="0" min="0" required>
+                            </div>
+                            <div class="col-6 col-12-xsmall">
+                                <label for="minmumStock">Minimum Stock</label>
+                                <input type="number" id="minmumStock" name="minmumStock" value="0" min="0" required>
+                            </div>
+                            <div class="col-6 col-12-xsmall">
+                                <label for="unite">Unit</label>
+                                <input type="text" id="unite" name="unite" required>
+                            </div>
+                            <div class="col-6 col-12-xsmall">
+                                <label for="location">Location</label>
+                                <input type="text" id="location" name="location" required>
+                            </div>
+                            <div class="col-6 col-12-xsmall">
+                                <label for="etagere">Shelf</label>
+                                <input type="text" id="etagere" name="etagere" required>
+                            </div>
+                            <div class="col-6 col-12-xsmall">
+                                <label for="etat">State</label>
+                                <div class="select-wrapper">
+                                    <select name="etat" id="etat" required>
+                                        <option value="Disponible">Disponible</option>
+                                        <option value="Rupture">Rupture</option>
+                                        <option value="Reserve">Reserve</option>
+                                        <option value="CommandeEnCours">Commande En Cours</option>
+                                        <option value="PartiellementDisponible">Partiellement Disponible</option>
+                                    </select>
+                                </div>
+                            </div>
+                             <div class="col-6 col-12-xsmall">
+                                <label for="reason">Movement Reason</label>
+                                <div class="select-wrapper">
+                                    <select name="reason" id="reason" required>
+                                        <option value="Bought" selected>Bought</option>
+                                        <option value="ChangeDepo">ChangeDepo</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="from-location-container" class="col-12" style="display: none;">
+                                <div class="row gtr-uniform">
+                                    <div class="col-12 col-12-xsmall">
+                                        <label for="fromLocation">From Location</label>
+                                        <input type="text" id="fromLocation" name="fromLocation">
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="reserve-fields-container" class="col-12" style="display: none;">
+                                <div class="row gtr-uniform">
+                                    <div class="col-6 col-12-xsmall">
+                                        <label for="reservedByWho">Reserved By</label>
+                                        <input type="text" id="reservedByWho" name="reservedByWho">
+                                    </div>
+                                    <div class="col-6 col-12-xsmall">
+                                        <label for="reservedToWho">Reserved To</label>
+                                        <input type="text" id="reservedToWho" name="reservedToWho">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-12-xsmall">
+                                <label for="startDate">Date</label>
+                                <input type="date" id="startDate" name="startDate" required>
+                            </div>
+                            <div class="col-6 col-12-xsmall">
+                                <label for="role">Role</label>
+                                <div class="select-wrapper">
+                                    <select name="role" id="role" required>
+                                        <option value="" disabled selected>Loading roles...</option>
+                                    </select>
+                                </div>
+                                <span id="role-error" class="error-message" style="display: none;"></span>
+                            </div>
+                            
+                            <div class="col-6 col-12-xsmall">
+                                <label for="movement-timeframe">Sales Movement Timeframe</label>
+                                <div class="select-wrapper">
+                                    <select id="movement-timeframe" name="movementTimeframe" required>
+                                        <option value="WEEK">Week</option>
+                                        <option value="MONTH">Month</option>
+                                        <option value="YEAR">Year</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-6 col-12-xsmall">
+                                <label for="fast-sales-threshold">Fast Sales Threshold</label>
+                                <input type="number" id="fast-sales-threshold" name="fastSalesThreshold" required>
+                            </div>
+                            <div class="col-6 col-12-xsmall">
+                                <label for="medium-sales-threshold">Medium Sales Threshold</label>
+                                <input type="number" id="medium-sales-threshold" name="mediumSalesThreshold" required>
+                            </div>
+                            <div class="col-12">
+                                <ul class="actions">
+                                    <li><input type="submit" value="Save Changes" class="primary"></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </form>
+
+                </section>
+
+                <div id="loading-message" class="loading-message">
+                    Loading profile data...
+                </div>
+                <div id="error-message" class="error-message" style="display: none;">
+                    Could not load profile. Please try logging in again.
+                </div>
+            </div>
+        </div>
+
+        <div id="sidebar">
+            <div class="inner">
+                <section id="user-profile-sidebar-section" style="display: none;">
+                    <div class="sidebar-profile-summary">
+                        <div class="profile-info">
+                            <h3 id="profile-username-sidebar"></h3>
+                            <p>Role: <span id="profile-role-sidebar"></span></p>
+                        </div>
+                        <div class="notification-bell-wrapper">
+                            <a href="#" class="notification-icon-link" id="notification-bell-button">
+                                <i class="fas fa-bell"></i>
+                            </a>
+                            <span class="notification-badge" id="notification-count"></span>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="search" class="alt">
+                    <form method="post" action="#">
+                        <input type="text" name="query" id="query" placeholder="Search" />
+                    </form>
+                </section>
+
+                <nav id="menu">
+                    <header class="major">
+                        <h2>Menu</h2>
+                    </header>
+                     <ul>
+                        <li><a href="profile.html">Homepage</a></li>
+                        <li><a href="AddArticleManually.html">Add article manually</a></li>
+                        <li><a href="ListArticle.html">List of articles</a></li>
+                    
+                    </ul>
+                </nav>
+
+               
+            </div>
+        </div>
+    </div>
+
+    <div id="userListModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeUserListModal">&times;</span>
+            <h2>Users with 'Waiting' Status</h2>
+            <div id="waitingUsersList">
+                </div>
+        </div>
+    </div>
+
+    <div id="userDetailsModal" class="modal">
+        <div class="modal-content user-detail-modal-content">
+            <span class="close-button" id="closeUserDetailsModal">&times;</span>
+            <h3 id="detail-username"></h3>
+            <p><strong>CIN:</strong> <span id="detail-cin"></span></p>
+            <p><strong>Email:</strong> <span id="detail-email"></span></p>
+            <p><strong>Role:</strong> <span id="detail-role"></span></p>
+            <p><strong>Status:</strong> <span id="detail-status"></span></p>
+
+            <div class="diploma-proof-container">
+                <h4>Diploma Proof:</h4>
+                <img id="detail-diploma-proof" src="" alt="Diploma Proof" style="display: none;">
+                <p id="no-diploma-proof-message" style="display: none;">No diploma proof available.</p>
+            </div>
+
+            <div class="user-detail-actions">
+                <button class="accept-button" id="detail-accept-button">Accept</button>
+                <button class="deny-button" id="detail-deny-button">Deny</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/browser.min.js"></script>
+    <script src="assets/js/breakpoints.min.js"></script>
+    <script src="assets/js/util.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Your original script's DOMContentLoaded function starts here
+            const loggedInUserId = sessionStorage.getItem('loggedInUserId');
+            const userProfileSidebarSection = document.getElementById('user-profile-sidebar-section');
+            const loadingMessage = document.getElementById('loading-message');
+            const errorMessage = document.getElementById('error-message');
+            const logoutButtonMainHeader = document.getElementById('logout-button-main-header');
+            const notificationCountSpan = document.getElementById('notification-count');
+            const notificationBellButton = document.getElementById('notification-bell-button');
+            const notificationBellWrapper = document.querySelector('.notification-bell-wrapper');
+
+            const userListModal = document.getElementById('userListModal');
+            const closeUserListModal = document.getElementById('closeUserListModal');
+            const waitingUsersList = document.getElementById('waitingUsersList');
+
+            const userDetailsModal = document.getElementById('userDetailsModal');
+            const closeUserDetailsModal = document.getElementById('closeUserDetailsModal');
+            const detailUsername = document.getElementById('detail-username');
+            const detailCin = document.getElementById('detail-cin');
+            const detailEmail = document.getElementById('detail-email');
+            const detailRole = document.getElementById('detail-role');
+            const detailStatus = document.getElementById('detail-status');
+            const detailDiplomaProof = document.getElementById('detail-diploma-proof');
+            const noDiplomaProofMessage = document.getElementById('no-diploma-proof-message');
+            const detailAcceptButton = document.getElementById('detail-accept-button');
+            const detailDenyButton = document.getElementById('detail-deny-button');
+
+            let currentDiplomaProofUrl = null;
+            let currentUserRole = '';
+            let currentUserCin = '';
+
+            // ------------------ MODIFIED SCRIPT SECTION FOR EDITING ------------------
+            const urlParams = new URLSearchParams(window.location.search);
+            const articleId = urlParams.get('id');
+
+            if (!articleId) {
+                alert("Article ID not found.");
+                window.location.href = '/ListArticle.html';
+                return;
+            }
+
+            const articleForm = document.getElementById('edit-article-form');
+            
+            const codeArticleInput = document.getElementById('codeArticle');
+            const designationInput = document.getElementById('designation');
+            const umInput = document.getElementById('um');
+            const qteInput = document.getElementById('qte');
+            const minmumStockInput = document.getElementById('minmumStock');
+            const uniteInput = document.getElementById('unite');
+            const locationInput = document.getElementById('location');
+            const etagereInput = document.getElementById('etagere');
+            const etatInput = document.getElementById('etat');
+            const dateInput = document.getElementById('startDate');
+            const roleSelect = document.getElementById('role');
+            const roleErrorSpan = document.getElementById('role-error');
+
+            const reasonSelect = document.getElementById('reason');
+            const fromLocationContainer = document.getElementById('from-location-container');
+            const fromLocationInput = document.getElementById('fromLocation');
+
+            const reservedByWhoInput = document.getElementById('reservedByWho');
+            const reservedToWhoInput = document.getElementById('reservedToWho');
+            const reserveFieldsContainer = document.getElementById('reserve-fields-container');
+            
+            const movementTimeframeInput = document.getElementById('movement-timeframe');
+            const fastSalesThresholdInput = document.getElementById('fast-sales-threshold');
+            const mediumSalesThresholdInput = document.getElementById('medium-sales-threshold');
+
+            // Fetch and populate article data
+            try {
+                const response = await fetch(`/api/users/articles/${articleId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const article = await response.json();
+
+                codeArticleInput.value = article.codeArticle || '';
+                designationInput.value = article.designation || '';
+                umInput.value = article.um || '';
+                qteInput.value = article.qte || '';
+                minmumStockInput.value = article.minmumStock || '';
+                uniteInput.value = article.unite || '';
+                locationInput.value = article.location || '';
+                etagereInput.value = article.etagere || '';
+                etatInput.value = article.etat || 'Disponible';
+                dateInput.value = article.date || '';
+                
+                // You may need to handle the role field if it's part of the article model, but it's not in the provided AddArticleManually.html.
+                // Assuming it's the same as the current user's role for simplicity, as per the add page logic.
+                
+                movementTimeframeInput.value = article.movementTimeframe || 'WEEK';
+                fastSalesThresholdInput.value = article.fastSalesThreshold || '';
+                mediumSalesThresholdInput.value = article.mediumSalesThreshold || '';
+                
+                if (article.etat === 'Reserve') {
+                    reservedByWhoInput.value = article.reservedByWho || '';
+                    reservedToWhoInput.value = article.reservedToWho || '';
+                    reserveFieldsContainer.style.display = 'flex';
+                }
+                
+                // Assuming the reason and fromLocation fields are for the initial movement and not part of the persistent article state.
+                // The form will default to 'Bought' and hide the 'fromLocation' field, which is a reasonable approach for an edit page.
+                
+            } catch (error) {
+                console.error('Error fetching article data:', error);
+                alert('Could not retrieve article data. Please try again.');
+                window.location.href = '/ListArticle.html';
+                return;
+            }
+
+            if (etatInput) {
+                etatInput.addEventListener('change', function() {
+                    if (this.value === 'Reserve') {
+                        reserveFieldsContainer.style.display = 'flex';
+                    } else {
+                        reserveFieldsContainer.style.display = 'none';
+                        reservedByWhoInput.value = '';
+                        reservedToWhoInput.value = '';
+                    }
+                });
+            }
+
+            if (reasonSelect) {
+                reasonSelect.addEventListener('change', function() {
+                    if (this.value === 'ChangeDepo') {
+                        fromLocationContainer.style.display = 'flex';
+                        fromLocationInput.required = true;
+                    } else {
+                        fromLocationContainer.style.display = 'none';
+                        fromLocationInput.required = false;
+                        fromLocationInput.value = '';
+                    }
+                });
+            }
+            
+            async function initializeRoleDropdown() {
+                if (!loggedInUserId) {
+                    console.error('No logged in user ID found in session storage.');
+                    return;
+                }
+
+                try {
+                    const userResponse = await fetch(`/api/users/${loggedInUserId}`);
+                    if (!userResponse.ok) {
+                        throw new Error(`Failed to fetch user data. Status: ${userResponse.status}`);
+                    }
+                    const userData = await userResponse.json();
+                    currentUserRole = userData.roleName;
+                    currentUserCin = userData.userCin;
+
+                    const rolesResponse = await fetch('/api/roles');
+                    if (!rolesResponse.ok) {
+                        throw new Error(`Failed to load roles. Status: ${rolesResponse.status}`);
+                    }
+                    const roles = await rolesResponse.json();
+
+                    roleSelect.innerHTML = '';
+
+                    if (currentUserRole.toLowerCase() === 'admin') {
+                        roles.forEach(role => {
+                            if (role.name.toLowerCase() !== 'admin') {
+                                const option = document.createElement('option');
+                                option.value = role.id;
+                                option.textContent = role.name;
+                                roleSelect.appendChild(option);
+                            }
+                        });
+                        roleSelect.disabled = false;
+                    } else {
+                        const userRoleData = roles.find(role => role.name === currentUserRole);
+                        if (userRoleData) {
+                            const option = document.createElement('option');
+                            option.value = userRoleData.id;
+                            option.textContent = userRoleData.name;
+                            option.selected = true;
+                            roleSelect.appendChild(option);
+                        }
+                        roleSelect.disabled = true;
+                    }
+
+                } catch (error) {
+                    console.error('Error initializing role dropdown:', error);
+                    if (roleErrorSpan) {
+                         roleErrorSpan.textContent = 'Failed to load roles.';
+                         roleErrorSpan.style.display = 'block';
+                    }
+                }
+            }
+            
+            initializeRoleDropdown();
+            
+            articleForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                if (!loggedInUserId) {
+                    displayMessageBox('You must be logged in to edit an article.', 'error');
+                    return;
+                }
+
+                if (!roleSelect.value) {
+                    displayMessageBox('Please select a role before submitting.', 'error');
+                    return;
+                }
+                
+                const updatedArticleData = {
+                    codeArticle: codeArticleInput.value,
+                    designation: designationInput.value,
+                    um: umInput.value,
+                    qte: parseInt(qteInput.value, 10),
+                    minmumStock: parseInt(minmumStockInput.value, 10),
+                    unite: uniteInput.value,
+                    location: locationInput.value,
+                    etagere: etagereInput.value,
+                    etat: etatInput.value,
+                    date: dateInput.value, // Keep the date from the original object
+                    role: { // Keep the role from the original object
+                        id: parseInt(roleSelect.value, 10)
+                    },
+                    // These fields are for adding, not editing, so we can omit them or set them to null.
+                    reason: null,
+                    fromLocation: null,
+                    
+                    movementTimeframe: movementTimeframeInput.value,
+                    fastSalesThreshold: parseInt(fastSalesThresholdInput.value, 10),
+                    mediumSalesThreshold: parseInt(mediumSalesThresholdInput.value, 10),
+                    reservedByWho: reservedByWhoInput.value,
+                    reservedToWho: reservedToWhoInput.value
+                };
+                
+                try {
+                    const response = await fetch(`/api/users/articles/${articleId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(updatedArticleData)
+                    });
+
+                    if (response.ok) {
+                        displayMessageBox('Article updated successfully!', 'success');
+                        setTimeout(() => {
+                           window.location.href = `/ArticleDetail.html?id=${articleId}`;
+                        }, 2000);
+                    } else {
+                        let errorData = await response.json().catch(() => ({ message: 'Could not parse error response.' }));
+                        displayMessageBox(`Error updating article: ${errorData.message || 'Unknown error.'}`, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error submitting form:', error);
+                    displayMessageBox('An unexpected network error occurred. Check if the server is running and the URL is correct.', 'error');
+                }
+            });
+
+            // ------------------ END OF MODIFIED SCRIPT SECTION ------------------
+
+
+            async function fetchWaitingUsers() {
+                try {
+                    const response = await fetch('/api/users/waiting');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const users = await response.json();
+                    waitingUsersList.innerHTML = '';
+
+                    if (users.length === 0) {
+                        waitingUsersList.innerHTML = '<p>No users with "Waiting" status.</p>';
+                        notificationCountSpan.textContent = '0';
+                    } else {
+                        notificationCountSpan.textContent = users.length;
+                        users.forEach(user => {
+                            const userItem = document.createElement('div');
+                            userItem.classList.add('user-list-item');
+                            userItem.innerHTML = `
+                                <div class="user-list-item-info">
+                                    <strong>${user.username}</strong> (Role: ${user.roleName})
+                                </div>
+                                <div class="user-list-item-actions">
+                                    <button class="accept-button" data-user-id="${user.userId}" data-action="accept">Accept</button>
+                                    <button class="deny-button" data-user-id="${user.userId}" data-action="deny">Deny</button>
+                                </div>
+                            `;
+                            userItem.addEventListener('click', (event) => {
+                                if (event.target.tagName === 'BUTTON') {
+                                    return;
+                                }
+                                showUserDetails(user.userId);
+                            });
+                            waitingUsersList.appendChild(userItem);
+                        });
+
+                        waitingUsersList.querySelectorAll('.accept-button').forEach(button => {
+                            button.addEventListener('click', (event) => {
+                                event.stopPropagation();
+                                const userId = event.target.dataset.userId;
+                                updateStatus(userId, 'Accepted');
+                            });
+                        });
+                        waitingUsersList.querySelectorAll('.deny-button').forEach(button => {
+                            button.addEventListener('click', (event) => {
+                                event.stopPropagation();
+                                const userId = event.target.dataset.userId;
+                                deleteUser(userId);
+                            });
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error fetching waiting users:', error);
+                    waitingUsersList.innerHTML = '<p>Failed to load waiting users.</p>';
+                    notificationCountSpan.textContent = '0';
+                }
+            }
+
+            async function showUserDetails(userId) {
+                detailDiplomaProof.style.display = 'none';
+                detailDiplomaProof.src = '';
+                noDiplomaProofMessage.style.display = 'none';
+
+                if (currentDiplomaProofUrl) {
+                    URL.revokeObjectURL(currentDiplomaProofUrl);
+                    currentDiplomaProofUrl = null;
+                }
+
+                try {
+                    const userResponse = await fetch(`/api/users/${userId}`);
+                    if (!userResponse.ok) {
+                        throw new Error(`HTTP error! status: ${userResponse.status}`);
+                    }
+                    const user = await userResponse.json();
+
+                    detailUsername.textContent = user.username;
+                    detailCin.textContent = user.userCin;
+                    detailEmail.textContent = user.userEmail;
+                    detailRole.textContent = user.roleName;
+                    detailStatus.textContent = user.userStatus;
+
+                    try {
+                        const diplomaResponse = await fetch(`/api/users/${userId}/diploma-proof`);
+                        if (diplomaResponse.ok) {
+                            const imageBlob = await diplomaResponse.blob();
+                            if (imageBlob.size > 0) {
+                                currentDiplomaProofUrl = URL.createObjectURL(imageBlob);
+                                detailDiplomaProof.src = currentDiplomaProofUrl;
+                                detailDiplomaProof.style.display = 'block';
+                            } else {
+                                noDiplomaProofMessage.style.display = 'block';
+                            }
+                        } else {
+                            noDiplomaProofMessage.style.display = 'block';
+                            console.warn(`No diploma proof found or error fetching for user ${userId}: Status ${diplomaResponse.status}`);
+                        }
+                    } catch (diplomaError) {
+                        console.error('Error fetching diploma proof:', diplomaError);
+                        noDiplomaProofMessage.style.display = 'block';
+                    }
+
+                    detailAcceptButton.onclick = () => updateStatus(user.userId, 'Accepted');
+                    detailDenyButton.onclick = () => deleteUser(user.userId);
+
+                    userListModal.style.display = 'none';
+                    userDetailsModal.style.display = 'flex';
+                } catch (error) {
+                    console.error('Error fetching user details:', error);
+                    displayMessageBox('Failed to load user details.', 'error');
+                }
+            }
+
+            async function updateStatus(userId, newStatus) {
+                displayConfirmationBox(`Are you sure you want to set this user's status to ${newStatus}?`, async () => {
+                    try {
+                        const response = await fetch(`/api/users/${userId}/status`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ status: newStatus })
+                        });
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        displayMessageBox(`User status updated to ${newStatus}!`, 'success');
+                        userDetailsModal.style.display = 'none';
+                        userListModal.style.display = 'none';
+                        if (currentUserRole.toLowerCase() === 'admin') {
+                            fetchWaitingUsers();
+                        }
+                    } catch (error) {
+                        console.error('Error updating status:', error);
+                        displayMessageBox('Failed to update user status.', 'error');
+                    }
+                });
+            }
+
+            async function deleteUser(userId) {
+                displayConfirmationBox('Are you sure you want to deny and delete this user?', async () => {
+                    try {
+                        const response = await fetch(`/api/users/delete/${userId}`, {
+                            method: 'DELETE'
+                        });
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        displayMessageBox('User denied and deleted successfully!', 'success');
+                        userDetailsModal.style.display = 'none';
+                        userListModal.style.display = 'none';
+                        if (currentUserRole.toLowerCase() === 'admin') {
+                            fetchWaitingUsers();
+                        }
+                    } catch (error) {
+                        console.error('Error deleting user:', error);
+                        displayMessageBox('Failed to delete user.', 'error');
+                    }
+                });
+            }
+
+            function displayMessageBox(message, type = 'info') {
+                const messageBox = document.createElement('div');
+                messageBox.style.position = 'fixed';
+                messageBox.style.top = '20px';
+                messageBox.style.left = '50%';
+                messageBox.style.transform = 'translateX(-50%)';
+                messageBox.style.backgroundColor = type === 'success' ? '#4CAF50' : (type === 'error' ? '#f44336' : '#007bff');
+                messageBox.style.color = 'white';
+                messageBox.style.padding = '15px 25px';
+                messageBox.style.borderRadius = '8px';
+                messageBox.style.zIndex = '3000';
+                messageBox.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+                messageBox.style.opacity = '0';
+                messageBox.style.transition = 'opacity 0.3s ease-in-out';
+                messageBox.textContent = message;
+                document.body.appendChild(messageBox);
+
+                setTimeout(() => {
+                    messageBox.style.opacity = '1';
+                }, 10);
+
+                setTimeout(() => {
+                    messageBox.style.opacity = '0';
+                    messageBox.addEventListener('transitionend', () => messageBox.remove());
+                }, 3000);
+            }
+
+            function displayConfirmationBox(message, onConfirm) {
+                const confirmationBox = document.createElement('div');
+                confirmationBox.style.position = 'fixed';
+                confirmationBox.style.top = '50%';
+                confirmationBox.style.left = '50%';
+                confirmationBox.style.transform = 'translate(-50%, -50%)';
+                confirmationBox.style.backgroundColor = '#fff';
+                confirmationBox.style.color = '#333';
+                confirmationBox.style.padding = '25px';
+                confirmationBox.style.borderRadius = '8px';
+                confirmationBox.style.zIndex = '3000';
+                confirmationBox.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
+                confirmationBox.style.textAlign = 'center';
+                confirmationBox.style.maxWidth = '400px';
+                document.body.appendChild(confirmationBox);
+
+                const text = document.createElement('p');
+                text.textContent = message;
+                text.style.marginBottom = '20px';
+                confirmationBox.appendChild(text);
+
+                const confirmBtn = document.createElement('button');
+                confirmBtn.textContent = 'Yes';
+                confirmBtn.style.backgroundColor = '#4CAF50';
+                confirmBtn.style.color = 'white';
+                confirmBtn.style.border = 'none';
+                confirmBtn.style.padding = '10px 20px';
+                confirmBtn.style.borderRadius = '5px';
+                confirmBtn.style.cursor = 'pointer';
+                confirmBtn.style.marginRight = '10px';
+                confirmBtn.addEventListener('click', () => {
+                    onConfirm();
+                    confirmationBox.remove();
+                });
+                confirmationBox.appendChild(confirmBtn);
+
+                const cancelBtn = document.createElement('button');
+                cancelBtn.textContent = 'No';
+                cancelBtn.style.backgroundColor = '#f44336';
+                cancelBtn.style.color = 'white';
+                cancelBtn.style.border = 'none';
+                cancelBtn.style.padding = '10px 20px';
+                cancelBtn.style.borderRadius = '5px';
+                cancelBtn.style.cursor = 'pointer';
+                cancelBtn.addEventListener('click', () => {
+                    confirmationBox.remove();
+                });
+                confirmationBox.appendChild(cancelBtn);
+            }
+
+            if (!loggedInUserId) {
+                errorMessage.textContent = 'No user logged in. Redirecting to login...';
+                errorMessage.style.display = 'block';
+                loadingMessage.style.display = 'none';
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 2000);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/users/${loggedInUserId}`);
+                let responseData;
+                const contentType = response.headers.get("content-type");
+
+                if (contentType && contentType.includes("application/json")) {
+                    responseData = await response.json();
+                } else {
+                    responseData = { message: await response.text() };
+                }
+
+                if (response.ok) {
+                    document.getElementById('profile-username-sidebar').textContent = responseData.username;
+                    document.getElementById('profile-role-sidebar').textContent = responseData.roleName;
+                    currentUserRole = responseData.roleName;
+
+                    loadingMessage.style.display = 'none';
+                    userProfileSidebarSection.style.display = 'block';
+
+                    notificationBellButton.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        if (currentUserRole.toLowerCase() === 'admin') {
+                            fetchWaitingUsers();
+                            userListModal.style.display = 'flex';
+                        } else {
+                            displayMessageBox('No specific notifications for your role at this time. Stay tuned for future alerts!', 'info');
+                        }
+                    });
+
+                    if (currentUserRole.toLowerCase() === 'admin') {
+                        fetchWaitingUsers();
+                    } else {
+                        notificationCountSpan.textContent = '0';
+                    }
+
+                } else {
+                    console.error('Failed to fetch user profile:', responseData);
+                    errorMessage.textContent = 'Failed to load profile: ' + (responseData.message || 'Unknown error.');
+                    errorMessage.style.display = 'block';
+                    loadingMessage.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error during profile fetch:', error);
+                errorMessage.textContent = 'An unexpected error occurred while loading profile. Please try again.';
+                errorMessage.style.display = 'block';
+                loadingMessage.style.display = 'none';
+            }
+
+            closeUserListModal.addEventListener('click', function() {
+                userListModal.style.display = 'none';
+            });
+
+            closeUserDetailsModal.addEventListener('click', function() {
+                userDetailsModal.style.display = 'none';
+                if (currentDiplomaProofUrl) {
+                    URL.revokeObjectURL(currentDiplomaProofUrl);
+                    currentDiplomaProofUrl = null;
+                }
+            });
+
+            window.addEventListener('click', function(event) {
+                if (event.target == userListModal) {
+                    userListModal.style.display = 'none';
+                }
+                if (event.target == userDetailsModal) {
+                    userDetailsModal.style.display = 'none';
+                    if (currentDiplomaProofUrl) {
+                        URL.revokeObjectURL(currentDiplomaProofUrl);
+                        currentDiplomaProofUrl = null;
+                    }
+                }
+            });
+
+            logoutButtonMainHeader.addEventListener('click', function() {
+                sessionStorage.removeItem('loggedInUserId');
+                window.location.href = '/index.html';
+            });
+        });
+    </script>
+</body>
+</html>

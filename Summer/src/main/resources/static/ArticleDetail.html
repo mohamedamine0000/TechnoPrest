@@ -98,11 +98,40 @@
             min-width: 300px;
         }
         
-       .delete-button {
-    /* ... existing properties ... */
-    width: 50%; /* Example: set width to 50% of the container */
-    margin: 1em auto; /* Center the button */
-}
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 2em;
+        }
+        
+        .edit-button, .delete-button {
+            flex: 1;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            border: none;
+        }
+        
+        .edit-button {
+            background-color: #28a745;
+        }
+        
+        .edit-button:hover {
+            background-color: #218838;
+        }
+        
+        .delete-button {
+            background-color: #dc3545;
+        }
+        
+        .delete-button:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 <body class="is-preload">
@@ -111,12 +140,15 @@
             <div class="inner">
                 <header id="header">
                     <a href="/ListArticle.html" class="logo">Back to Articles</a>
-                     <button id="delete-article-button" class="delete-button" onclick="deleteArticle()">Delete Article</button>
                 </header>
 
                 <div class="article-details-container">
                     <h2 id="article-designation">Loading...</h2>
                     <div id="article-details-content">
+                    </div>
+                    <div class="button-container">
+                        <a href="#" id="edit-article-button" class="edit-button">Edit Article</a>
+                        <button id="delete-article-button" class="delete-button" onclick="deleteArticle()">Delete Article</button>
                     </div>
                 </div>
 
@@ -145,6 +177,10 @@
                 document.getElementById('article-details-content').innerHTML = "<p>Invalid article ID.</p>";
                 return;
             }
+
+            // Set the href for the edit button
+            const editButton = document.getElementById('edit-article-button');
+            editButton.href = `/EditArticle.html?id=${articleId}`;
 
             try {
                 const response = await fetch(`/api/users/articles/${articleId}`);

@@ -487,4 +487,34 @@ public class UserController {
 
         return ResponseEntity.ok(distribution);
     }
+
+    // API to update an article
+    @PutMapping("/articles/{id}")
+    public ResponseEntity<Article> updateArticle(@PathVariable Long id, @RequestBody Article updatedArticle) {
+        Optional<Article> articleOptional = articleRepo.findById(id);
+        if (articleOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        Article existingArticle = articleOptional.get();
+
+        // Update the fields that can be modified
+        existingArticle.setCodeArticle(updatedArticle.getCodeArticle());
+        existingArticle.setDesignation(updatedArticle.getDesignation());
+        existingArticle.setUm(updatedArticle.getUm());
+        existingArticle.setQte(updatedArticle.getQte());
+        existingArticle.setMinmumStock(updatedArticle.getMinmumStock());
+        existingArticle.setUnite(updatedArticle.getUnite());
+        existingArticle.setLocation(updatedArticle.getLocation());
+        existingArticle.setEtagere(updatedArticle.getEtagere());
+        existingArticle.setEtat(updatedArticle.getEtat());
+        existingArticle.setMovementTimeframe(updatedArticle.getMovementTimeframe());
+        existingArticle.setFastSalesThreshold(updatedArticle.getFastSalesThreshold());
+        existingArticle.setMediumSalesThreshold(updatedArticle.getMediumSalesThreshold());
+        existingArticle.setReservedByWho(updatedArticle.getReservedByWho());
+        existingArticle.setReservedToWho(updatedArticle.getReservedToWho());
+
+        Article savedArticle = articleRepo.save(existingArticle);
+        return new ResponseEntity<>(savedArticle, HttpStatus.OK);
+    }
 }
