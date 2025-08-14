@@ -3,6 +3,7 @@ package com.esprit.summer.Services;
 import com.esprit.summer.Entities.Article;
 import com.esprit.summer.Entities.ArticleMovement;
 import com.esprit.summer.Entities.Reason;
+import com.esprit.summer.Entities.UserRole;
 import com.esprit.summer.Repositories.ArticleMovementRepo;
 import com.esprit.summer.Repositories.ArticleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -238,5 +239,13 @@ public class ArticleService {
                 .timestamp(LocalDateTime.now())
                 .build();
         articleMovementRepo.save(movement);
+    }
+
+    public List<Article> getLowStockArticlesByRole(UserRole userRole) {
+        return articleRepo.findLowStockByRole(userRole);
+    }
+
+    public List<Article> getLowStockArticlesForAllRoles() {
+        return articleRepo.findAllLowStock();
     }
 }

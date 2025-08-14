@@ -521,4 +521,23 @@ public class UserController {
         Article savedArticle = articleRepo.save(existingArticle);
         return new ResponseEntity<>(savedArticle, HttpStatus.OK);
     }
+
+    // API to get low stock articles for the logged-in user's role
+    @GetMapping("/articles/low-stock/{userId}")
+    public ResponseEntity<List<Article>> getLowStockArticlesForUserRole(@PathVariable Long userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty() || userOptional.get().getRole() == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        UserRole userRole = userOptional.get().getRole();
+        List<Article> articles = articleService.getLowStockArticlesByRole(userRole);
+        return new ResponseEntity<>(articles, HttpStatus.OK);
+    }
+
+    // API to get all low stock articles (for admin)
+    @GetMapping("/articles/low-stock/all")
+    public ResponseEntity<List<Article>> getAllLowStockArticles() {
+        List<Article> articles = articleService.getLowStockArticlesForAllRoles();
+        return new ResponseEntity<>(articles, HttpStatus.OK);
+    }
 }
