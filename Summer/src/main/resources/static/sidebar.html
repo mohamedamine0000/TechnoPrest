@@ -565,6 +565,22 @@
         userInfoDisplay = document.getElementById('user-info-display');
         logoutButtonMainHeader = document.getElementById('logout-button-main-header');
 
+         document.getElementById('toggle-roles-button').addEventListener('click', function() {
+            var dropdown = document.getElementById('roles-dropdown');
+            if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+                dropdown.style.display = 'block';
+            } else {
+                dropdown.style.display = 'none';
+            }
+        });
+
+         await fetchUserRole();
+    await fetchArticles();
+    setupArticlesEventListeners();
+    
+    // Initial call to update all notifications
+    await updateNotifications();
+
         // Global functions for handling user actions (from first script)
         window.handleSellArticle = async function(articleId, currentQte, userCin) {
             if (currentQte <= 0) {
@@ -833,140 +849,159 @@
         }
         
         // Filter and render articles function
-        function filterAndRenderArticles() {
-            if (!searchInput || !articlesListBody) return; // Guard clause
-            
-            const searchTerm = searchInput.value.toLowerCase();
-            let filteredArticles = allArticles.filter(article => {
-                const matchesSearch = article.codeArticle.toLowerCase().includes(searchTerm) ||
-                                        article.designation.toLowerCase().includes(searchTerm);
-                
-                const articleRoleName = article.role && article.role.name ? article.role.name : 'N/A';
-                const matchesRole = selectedRoles.length === 0 || selectedRoles.includes(articleRoleName);
+      function filterAndRenderArticles() {
+    if (!searchInput || !articlesListBody) return; // Guard clause
+    
+    const searchTerm = searchInput.value.toLowerCase();
+    let filteredArticles = allArticles.filter(article => {
+        const matchesSearch = article.codeArticle.toLowerCase().includes(searchTerm) ||
+                                article.designation.toLowerCase().includes(searchTerm);
+        
+        const articleRoleName = article.role && article.role.name ? article.role.name : 'N/A';
+        // For non-admin users, always filter by their role regardless of search
+        const matchesRole = currentUserRole === 'Admin' ? 
+            (selectedRoles.length === 0 || selectedRoles.includes(articleRoleName)) :
+            (articleRoleName === currentUserRole);
+        
+        return matchesSearch && matchesRole;
+    });
+    renderArticles(filteredArticles);
+}
 
-                return matchesSearch && matchesRole;
-            });
-            renderArticles(filteredArticles);
-        }
+
 
         // Fetch articles function
-        async function fetchArticles() {
-            if (!loadingMessage || !errorMessage || !articlesListBody) return; // Guard clause
-            
-            loadingMessage.style.display = 'block';
-            errorMessage.style.display = 'none';
-            try {
-                const [articlesResponse, movementsResponse] = await Promise.all([
-                    fetch('/api/users/articles'),
-                    fetch('/api/article-movements')
-                ]);
+      async function fetchArticles() {
+    if (!loadingMessage || !errorMessage || !articlesListBody) return; // Guard clause
+    
+    loadingMessage.style.display = 'block';
+    errorMessage.style.display = 'none';
+    try {
+        const [articlesResponse, movementsResponse] = await Promise.all([
+            fetch('/api/users/articles'),
+            fetch('/api/article-movements')
+        ]);
 
-                if (!articlesResponse.ok) {
-                    throw new Error(`HTTP error! status: ${articlesResponse.status}`);
-                }
-                if (!movementsResponse.ok) {
-                    throw new Error(`HTTP error! status: ${movementsResponse.status}`);
-                }
-
-                allArticles = await articlesResponse.json();
-                allMovements = await movementsResponse.json();
-                loadingMessage.style.display = 'none';
-
-                if (currentUserRole === 'Admin') {
-                    if (roleHeaderCol) {
-                        roleHeaderCol.style.display = 'table-cell';
-                        document.querySelectorAll('.article-role-col').forEach(el => el.style.display = 'table-cell');
-                    }
-                    renderArticles(allArticles);
-                } else {
-                    const filteredByRole = allArticles.filter(article => 
-                        article.role && article.role.name === currentUserRole
-                    );
-                    renderArticles(filteredByRole);
-                }
-            } catch (error) {
-                console.error('Error fetching articles:', error);
-                loadingMessage.style.display = 'none';
-                errorMessage.style.display = 'block';
-                errorMessage.textContent = 'Failed to load articles. Please try again later.';
-            }
+        if (!articlesResponse.ok) {
+            throw new Error(`HTTP error! status: ${articlesResponse.status}`);
         }
+        if (!movementsResponse.ok) {
+            throw new Error(`HTTP error! status: ${movementsResponse.status}`);
+        }
+
+        allArticles = await articlesResponse.json();
+        allMovements = await movementsResponse.json();
+        loadingMessage.style.display = 'none';
+
+        if (currentUserRole === 'Admin') {
+            if (roleHeaderCol) {
+                roleHeaderCol.style.display = 'table-cell';
+                document.querySelectorAll('.article-role-col').forEach(el => el.style.display = 'table-cell');
+            }
+            renderArticles(allArticles);
+        } else {
+            const filteredByRole = allArticles.filter(article => 
+                article.role && article.role.name === currentUserRole
+            );
+            renderArticles(filteredByRole);
+        }
+    } catch (error) {
+        console.error('Error fetching articles:', error);
+        loadingMessage.style.display = 'none';
+        errorMessage.style.display = 'block';
+        errorMessage.textContent = 'Failed to load articles. Please try again later.';
+    }
+}
 
         // Fetch roles and populate dropdown function
-        async function fetchRolesAndPopulateDropdown() {
-            if (!rolesDropdown) return; // Guard clause
-            
-            try {
-                const response = await fetch('/api/roles');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                allRoles = await response.json();
-                
-                rolesDropdown.innerHTML = '';
-                allRoles.forEach(role => {
-                    const label = document.createElement('label');
-                    label.innerHTML = `
-                        <input type="checkbox" name="role" value="${role.name}"> ${role.name}
-                    `;
-                    rolesDropdown.appendChild(label);
-                });
-
-                rolesDropdown.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                    checkbox.addEventListener('change', function() {
-                        const label = this.closest('label');
-                        if (this.checked) {
-                            selectedRoles.push(this.value);
-                            label.classList.add('selected-role');
-                        } else {
-                            selectedRoles = selectedRoles.filter(role => role !== this.value);
-                            label.classList.remove('selected-role');
-                        }
-                        filterAndRenderArticles();
-                    });
-                });
-            } catch (error) {
-                console.error('Error fetching roles:', error);
-            }
+       async function fetchRolesAndPopulateDropdown() {
+    if (!rolesDropdown) return; // Guard clause
+    
+    try {
+        const response = await fetch('/api/roles');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        allRoles = await response.json();
+        
+        rolesDropdown.innerHTML = '';
+        allRoles.forEach(role => {
+            const label = document.createElement('label');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = 'role';
+            checkbox.value = role.name;
+            
+            // Check if this role is already selected
+            if (selectedRoles.includes(role.name)) {
+                checkbox.checked = true;
+                label.classList.add('selected-role');
+            }
+            
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(` ${role.name}`));
+            rolesDropdown.appendChild(label);
+            
+            // Add event listener to each checkbox
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    if (!selectedRoles.includes(this.value)) {
+                        selectedRoles.push(this.value);
+                    }
+                    label.classList.add('selected-role');
+                } else {
+                    selectedRoles = selectedRoles.filter(r => r !== this.value);
+                    label.classList.remove('selected-role');
+                }
+                filterAndRenderArticles();
+            });
+        });
+    } catch (error) {
+        console.error('Error fetching roles:', error);
+    }
+}
 
         // Setup event listeners for articles functionality
         function setupArticlesEventListeners() {
-            if (!articlesListBody) return; // Guard clause
-            
-            articlesListBody.addEventListener('click', function(event) {
-                const target = event.target;
-                
-                const row = target.closest('tr');
-                if (row && row.dataset.articleId && !target.closest('button')) {
-                    window.location.href = `/ArticleDetail.html?id=${row.dataset.articleId}`;
-                    return;
-                }
-
-                if (target.classList.contains('sold-button')) {
-                    const articleId = target.dataset.articleId;
-                    const currentQte = target.dataset.qte;
-                    window.handleSellArticle(articleId, currentQte, currentUserCin);
-                } else if (target.classList.contains('change-depo-button')) {
-                    const articleId = target.dataset.articleId;
-                    const currentQte = target.dataset.qte;
-                    window.handleChangeDepo(articleId, currentQte, currentUserCin);
-                } else if (target.classList.contains('add-depo-button')) {
-                    const articleId = target.dataset.articleId;
-                    window.handleAddFromDepo(articleId, currentUserCin);
-                }
-            });
-
-            if (searchInput) {
-                searchInput.addEventListener('keyup', filterAndRenderArticles);
-            }
-            
-            if (toggleRolesButton && rolesDropdown) {
-                toggleRolesButton.addEventListener('click', () => {
-                    rolesDropdown.style.display = rolesDropdown.style.display === 'none' ? 'block' : 'none';
-                });
-            }
+    if (!articlesListBody) return; // Guard clause
+    
+    // Handle row clicks for article details
+    articlesListBody.addEventListener('click', function(event) {
+        const target = event.target;
+        const row = target.closest('tr');
+        if (row && row.dataset.articleId && !target.closest('button')) {
+            window.location.href = `/ArticleDetail.html?id=${row.dataset.articleId}`;
+            return;
         }
+
+        // Handle action buttons
+        if (target.classList.contains('sold-button')) {
+            const articleId = target.dataset.articleId;
+            const currentQte = target.dataset.qte;
+            window.handleSellArticle(articleId, currentQte, currentUserCin);
+        } else if (target.classList.contains('change-depo-button')) {
+            const articleId = target.dataset.articleId;
+            const currentQte = target.dataset.qte;
+            window.handleChangeDepo(articleId, currentQte, currentUserCin);
+        } else if (target.classList.contains('add-depo-button')) {
+            const articleId = target.dataset.articleId;
+            window.handleAddFromDepo(articleId, currentUserCin);
+        }
+    });
+
+    // Handle search input
+    if (searchInput) {
+        searchInput.addEventListener('keyup', filterAndRenderArticles);
+    }
+    
+    // Handle role filter toggle
+    if (toggleRolesButton && rolesDropdown) {
+        toggleRolesButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            rolesDropdown.style.display = rolesDropdown.style.display === 'none' ? 'block' : 'none';
+        });
+    }
+}
 
         // Notification functions from second script
         async function fetchWaitingUsers() {
@@ -1288,31 +1323,34 @@
         }
 
         // Fetch user role function
-        async function fetchUserRole() {
-            if (!loggedInUserId) {
-                console.error('No user logged in.');
-                if (userInfoDisplay) userInfoDisplay.textContent = 'No user logged in.';
-                return;
-            }
-            try {
-                const response = await fetch(`/api/users/${loggedInUserId}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const user = await response.json();
-                currentUserRole = user.roleName;
-                currentUserCin = user.userCin;
-                if (userInfoDisplay) userInfoDisplay.textContent = ``;
-
-                if (currentUserRole === 'Admin' && roleFilterContainer) {
-                    roleFilterContainer.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Error fetching user role:', error);
-                if (userInfoDisplay) userInfoDisplay.textContent = 'Error loading user info.';
-            }
+       async function fetchUserRole() {
+    if (!loggedInUserId) {
+        console.error('No user logged in.');
+        if (userInfoDisplay) userInfoDisplay.textContent = 'No user logged in.';
+        return;
+    }
+    try {
+        const response = await fetch(`/api/users/${loggedInUserId}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        const user = await response.json();
+        currentUserRole = user.roleName;
+        currentUserCin = user.userCin;
+        if (userInfoDisplay) userInfoDisplay.textContent = ``;
 
+        // Show role filter only for Admin
+        if (currentUserRole === 'Admin' && roleFilterContainer) {
+            roleFilterContainer.style.display = 'block';
+            await fetchRolesAndPopulateDropdown(); // Also fetch roles for Admin
+        } else if (roleFilterContainer) {
+            roleFilterContainer.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error fetching user role:', error);
+        if (userInfoDisplay) userInfoDisplay.textContent = 'Error loading user info.';
+    }
+}
         // Initial setup and user profile loading
         if (!loggedInUserId) {
             if (errorMessage) {

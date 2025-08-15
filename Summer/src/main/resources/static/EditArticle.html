@@ -309,7 +309,7 @@
                      <ul>
                         <li><a href="profile.html">Homepage</a></li>
                         <li><a href="AddArticleManually.html">Add article manually</a></li>
-                        <li><a href="ListArticle.html">List of articles</a></li>
+                        <li><a href="sidebar.html">List of articles</a></li>
                     
                     </ul>
                 </nav>
@@ -423,6 +423,150 @@
             const movementTimeframeInput = document.getElementById('movement-timeframe');
             const fastSalesThresholdInput = document.getElementById('fast-sales-threshold');
             const mediumSalesThresholdInput = document.getElementById('medium-sales-threshold');
+
+            // Container for low-stock articles
+const lowStockArticlesList = document.createElement('div');
+lowStockArticlesList.id = 'low-stock-articles-list';
+lowStockArticlesList.innerHTML = '<h3>Low Stock Articles</h3><ul id="low-stock-list"></ul>';
+
+async function fetchWaitingUsers() {
+            try {
+                const response = await fetch('/api/users/waiting');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const users = await response.json();
+                
+                waitingUsersList.innerHTML = '<h3>New User Registrations</h3>';
+                if (users.length === 0) {
+                    waitingUsersList.innerHTML += '<p>No new user registrations.</p>';
+                } else {
+                    users.forEach(user => {
+                        const userItem = document.createElement('div');
+                        userItem.classList.add('user-list-item');
+                        userItem.innerHTML = `
+                            <div class="user-list-item-info">
+                                <strong>${user.username}</strong> (Role: ${user.roleName})
+                            </div>
+                            <div class="user-list-item-actions">
+                                <button class="accept-button" data-user-id="${user.userId}" data-action="accept">Accept</button>
+                                <button class="deny-button" data-user-id="${user.userId}" data-action="deny">Deny</button>
+                            </div>
+                        `;
+                        userItem.addEventListener('click', (event) => {
+                            if (event.target.tagName === 'BUTTON') {
+                                return;
+                            }
+                            showUserDetails(user.userId);
+                        });
+                        waitingUsersList.appendChild(userItem);
+                    });
+                    
+                    waitingUsersList.querySelectorAll('.accept-button').forEach(button => {
+                        button.addEventListener('click', (event) => {
+                            event.stopPropagation();
+                            const userId = event.target.dataset.userId;
+                            updateStatus(userId, 'Accepted');
+                        });
+                    });
+                    waitingUsersList.querySelectorAll('.deny-button').forEach(button => {
+                        button.addEventListener('click', (event) => {
+                            event.stopPropagation();
+                            const userId = event.target.dataset.userId;
+                            deleteUser(userId);
+                        });
+                    });
+                }
+                return users.length;
+            } catch (error) {
+                console.error('Error fetching waiting users:', error);
+                waitingUsersList.innerHTML = '<h3>New User Registrations</h3><p>Failed to load waiting users.</p>';
+                return 0;
+            }
+        }
+        
+        // NEW function to fetch low-stock articles
+      async function fetchLowStockArticles() {
+    let apiUrl = '';
+    if (currentUserRole === 'Admin') {
+        // CORRECTED URL to match your backend API
+        apiUrl = '/api/users/articles/low-stock/all';
+    } else {
+        // CORRECTED URL to match your backend API, passing the userId
+        apiUrl = `/api/users/articles/low-stock/${loggedInUserId}`;
+    }
+
+    try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const articles = await response.json();
+        const articlesList = lowStockArticlesList.querySelector('ul');
+        articlesList.innerHTML = '';
+        
+        if (articles.length === 0) {
+            articlesList.innerHTML = '<li>No low-stock articles at this time.</li>';
+        } else {
+            articles.forEach(article => {
+                const articleItem = document.createElement('li');
+                // Displaying article code, designation, and quantity
+                articleItem.innerHTML = `<strong>Code: ${article.codeArticle}</strong> - ${article.designation} (Qte: ${article.qte})`;
+                articlesList.appendChild(articleItem);
+            });
+        }
+        return articles.length;
+    } catch (error) {
+        console.error('Error fetching low-stock articles:', error);
+        lowStockArticlesList.querySelector('ul').innerHTML = '<li>Failed to load low-stock articles.</li>';
+        return 0;
+    }
+}
+
+
+     // NEW: Combined function to fetch all notifications and update the badge
+       async function updateNotifications() {
+    let totalNotifications = 0;
+    
+    // Clear the existing content before updating
+    waitingUsersList.innerHTML = '';
+    
+    if (currentUserRole === 'Admin') {
+        const userCount = await fetchWaitingUsers();
+        const articleCount = await fetchLowStockArticles();
+        totalNotifications = userCount + articleCount;
+        
+        // Ensure both lists are visible
+        waitingUsersList.style.display = 'block';
+        lowStockArticlesList.style.display = 'block';
+
+        // Append the low-stock list after the waiting users list
+        if (!waitingUsersList.parentNode.contains(lowStockArticlesList)) {
+            waitingUsersList.parentNode.appendChild(lowStockArticlesList);
+        }
+    } else {
+        const articleCount = await fetchLowStockArticles();
+        totalNotifications = articleCount;
+        
+        // Hide the waiting users list for non-admins
+        waitingUsersList.style.display = 'none';
+
+        // Ensure only the low-stock list is visible
+        if (!waitingUsersList.parentNode.contains(lowStockArticlesList)) {
+            // Append the low-stock list to the modal body
+            waitingUsersList.parentNode.appendChild(lowStockArticlesList);
+        }
+        lowStockArticlesList.style.display = 'block';
+    }
+    
+    notificationCountSpan.textContent = totalNotifications;
+    if (totalNotifications > 0) {
+        notificationCountSpan.style.display = 'block';
+    } else {
+        notificationCountSpan.style.display = 'none';
+    }
+}
+
 
 
             async function initializeRoleDropdown(articleRole) {
@@ -541,7 +685,13 @@
             }
 
           
-            
+              // Event listener for the notification bell
+        notificationBellButton.addEventListener('click', async function(event) {
+            event.preventDefault();
+            await updateNotifications();
+            userListModal.style.display = 'flex';
+        });
+
             articleForm.addEventListener('submit', async function(event) {
                 event.preventDefault();
 
@@ -606,62 +756,7 @@
             // ------------------ END OF MODIFIED SCRIPT SECTION ------------------
 
 
-            async function fetchWaitingUsers() {
-                try {
-                    const response = await fetch('/api/users/waiting');
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const users = await response.json();
-                    waitingUsersList.innerHTML = '';
-
-                    if (users.length === 0) {
-                        waitingUsersList.innerHTML = '<p>No users with "Waiting" status.</p>';
-                        notificationCountSpan.textContent = '0';
-                    } else {
-                        notificationCountSpan.textContent = users.length;
-                        users.forEach(user => {
-                            const userItem = document.createElement('div');
-                            userItem.classList.add('user-list-item');
-                            userItem.innerHTML = `
-                                <div class="user-list-item-info">
-                                    <strong>${user.username}</strong> (Role: ${user.roleName})
-                                </div>
-                                <div class="user-list-item-actions">
-                                    <button class="accept-button" data-user-id="${user.userId}" data-action="accept">Accept</button>
-                                    <button class="deny-button" data-user-id="${user.userId}" data-action="deny">Deny</button>
-                                </div>
-                            `;
-                            userItem.addEventListener('click', (event) => {
-                                if (event.target.tagName === 'BUTTON') {
-                                    return;
-                                }
-                                showUserDetails(user.userId);
-                            });
-                            waitingUsersList.appendChild(userItem);
-                        });
-
-                        waitingUsersList.querySelectorAll('.accept-button').forEach(button => {
-                            button.addEventListener('click', (event) => {
-                                event.stopPropagation();
-                                const userId = event.target.dataset.userId;
-                                updateStatus(userId, 'Accepted');
-                            });
-                        });
-                        waitingUsersList.querySelectorAll('.deny-button').forEach(button => {
-                            button.addEventListener('click', (event) => {
-                                event.stopPropagation();
-                                const userId = event.target.dataset.userId;
-                                deleteUser(userId);
-                            });
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error fetching waiting users:', error);
-                    waitingUsersList.innerHTML = '<p>Failed to load waiting users.</p>';
-                    notificationCountSpan.textContent = '0';
-                }
-            }
+        
 
             async function showUserDetails(userId) {
                 detailDiplomaProof.style.display = 'none';
@@ -871,21 +966,15 @@
                     loadingMessage.style.display = 'none';
                     userProfileSidebarSection.style.display = 'block';
 
-                    notificationBellButton.addEventListener('click', function(event) {
-                        event.preventDefault();
-                        if (currentUserRole.toLowerCase() === 'admin') {
-                            fetchWaitingUsers();
-                            userListModal.style.display = 'flex';
-                        } else {
-                            displayMessageBox('No specific notifications for your role at this time. Stay tuned for future alerts!', 'info');
-                        }
-                    });
+                    // Initial call to update all notifications
+                await updateNotifications();
 
-                    if (currentUserRole.toLowerCase() === 'admin') {
-                        fetchWaitingUsers();
-                    } else {
-                        notificationCountSpan.textContent = '0';
-                    }
+                    notificationBellButton.addEventListener('click', async function(event) {
+            event.preventDefault();
+            await updateNotifications();
+            userListModal.style.display = 'flex';
+        });
+
 
                 } else {
                     console.error('Failed to fetch user profile:', responseData);
