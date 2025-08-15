@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile</title>
+    <title>List of Articles</title>
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <style>
+<style>
         .diploma-proof-container img {
-         max-width: 100%;
-        height: auto;
-        display: block; /* Removes any extra space below the image */
-        margin: 0 auto; /* Centers the image */
+            max-width: 100%;
+            height: auto;
+            display: block; /* Removes any extra space below the image */
+            margin: 0 auto; /* Centers the image */
         }
+        
         /* Specific styles for the sidebar profile section, as requested */
         .sidebar-profile-summary {
             display: flex;
@@ -74,34 +75,34 @@
         }
 
         /* Modal specific styles */
-   .modal {
-    display: none;
-    position: fixed;
-    z-index: 2000;
-     left: 0;
-     top: 0;
-     width: 100%;
-    height: 100%;
-    overflow: auto;
-     background-color: rgba(0,0,0,0.6);
-    justify-content: center;
-    align-items: center;
-}
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+        }
 
-.modal-content {
-     background-color: #fefefe;
-     margin: auto;
-     padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 900px;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    position: relative;
-    color: #333;
-     /* Add this to shift it */
-    transform: translateX(150px);
-}
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 900px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+            color: #333;
+            /* Add this to shift it */
+            transform: translateX(150px);
+        }
 
         .close-button {
             color: #aaa;
@@ -120,7 +121,6 @@
             text-decoration: none;
             cursor: pointer;
         }
-        
 
         /* This is kept to style the user list within the modal, which is not part of the main template's default styles */
         .user-list-item {
@@ -132,21 +132,246 @@
             cursor: pointer;
             transition: background-color 0.2s ease;
         }
+        
         .user-list-item:last-child {
             border-bottom: none;
         }
+        
         .user-list-item:hover {
             background-color: #f5f5f5;
         }
+        
         .user-list-item-info {
             flex-grow: 1;
         }
+        
         .user-list-item-actions button {
             margin-left: 10px;
             padding: 5px 10px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 0.9em;
+        }
+        
+        .movement-speed-cell {
+            font-weight: bold;
+            text-align: center;
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        
+        .slow-movement {
+            background-color: #f44336; /* Red */
+        }
+        
+        .medium-movement {
+            background-color: #ff9800; /* Orange */
+        }
+        
+        .fast-movement {
+            background-color: #4caf50; /* Green */
+        }
+        
+        body.is-preload #wrapper {
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        body #wrapper {
+            opacity: 1;
+        }
+
+       #wrapper {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: row; /* Changed from column to row */
+    }
+
+        /* FIXED: Make main content flexible and take available space */
+       #main {
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: 0; /* This helps with flex calculations */
+    order: 2; /* Main content comes second (right side) */
+}
+
+        /* FIXED: Make sidebar fixed width and positioned on the right */
+       #sidebar {
+    width: 350px; /* Fixed width for sidebar */
+    flex-shrink: 0;
+    background-color: #f8f9fa;
+    border-right: 1px solid #ddd; /* Changed from border-left to border-right */
+    order: 1; /* Sidebar comes first (left side) */
+    overflow-y: auto; /* Allow scrolling in sidebar if content is long */
+}
+
+        #sidebar .inner {
+            padding: 2em;
+        }
+
+        .inner {
+            padding: 2em;
+        }
+
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 1em;
+            margin-bottom: 2em;
+        }
+
+        #header .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            text-decoration: none;
+        }
+
+        #header .icons {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #header .icons li {
+            display: inline-block;
+        }
+
+        #header .icons button {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            color: #555;
+        }
+
+        /* Specific styles for the article list page */
+        .article-table-container {
+            margin-top: 2em;
+            overflow-x: auto;
+        }
+
+        .article-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .article-table th,
+        .article-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .article-table th {
+            background-color: #f2f2f2;
+        }
+
+        .search-container {
+            margin-bottom: 1em;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .filter-container {
+            margin-bottom: 1em;
+        }
+
+        .filter-container .roles-dropdown {
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 4px;
+        }
+
+        .filter-container label {
+            display: block;
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+
+        /* Styles for the selected role label */
+        .filter-container .selected-role {
+            background-color: #e0e0e0;
+            font-weight: bold;
+        }
+
+        .sold-button, .change-depo-button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-right: 5px; /* Spacing between buttons */
+        }
+        
+        .add-depo-button {
+            /* NEW style for the Add from Depo button */
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-right: 5px; /* Spacing between buttons */
+        }
+
+        .change-depo-button {
+            background-color: #3498db;
+        }
+
+        .sold-button:hover:not(:disabled) {
+            background-color: #c0392b;
+        }
+        
+        .change-depo-button:hover:not(:disabled) {
+            background-color: #2980b9;
+        }
+
+        .add-depo-button:hover:not(:disabled) {
+            /* NEW hover style for the Add from Depo button */
+            background-color: #27ae60;
+        }
+
+        .sold-button:disabled, .change-depo-button:disabled, .add-depo-button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .actions-col {
+            width: 120px; /* Adjust width as needed */
+        }
+
+        /* RESPONSIVE: Make it stack vertically on smaller screens */
+        @media (max-width: 1024px) {
+            #wrapper {
+                flex-direction: column;
+            }
+            
+            #sidebar {
+                width: 100%;
+                order: 1; /* Sidebar on top on mobile */
+            }
+            
+            #main {
+                order: 2; /* Main content below on mobile */
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -155,7 +380,7 @@
         <div id="main">
             <div class="inner">
                 <header id="header">
-                    <a href="/profile.html" class="logo"><strong>My App</strong> Main Content</a>
+                    <a href="/profile.html" class="logo"><strong>My App</strong> Articles</a>
                     <ul class="icons">
                         <li>
                             <button id="logout-button-main-header" class="fas fa-sign-out-alt">
@@ -165,13 +390,40 @@
                     </ul>
                 </header>
 
-               
-
                 <div id="loading-message" class="loading-message">
-                    Loading profile data...
+                    Loading articles...
                 </div>
                 <div id="error-message" class="error-message" style="display: none;">
-                    Could not load profile. Please try logging in again.
+                    Could not load articles.
+                </div>
+
+                <p id="user-info-display">Loading user info...</p>
+                
+                <div class="search-container">
+                    <input type="text" id="article-search" placeholder="Search by Code Article or Designation...">
+                </div>
+
+                <div id="role-filter-container" class="filter-container" style="display: none;">
+                    <button id="toggle-roles-button">Filter by Role</button>
+                    <div id="roles-dropdown" class="roles-dropdown" style="display: none;">
+                    </div>
+                </div>
+
+                <div class="article-table-container">
+                    <table class="article-table">
+                        <thead>
+                            <tr>
+                                <th>Code Article</th>
+                                <th>Designation</th>
+                                <th>Quantity (Qte)</th>
+                                <th id="role-header-col" style="display: none;">Role</th>
+                                <th>Movement Speed</th>
+                                <th class="actions-col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="articles-list-body">
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -203,15 +455,16 @@
                     <header class="major">
                         <h2>Menu</h2>
                     </header>
-                        <ul>
+                    <ul>
                         <li><a href="profile.html">Homepage</a></li>
                         <li><a href="AddArticleManually.html">Add article manually</a></li>
-                        <li><a href="ListArticle.html">List of articles</a></li>
-                    
+                        <li><a href="sidebar.html">List of articles</a></li>
                     </ul>
                 </nav>
 
-               
+                <footer id="footer">
+                    <p class="copyright">&copy; Untitled. All rights reserved. Demo Images: <a href="https://unsplash.com">Unsplash</a>. Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
+                </footer>
             </div>
         </div>
     </div>
@@ -221,7 +474,7 @@
             <span class="close-button" id="closeUserListModal">&times;</span>
             <h2>Users with 'Waiting' Status</h2>
             <div id="waitingUsersList">
-                </div>
+            </div>
         </div>
     </div>
 
@@ -248,359 +501,927 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            const loggedInUserId = sessionStorage.getItem('loggedInUserId');
-            const userProfileSidebarSection = document.getElementById('user-profile-sidebar-section');
-            const loadingMessage = document.getElementById('loading-message');
-            const errorMessage = document.getElementById('error-message');
-            const logoutButtonMainHeader = document.getElementById('logout-button-main-header');
-            const notificationCountSpan = document.getElementById('notification-count');
-            const notificationBellButton = document.getElementById('notification-bell-button');
-            const notificationBellWrapper = document.querySelector('.notification-bell-wrapper');
+    document.addEventListener('DOMContentLoaded', async function() {
+        document.body.classList.remove('is-preload');
 
-            const userListModal = document.getElementById('userListModal');
-            const closeUserListModal = document.getElementById('closeUserListModal');
-            const waitingUsersList = document.getElementById('waitingUsersList');
+        // Global variables from both scripts
+        let allArticles = [];
+        let allRoles = [];
+        let allMovements = [];
+        let currentUserRole = '';
+        let currentUserCin = ''; 
+        let selectedRoles = [];
+        let articlesListBody;
+        let searchInput;
+        let loadingMessage;
+        let errorMessage;
+        let roleFilterContainer;
+        let toggleRolesButton;
+        let rolesDropdown;
+        let roleHeaderCol;
+        let loggedInUserId;
+        let userInfoDisplay;
+        let logoutButtonMainHeader;
 
-            const userDetailsModal = document.getElementById('userDetailsModal');
-            const closeUserDetailsModal = document.getElementById('closeUserDetailsModal');
-            const detailUsername = document.getElementById('detail-username');
-            const detailCin = document.getElementById('detail-cin');
-            const detailEmail = document.getElementById('detail-email');
-            const detailRole = document.getElementById('detail-role');
-            const detailStatus = document.getElementById('detail-status');
-            const detailDiplomaProof = document.getElementById('detail-diploma-proof');
-            const noDiplomaProofMessage = document.getElementById('no-diploma-proof-message');
-            const detailAcceptButton = document.getElementById('detail-accept-button');
-            const detailDenyButton = document.getElementById('detail-deny-button');
+        // Sidebar notification variables
+        const userProfileSidebarSection = document.getElementById('user-profile-sidebar-section');
+        const notificationCountSpan = document.getElementById('notification-count');
+        const notificationBellButton = document.getElementById('notification-bell-button');
+        const notificationBellWrapper = document.querySelector('.notification-bell-wrapper');
 
-            let currentDiplomaProofUrl = null;
-            let currentUserRole = '';
+        const userListModal = document.getElementById('userListModal');
+        const closeUserListModal = document.getElementById('closeUserListModal');
+        const waitingUsersList = document.getElementById('waitingUsersList');
 
-            async function fetchWaitingUsers() {
+        const userDetailsModal = document.getElementById('userDetailsModal');
+        const closeUserDetailsModal = document.getElementById('closeUserDetailsModal');
+        const detailUsername = document.getElementById('detail-username');
+        const detailCin = document.getElementById('detail-cin');
+        const detailEmail = document.getElementById('detail-email');
+        const detailRole = document.getElementById('detail-role');
+        const detailStatus = document.getElementById('detail-status');
+        const detailDiplomaProof = document.getElementById('detail-diploma-proof');
+        const noDiplomaProofMessage = document.getElementById('no-diploma-proof-message');
+        const detailAcceptButton = document.getElementById('detail-accept-button');
+        const detailDenyButton = document.getElementById('detail-deny-button');
+
+        let currentDiplomaProofUrl = null;
+
+        // NEW: Container for low-stock articles
+        const lowStockArticlesList = document.createElement('div');
+        lowStockArticlesList.id = 'low-stock-articles-list';
+        lowStockArticlesList.innerHTML = '<h3>Low Stock Articles</h3><ul id="low-stock-list"></ul>';
+
+        // Initialize DOM elements for articles page
+        articlesListBody = document.getElementById('articles-list-body');
+        searchInput = document.getElementById('article-search');
+        loadingMessage = document.getElementById('loading-message');
+        errorMessage = document.getElementById('error-message');
+        roleFilterContainer = document.getElementById('role-filter-container');
+        toggleRolesButton = document.getElementById('toggle-roles-button');
+        rolesDropdown = document.getElementById('roles-dropdown');
+        roleHeaderCol = document.getElementById('role-header-col');
+        loggedInUserId = sessionStorage.getItem('loggedInUserId');
+        userInfoDisplay = document.getElementById('user-info-display');
+        logoutButtonMainHeader = document.getElementById('logout-button-main-header');
+
+        // Global functions for handling user actions (from first script)
+        window.handleSellArticle = async function(articleId, currentQte, userCin) {
+            if (currentQte <= 0) {
+                alert('Cannot sell an article with a quantity of 0.');
+                return;
+            }
+
+            if (!userCin) {
+                alert('User information not available. Please refresh and try again.');
+                return;
+            }
+
+            const quantityToSell = prompt(`Enter quantity to sell (current: ${currentQte}):`);
+            if (quantityToSell === null || quantityToSell === '') {
+                return;
+            }
+            
+            const client = prompt('Enter client name:');
+            if (client === null || client === '') {
+                alert('Client name cannot be empty.');
+                return;
+            }
+
+            const clientZone = prompt('Enter client zone:');
+            if (clientZone === null || clientZone === '') {
+                alert('Client zone cannot be empty.');
+                return;
+            }
+
+            const clientActivityDomain = prompt('Enter client activity domain:');
+            if (clientActivityDomain === null || clientActivityDomain === '') {
+                alert('Client activity domain cannot be empty.');
+                return;
+            }
+            
+            const priseEnCharge = prompt('Enter prise en charge:');
+            if (priseEnCharge === null || priseEnCharge === '') {
+                alert('Prise en charge cannot be empty.');
+                return;
+            }
+
+            const qte = parseInt(quantityToSell, 10);
+
+            if (isNaN(qte) || qte <= 0 || qte > currentQte) {
+                alert(`Invalid quantity. Please enter a positive number not greater than ${currentQte}.`);
+                return;
+            }
+
+            const payload = {
+                quantityChange: qte,
+                recordedBy: userCin,
+                client: client,
+                clientZone: clientZone,
+                clientActivityDomain: clientActivityDomain,
+                priseEnCharge: priseEnCharge
+            };
+
+            try {
+                const response = await fetch(`/api/users/${articleId}/sell`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                alert(`Successfully sold ${qte} units of the article.`);
+                await fetchArticles();
+                await updateNotifications(); // Update notifications after selling
+            } catch (error) {
+                console.error('Error selling article:', error);
+                alert('Failed to sell article. Please try again.');
+            }
+        }
+
+        window.handleChangeDepo = async function(articleId, currentQte, userCin) {
+            if (currentQte <= 0) {
+                alert('Cannot change depot for an article with a quantity of 0.');
+                return;
+            }
+
+            if (!userCin) {
+                alert('User information not available. Please refresh and try again.');
+                return;
+            }
+
+            const quantityToMove = prompt(`Enter quantity to move (current: ${currentQte}):`);
+            if (quantityToMove === null || quantityToMove === '') {
+                return;
+            }
+            
+            const qte = parseInt(quantityToMove, 10);
+
+            if (isNaN(qte) || qte <= 0 || qte > currentQte) {
+                alert(`Invalid quantity. Please enter a positive number not greater than ${currentQte}.`);
+                return;
+            }
+            
+            const newLocation = prompt('Enter the other depot location:');
+            if (newLocation === null || newLocation === '') {
+                alert('New location cannot be empty.');
+                return;
+            }
+
+            const payload = {
+                quantityChange: qte,
+                newLocation: newLocation,
+                recordedBy: userCin
+            };
+
+            try {
+                const response = await fetch(`/api/users/articles/${articleId}/change-depo`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                alert(`Successfully moved ${qte} units.`);
+                await fetchArticles();
+                await updateNotifications(); // Update notifications after changing depot
+            } catch (error) {
+                console.error('Error changing depot:', error);
+                alert('Failed to change depot. Please try again.');
+            }
+        }
+        
+        window.handleAddFromDepo = async function(articleId, userCin) {
+            if (!userCin) {
+                alert('User information not available. Please refresh and try again.');
+                return;
+            }
+
+            const quantityToAdd = prompt('Enter quantity to add:');
+            if (quantityToAdd === null || quantityToAdd === '') {
+                return;
+            }
+
+            const qte = parseInt(quantityToAdd, 10);
+            if (isNaN(qte) || qte <= 0) {
+                alert('Invalid quantity. Please enter a positive number.');
+                return;
+            }
+
+            const newLocation = prompt('Enter the new depot location:');
+            if (newLocation === null || newLocation === '') {
+                alert('New location cannot be empty.');
+                return;
+            }
+
+            const payload = {
+                quantityChange: qte,
+                newLocation: newLocation,
+                recordedBy: userCin
+            };
+
+            try {
+                const response = await fetch(`/api/users/articles/${articleId}/add-from-depo`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                alert(`Successfully added ${qte} units of the article to ${newLocation}.`);
+                await fetchArticles();
+                await updateNotifications(); // Update notifications after adding from depot
+            } catch (error) {
+                console.error('Error adding from depot:', error);
+                alert('Failed to add from depot. Please try again.');
+            }
+        }
+        
+        // Calculate movement speed function
+        function calculateMovementSpeed(article, movements) {
+            if (!article.movementTimeframe || article.fastSalesThreshold === null || article.mediumSalesThreshold === null) {
+                return { speed: 'N/A', cssClass: '' };
+            }
+
+            let totalSales = 0;
+            let startDate = new Date();
+            
+            switch (article.movementTimeframe) {
+                case 'WEEK':
+                    startDate.setDate(startDate.getDate() - 7);
+                    break;
+                case 'MONTH':
+                    startDate.setMonth(startDate.getMonth() - 1);
+                    break;
+                case 'YEAR':
+                    startDate.setFullYear(startDate.getFullYear() - 1);
+                    break;
+                default:
+                    return { speed: 'N/A', cssClass: '' };
+            }
+
+            movements.forEach(movement => {
+                const movementDate = new Date(movement.timestamp);
+                if (movement.article.articleId === article.articleId && movement.reason.toLowerCase() === 'sold' && movementDate >= startDate) {
+                    totalSales += Math.abs(movement.quantityChange);
+                }
+            });
+
+            let speed = '';
+            let cssClass = '';
+            if (totalSales >= article.fastSalesThreshold) {
+                speed = 'Fast';
+                cssClass = 'fast-movement';
+            } else if (totalSales >= article.mediumSalesThreshold) {
+                speed = 'Medium';
+                cssClass = 'medium-movement';
+            } else {
+                speed = 'Slow';
+                cssClass = 'slow-movement';
+            }
+            
+            return { speed, cssClass };
+        }
+
+        // Render articles function
+        function renderArticles(articlesToDisplay) {
+            if (!articlesListBody) return; // Guard clause for pages without articles table
+            
+            articlesListBody.innerHTML = '';
+            if (articlesToDisplay.length === 0) {
+                articlesListBody.innerHTML = '<tr><td colspan="6">No articles found.</td></tr>';
+                return;
+            }
+            articlesToDisplay.forEach(article => {
+                const row = articlesListBody.insertRow();
+                row.dataset.articleId = article.articleId;
+                row.style.cursor = 'pointer';
+
+                const roleName = article.role && article.role.name ? article.role.name : 'N/A';
+                
+                const soldButton = `<button class="sold-button" data-article-id="${article.articleId}" data-qte="${article.qte}" ${article.qte <= 0 ? 'disabled' : ''}>Sold</button>`;
+                const changeDepoButton = `<button class="change-depo-button" data-article-id="${article.articleId}" data-qte="${article.qte}" ${article.qte <= 0 ? 'disabled' : ''}>Change Depo</button>`;
+                const { speed, cssClass } = calculateMovementSpeed(article, allMovements);
+                const addDepoButton = `<button class="add-depo-button" data-article-id="${article.articleId}">Add from Depo</button>`;
+
+                const designationWithLocation = article.location ? `${article.designation} (${article.location})` : article.designation;
+
+                row.innerHTML = `
+                    <td>${article.codeArticle}</td>
+                    <td>${designationWithLocation}</td>
+                    <td>${article.qte}</td>
+                    <td class="article-role-col">${roleName}</td>
+                    <td class="movement-speed-cell ${cssClass}">${speed}</td>
+                    <td class="actions-col">${soldButton} ${changeDepoButton} ${addDepoButton}</td>
+                `;
+            });
+        }
+        
+        // Filter and render articles function
+        function filterAndRenderArticles() {
+            if (!searchInput || !articlesListBody) return; // Guard clause
+            
+            const searchTerm = searchInput.value.toLowerCase();
+            let filteredArticles = allArticles.filter(article => {
+                const matchesSearch = article.codeArticle.toLowerCase().includes(searchTerm) ||
+                                        article.designation.toLowerCase().includes(searchTerm);
+                
+                const articleRoleName = article.role && article.role.name ? article.role.name : 'N/A';
+                const matchesRole = selectedRoles.length === 0 || selectedRoles.includes(articleRoleName);
+
+                return matchesSearch && matchesRole;
+            });
+            renderArticles(filteredArticles);
+        }
+
+        // Fetch articles function
+        async function fetchArticles() {
+            if (!loadingMessage || !errorMessage || !articlesListBody) return; // Guard clause
+            
+            loadingMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+            try {
+                const [articlesResponse, movementsResponse] = await Promise.all([
+                    fetch('/api/users/articles'),
+                    fetch('/api/article-movements')
+                ]);
+
+                if (!articlesResponse.ok) {
+                    throw new Error(`HTTP error! status: ${articlesResponse.status}`);
+                }
+                if (!movementsResponse.ok) {
+                    throw new Error(`HTTP error! status: ${movementsResponse.status}`);
+                }
+
+                allArticles = await articlesResponse.json();
+                allMovements = await movementsResponse.json();
+                loadingMessage.style.display = 'none';
+
+                if (currentUserRole === 'Admin') {
+                    if (roleHeaderCol) {
+                        roleHeaderCol.style.display = 'table-cell';
+                        document.querySelectorAll('.article-role-col').forEach(el => el.style.display = 'table-cell');
+                    }
+                    renderArticles(allArticles);
+                } else {
+                    const filteredByRole = allArticles.filter(article => 
+                        article.role && article.role.name === currentUserRole
+                    );
+                    renderArticles(filteredByRole);
+                }
+            } catch (error) {
+                console.error('Error fetching articles:', error);
+                loadingMessage.style.display = 'none';
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = 'Failed to load articles. Please try again later.';
+            }
+        }
+
+        // Fetch roles and populate dropdown function
+        async function fetchRolesAndPopulateDropdown() {
+            if (!rolesDropdown) return; // Guard clause
+            
+            try {
+                const response = await fetch('/api/roles');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                allRoles = await response.json();
+                
+                rolesDropdown.innerHTML = '';
+                allRoles.forEach(role => {
+                    const label = document.createElement('label');
+                    label.innerHTML = `
+                        <input type="checkbox" name="role" value="${role.name}"> ${role.name}
+                    `;
+                    rolesDropdown.appendChild(label);
+                });
+
+                rolesDropdown.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const label = this.closest('label');
+                        if (this.checked) {
+                            selectedRoles.push(this.value);
+                            label.classList.add('selected-role');
+                        } else {
+                            selectedRoles = selectedRoles.filter(role => role !== this.value);
+                            label.classList.remove('selected-role');
+                        }
+                        filterAndRenderArticles();
+                    });
+                });
+            } catch (error) {
+                console.error('Error fetching roles:', error);
+            }
+        }
+
+        // Setup event listeners for articles functionality
+        function setupArticlesEventListeners() {
+            if (!articlesListBody) return; // Guard clause
+            
+            articlesListBody.addEventListener('click', function(event) {
+                const target = event.target;
+                
+                const row = target.closest('tr');
+                if (row && row.dataset.articleId && !target.closest('button')) {
+                    window.location.href = `/ArticleDetail.html?id=${row.dataset.articleId}`;
+                    return;
+                }
+
+                if (target.classList.contains('sold-button')) {
+                    const articleId = target.dataset.articleId;
+                    const currentQte = target.dataset.qte;
+                    window.handleSellArticle(articleId, currentQte, currentUserCin);
+                } else if (target.classList.contains('change-depo-button')) {
+                    const articleId = target.dataset.articleId;
+                    const currentQte = target.dataset.qte;
+                    window.handleChangeDepo(articleId, currentQte, currentUserCin);
+                } else if (target.classList.contains('add-depo-button')) {
+                    const articleId = target.dataset.articleId;
+                    window.handleAddFromDepo(articleId, currentUserCin);
+                }
+            });
+
+            if (searchInput) {
+                searchInput.addEventListener('keyup', filterAndRenderArticles);
+            }
+            
+            if (toggleRolesButton && rolesDropdown) {
+                toggleRolesButton.addEventListener('click', () => {
+                    rolesDropdown.style.display = rolesDropdown.style.display === 'none' ? 'block' : 'none';
+                });
+            }
+        }
+
+        // Notification functions from second script
+        async function fetchWaitingUsers() {
+            if (!waitingUsersList) return 0; // Guard clause
+            
+            try {
+                const response = await fetch('/api/users/waiting');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const users = await response.json();
+                
+                waitingUsersList.innerHTML = '<h3>New User Registrations</h3>';
+                if (users.length === 0) {
+                    waitingUsersList.innerHTML += '<p>No new user registrations.</p>';
+                } else {
+                    users.forEach(user => {
+                        const userItem = document.createElement('div');
+                        userItem.classList.add('user-list-item');
+                        userItem.innerHTML = `
+                            <div class="user-list-item-info">
+                                <strong>${user.username}</strong> (Role: ${user.roleName})
+                            </div>
+                            <div class="user-list-item-actions">
+                                <button class="accept-button" data-user-id="${user.userId}" data-action="accept">Accept</button>
+                                <button class="deny-button" data-user-id="${user.userId}" data-action="deny">Deny</button>
+                            </div>
+                        `;
+                        userItem.addEventListener('click', (event) => {
+                            if (event.target.tagName === 'BUTTON') {
+                                return;
+                            }
+                            showUserDetails(user.userId);
+                        });
+                        waitingUsersList.appendChild(userItem);
+                    });
+                    
+                    waitingUsersList.querySelectorAll('.accept-button').forEach(button => {
+                        button.addEventListener('click', (event) => {
+                            event.stopPropagation();
+                            const userId = event.target.dataset.userId;
+                            updateStatus(userId, 'Accepted');
+                        });
+                    });
+                    waitingUsersList.querySelectorAll('.deny-button').forEach(button => {
+                        button.addEventListener('click', (event) => {
+                            event.stopPropagation();
+                            const userId = event.target.dataset.userId;
+                            deleteUser(userId);
+                        });
+                    });
+                }
+                return users.length;
+            } catch (error) {
+                console.error('Error fetching waiting users:', error);
+                if (waitingUsersList) {
+                    waitingUsersList.innerHTML = '<h3>New User Registrations</h3><p>Failed to load waiting users.</p>';
+                }
+                return 0;
+            }
+        }
+        
+        // Fetch low-stock articles function
+        async function fetchLowStockArticles() {
+            let apiUrl = '';
+            if (currentUserRole === 'Admin') {
+                apiUrl = '/api/users/articles/low-stock/all';
+            } else {
+                apiUrl = `/api/users/articles/low-stock/${loggedInUserId}`;
+            }
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const articles = await response.json();
+                const articlesList = lowStockArticlesList.querySelector('ul');
+                articlesList.innerHTML = '';
+                
+                if (articles.length === 0) {
+                    articlesList.innerHTML = '<li>No low-stock articles at this time.</li>';
+                } else {
+                    articles.forEach(article => {
+                        const articleItem = document.createElement('li');
+                        articleItem.innerHTML = `<strong>Code: ${article.codeArticle}</strong> - ${article.designation} (Qte: ${article.qte})`;
+                        articlesList.appendChild(articleItem);
+                    });
+                }
+                return articles.length;
+            } catch (error) {
+                console.error('Error fetching low-stock articles:', error);
+                lowStockArticlesList.querySelector('ul').innerHTML = '<li>Failed to load low-stock articles.</li>';
+                return 0;
+            }
+        }
+
+        async function showUserDetails(userId) {
+            if (!detailDiplomaProof || !noDiplomaProofMessage) return; // Guard clause
+            
+            detailDiplomaProof.style.display = 'none';
+            detailDiplomaProof.src = '';
+            noDiplomaProofMessage.style.display = 'none';
+
+            if (currentDiplomaProofUrl) {
+                URL.revokeObjectURL(currentDiplomaProofUrl);
+                currentDiplomaProofUrl = null;
+            }
+
+            try {
+                const userResponse = await fetch(`/api/users/${userId}`);
+                if (!userResponse.ok) {
+                    throw new Error(`HTTP error! status: ${userResponse.status}`);
+                }
+                const user = await userResponse.json();
+
+                if (detailUsername) detailUsername.textContent = user.username;
+                if (detailCin) detailCin.textContent = user.userCin;
+                if (detailEmail) detailEmail.textContent = user.userEmail;
+                if (detailRole) detailRole.textContent = user.roleName;
+                if (detailStatus) detailStatus.textContent = user.userStatus;
+
                 try {
-                    const response = await fetch('/api/users/waiting');
+                    const diplomaResponse = await fetch(`/api/users/${userId}/diploma-proof`);
+                    if (diplomaResponse.ok) {
+                        const imageBlob = await diplomaResponse.blob();
+                        if (imageBlob.size > 0) {
+                            currentDiplomaProofUrl = URL.createObjectURL(imageBlob);
+                            detailDiplomaProof.src = currentDiplomaProofUrl;
+                            detailDiplomaProof.style.display = 'block';
+                        } else {
+                            noDiplomaProofMessage.style.display = 'block';
+                        }
+                    } else {
+                        noDiplomaProofMessage.style.display = 'block';
+                        console.warn(`No diploma proof found or error fetching for user ${userId}: Status ${diplomaResponse.status}`);
+                    }
+                } catch (diplomaError) {
+                    console.error('Error fetching diploma proof:', diplomaError);
+                    noDiplomaProofMessage.style.display = 'block';
+                }
+
+                if (detailAcceptButton) detailAcceptButton.onclick = () => updateStatus(user.userId, 'Accepted');
+                if (detailDenyButton) detailDenyButton.onclick = () => deleteUser(user.userId);
+
+                if (userListModal) userListModal.style.display = 'none';
+                if (userDetailsModal) userDetailsModal.style.display = 'flex';
+            } catch (error) {
+                console.error('Error fetching user details:', error);
+                displayMessageBox('Failed to load user details.', 'error');
+            }
+        }
+
+        async function updateStatus(userId, newStatus) {
+            displayConfirmationBox(`Are you sure you want to set this user's status to ${newStatus}?`, async () => {
+                try {
+                    const response = await fetch(`/api/users/${userId}/status`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ status: newStatus })
+                    });
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
-                    const users = await response.json();
-                    waitingUsersList.innerHTML = '';
-
-                    if (users.length === 0) {
-                        waitingUsersList.innerHTML = '<p>No users with "Waiting" status.</p>';
-                        notificationCountSpan.textContent = '0';
-                    } else {
-                        notificationCountSpan.textContent = users.length;
-                        users.forEach(user => {
-                            const userItem = document.createElement('div');
-                            userItem.classList.add('user-list-item');
-                            userItem.innerHTML = `
-                                <div class="user-list-item-info">
-                                    <strong>${user.username}</strong> (Role: ${user.roleName})
-                                </div>
-                                <div class="user-list-item-actions">
-                                    <button class="accept-button" data-user-id="${user.userId}" data-action="accept">Accept</button>
-                                    <button class="deny-button" data-user-id="${user.userId}" data-action="deny">Deny</button>
-                                </div>
-                            `;
-                            userItem.addEventListener('click', (event) => {
-                                if (event.target.tagName === 'BUTTON') {
-                                    return;
-                                }
-                                showUserDetails(user.userId);
-                            });
-                            waitingUsersList.appendChild(userItem);
-                        });
-
-                        waitingUsersList.querySelectorAll('.accept-button').forEach(button => {
-                            button.addEventListener('click', (event) => {
-                                event.stopPropagation();
-                                const userId = event.target.dataset.userId;
-                                updateStatus(userId, 'Accepted');
-                            });
-                        });
-                        waitingUsersList.querySelectorAll('.deny-button').forEach(button => {
-                            button.addEventListener('click', (event) => {
-                                event.stopPropagation();
-                                const userId = event.target.dataset.userId;
-                                deleteUser(userId);
-                            });
-                        });
-                    }
+                    displayMessageBox(`User status updated to ${newStatus}!`, 'success');
+                    if (userDetailsModal) userDetailsModal.style.display = 'none';
+                    if (userListModal) userListModal.style.display = 'none';
+                    await updateNotifications();
                 } catch (error) {
-                    console.error('Error fetching waiting users:', error);
-                    waitingUsersList.innerHTML = '<p>Failed to load waiting users.</p>';
-                    notificationCountSpan.textContent = '0';
+                    console.error('Error updating status:', error);
+                    displayMessageBox('Failed to update user status.', 'error');
                 }
+            });
+        }
+
+        async function deleteUser(userId) {
+            displayConfirmationBox('Are you sure you want to deny and delete this user?', async () => {
+                try {
+                    const response = await fetch(`/api/users/delete/${userId}`, {
+                        method: 'DELETE'
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    displayMessageBox('User denied and deleted successfully!', 'success');
+                    if (userDetailsModal) userDetailsModal.style.display = 'none';
+                    if (userListModal) userListModal.style.display = 'none';
+                    await updateNotifications();
+                } catch (error) {
+                    console.error('Error deleting user:', error);
+                    displayMessageBox('Failed to delete user.', 'error');
+                }
+            });
+        }
+
+        function displayMessageBox(message, type = 'info') {
+            const messageBox = document.createElement('div');
+            messageBox.style.position = 'fixed';
+            messageBox.style.top = '20px';
+            messageBox.style.left = '50%';
+            messageBox.style.transform = 'translateX(-50%)';
+            messageBox.style.backgroundColor = type === 'success' ? '#4CAF50' : (type === 'error' ? '#f44336' : '#007bff');
+            messageBox.style.color = 'white';
+            messageBox.style.padding = '15px 25px';
+            messageBox.style.borderRadius = '8px';
+            messageBox.style.zIndex = '3000';
+            messageBox.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+            messageBox.style.opacity = '0';
+            messageBox.style.transition = 'opacity 0.3s ease-in-out';
+            messageBox.textContent = message;
+            document.body.appendChild(messageBox);
+
+            setTimeout(() => {
+                messageBox.style.opacity = '1';
+            }, 10);
+
+            setTimeout(() => {
+                messageBox.style.opacity = '0';
+                messageBox.addEventListener('transitionend', () => messageBox.remove());
+            }, 3000);
+        }
+
+        function displayConfirmationBox(message, onConfirm) {
+            const confirmationBox = document.createElement('div');
+            confirmationBox.style.position = 'fixed';
+            confirmationBox.style.top = '50%';
+            confirmationBox.style.left = '50%';
+            confirmationBox.style.transform = 'translate(-50%, -50%)';
+            confirmationBox.style.backgroundColor = '#fff';
+            confirmationBox.style.color = '#333';
+            confirmationBox.style.padding = '25px';
+            confirmationBox.style.borderRadius = '8px';
+            confirmationBox.style.zIndex = '3000';
+            confirmationBox.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
+            confirmationBox.style.textAlign = 'center';
+            confirmationBox.style.maxWidth = '400px';
+            document.body.appendChild(confirmationBox);
+
+            const text = document.createElement('p');
+            text.textContent = message;
+            text.style.marginBottom = '20px';
+            confirmationBox.appendChild(text);
+
+            const confirmBtn = document.createElement('button');
+            confirmBtn.textContent = 'Yes';
+            confirmBtn.style.backgroundColor = '#4CAF50';
+            confirmBtn.style.color = 'white';
+            confirmBtn.style.border = 'none';
+            confirmBtn.style.padding = '10px 20px';
+            confirmBtn.style.borderRadius = '5px';
+            confirmBtn.style.cursor = 'pointer';
+            confirmBtn.style.marginRight = '10px';
+            confirmBtn.addEventListener('click', () => {
+                onConfirm();
+                confirmationBox.remove();
+            });
+            confirmationBox.appendChild(confirmBtn);
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.textContent = 'No';
+            cancelBtn.style.backgroundColor = '#f44336';
+            cancelBtn.style.color = 'white';
+            cancelBtn.style.border = 'none';
+            cancelBtn.style.padding = '10px 20px';
+            cancelBtn.style.borderRadius = '5px';
+            cancelBtn.style.cursor = 'pointer';
+            cancelBtn.addEventListener('click', () => {
+                confirmationBox.remove();
+            });
+            confirmationBox.appendChild(cancelBtn);
+        }
+
+        // Combined function to fetch all notifications and update the badge
+        async function updateNotifications() {
+            if (!notificationCountSpan) return; // Guard clause
+            
+            let totalNotifications = 0;
+            
+            if (waitingUsersList) {
+                waitingUsersList.innerHTML = '';
+            }
+            
+            if (currentUserRole === 'Admin') {
+                const userCount = await fetchWaitingUsers();
+                const articleCount = await fetchLowStockArticles();
+                totalNotifications = userCount + articleCount;
+                
+                // Ensure both lists are visible
+                if (waitingUsersList) waitingUsersList.style.display = 'block';
+                lowStockArticlesList.style.display = 'block';
+
+                // Append the low-stock list after the waiting users list
+                if (waitingUsersList && waitingUsersList.parentNode && !waitingUsersList.parentNode.contains(lowStockArticlesList)) {
+                    waitingUsersList.parentNode.appendChild(lowStockArticlesList);
+                }
+            } else {
+                const articleCount = await fetchLowStockArticles();
+                totalNotifications = articleCount;
+                
+                // Hide the waiting users list for non-admins
+                if (waitingUsersList) waitingUsersList.style.display = 'none';
+
+                // Ensure only the low-stock list is visible
+                if (waitingUsersList && waitingUsersList.parentNode && !waitingUsersList.parentNode.contains(lowStockArticlesList)) {
+                    // Append the low-stock list to the modal body
+                    waitingUsersList.parentNode.appendChild(lowStockArticlesList);
+                }
+                lowStockArticlesList.style.display = 'block';
+            }
+            
+            notificationCountSpan.textContent = totalNotifications;
+            if (totalNotifications > 0) {
+                notificationCountSpan.style.display = 'block';
+            } else {
+                notificationCountSpan.style.display = 'none';
+            }
+        }
+
+        // Fetch user role function
+        async function fetchUserRole() {
+            if (!loggedInUserId) {
+                console.error('No user logged in.');
+                if (userInfoDisplay) userInfoDisplay.textContent = 'No user logged in.';
+                return;
+            }
+            try {
+                const response = await fetch(`/api/users/${loggedInUserId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const user = await response.json();
+                currentUserRole = user.roleName;
+                currentUserCin = user.userCin;
+                if (userInfoDisplay) userInfoDisplay.textContent = ``;
+
+                if (currentUserRole === 'Admin' && roleFilterContainer) {
+                    roleFilterContainer.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error fetching user role:', error);
+                if (userInfoDisplay) userInfoDisplay.textContent = 'Error loading user info.';
+            }
+        }
+
+        // Initial setup and user profile loading
+        if (!loggedInUserId) {
+            if (errorMessage) {
+                errorMessage.textContent = 'No user logged in. Redirecting to login...';
+                errorMessage.style.display = 'block';
+            }
+            if (loadingMessage) loadingMessage.style.display = 'none';
+            setTimeout(() => {
+                window.location.href = '/index.html';
+            }, 2000);
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/users/${loggedInUserId}`);
+            let responseData;
+            const contentType = response.headers.get("content-type");
+
+            if (contentType && contentType.includes("application/json")) {
+                responseData = await response.json();
+            } else {
+                responseData = { message: await response.text() };
             }
 
-            async function showUserDetails(userId) {
-                detailDiplomaProof.style.display = 'none';
-                detailDiplomaProof.src = '';
-                noDiplomaProofMessage.style.display = 'none';
+            if (response.ok) {
+                // Update sidebar profile info if elements exist
+                const profileUsernameSidebar = document.getElementById('profile-username-sidebar');
+                const profileRoleSidebar = document.getElementById('profile-role-sidebar');
+                
+                if (profileUsernameSidebar) profileUsernameSidebar.textContent = responseData.username;
+                if (profileRoleSidebar) profileRoleSidebar.textContent = responseData.roleName;
+                currentUserRole = responseData.roleName;
+                currentUserCin = responseData.userCin;
 
+                if (loadingMessage) loadingMessage.style.display = 'none';
+                if (userProfileSidebarSection) userProfileSidebarSection.style.display = 'block';
+                
+                // Initialize articles functionality if elements exist
+                if (currentUserRole === 'Admin' && roleFilterContainer) {
+                    await fetchRolesAndPopulateDropdown();
+                }
+                await fetchArticles();
+                setupArticlesEventListeners();
+                
+                // Initial call to update all notifications
+                await updateNotifications();
+
+            } else {
+                console.error('Failed to fetch user profile:', responseData);
+                if (errorMessage) {
+                    errorMessage.textContent = 'Failed to load profile: ' + (responseData.message || 'Unknown error.');
+                    errorMessage.style.display = 'block';
+                }
+                if (loadingMessage) loadingMessage.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error during profile fetch:', error);
+            if (errorMessage) {
+                errorMessage.textContent = 'An unexpected error occurred while loading profile. Please try again.';
+                errorMessage.style.display = 'block';
+            }
+            if (loadingMessage) loadingMessage.style.display = 'none';
+        }
+
+        // Event listener for the notification bell
+        if (notificationBellButton) {
+            notificationBellButton.addEventListener('click', async function(event) {
+                event.preventDefault();
+                await updateNotifications();
+                if (userListModal) userListModal.style.display = 'flex';
+            });
+        }
+
+        if (closeUserListModal) {
+            closeUserListModal.addEventListener('click', function() {
+                if (userListModal) userListModal.style.display = 'none';
+            });
+        }
+        
+        if (closeUserDetailsModal) {
+            closeUserDetailsModal.addEventListener('click', function() {
+                if (userDetailsModal) userDetailsModal.style.display = 'none';
                 if (currentDiplomaProofUrl) {
                     URL.revokeObjectURL(currentDiplomaProofUrl);
                     currentDiplomaProofUrl = null;
                 }
-
-                try {
-                    const userResponse = await fetch(`/api/users/${userId}`);
-                    if (!userResponse.ok) {
-                        throw new Error(`HTTP error! status: ${userResponse.status}`);
-                    }
-                    const user = await userResponse.json();
-
-                    detailUsername.textContent = user.username;
-                    detailCin.textContent = user.userCin;
-                    detailEmail.textContent = user.userEmail;
-                    detailRole.textContent = user.roleName;
-                    detailStatus.textContent = user.userStatus;
-
-                    try {
-                        const diplomaResponse = await fetch(`/api/users/${userId}/diploma-proof`);
-                        if (diplomaResponse.ok) {
-                            const imageBlob = await diplomaResponse.blob();
-                            if (imageBlob.size > 0) {
-                                currentDiplomaProofUrl = URL.createObjectURL(imageBlob);
-                                detailDiplomaProof.src = currentDiplomaProofUrl;
-                                detailDiplomaProof.style.display = 'block';
-                            } else {
-                                noDiplomaProofMessage.style.display = 'block';
-                            }
-                        } else {
-                            noDiplomaProofMessage.style.display = 'block';
-                            console.warn(`No diploma proof found or error fetching for user ${userId}: Status ${diplomaResponse.status}`);
-                        }
-                    } catch (diplomaError) {
-                        console.error('Error fetching diploma proof:', diplomaError);
-                        noDiplomaProofMessage.style.display = 'block';
-                    }
-
-                    detailAcceptButton.onclick = () => updateStatus(user.userId, 'Accepted');
-                    detailDenyButton.onclick = () => deleteUser(user.userId);
-
-                    userListModal.style.display = 'none';
-                    userDetailsModal.style.display = 'flex';
-                } catch (error) {
-                    console.error('Error fetching user details:', error);
-                    displayMessageBox('Failed to load user details.', 'error');
-                }
-            }
-
-            async function updateStatus(userId, newStatus) {
-                displayConfirmationBox(`Are you sure you want to set this user's status to ${newStatus}?`, async () => {
-                    try {
-                        const response = await fetch(`/api/users/${userId}/status`, {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ status: newStatus })
-                        });
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        displayMessageBox(`User status updated to ${newStatus}!`, 'success');
-                        userDetailsModal.style.display = 'none';
-                        userListModal.style.display = 'none';
-                        if (currentUserRole === 'Admin') {
-                            fetchWaitingUsers();
-                        }
-                    } catch (error) {
-                        console.error('Error updating status:', error);
-                        displayMessageBox('Failed to update user status.', 'error');
-                    }
-                });
-            }
-
-            async function deleteUser(userId) {
-                displayConfirmationBox('Are you sure you want to deny and delete this user?', async () => {
-                    try {
-                        const response = await fetch(`/api/users/delete/${userId}`, {
-                            method: 'DELETE'
-                        });
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        displayMessageBox('User denied and deleted successfully!', 'success');
-                        userDetailsModal.style.display = 'none';
-                        userListModal.style.display = 'none';
-                        if (currentUserRole === 'Admin') {
-                            fetchWaitingUsers();
-                        }
-                    } catch (error) {
-                        console.error('Error deleting user:', error);
-                        displayMessageBox('Failed to delete user.', 'error');
-                    }
-                });
-            }
-
-            function displayMessageBox(message, type = 'info') {
-                const messageBox = document.createElement('div');
-                messageBox.style.position = 'fixed';
-                messageBox.style.top = '20px';
-                messageBox.style.left = '50%';
-                messageBox.style.transform = 'translateX(-50%)';
-                messageBox.style.backgroundColor = type === 'success' ? '#4CAF50' : (type === 'error' ? '#f44336' : '#007bff');
-                messageBox.style.color = 'white';
-                messageBox.style.padding = '15px 25px';
-                messageBox.style.borderRadius = '8px';
-                messageBox.style.zIndex = '3000';
-                messageBox.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
-                messageBox.style.opacity = '0';
-                messageBox.style.transition = 'opacity 0.3s ease-in-out';
-                messageBox.textContent = message;
-                document.body.appendChild(messageBox);
-
-                setTimeout(() => {
-                    messageBox.style.opacity = '1';
-                }, 10);
-
-                setTimeout(() => {
-                    messageBox.style.opacity = '0';
-                    messageBox.addEventListener('transitionend', () => messageBox.remove());
-                }, 3000);
-            }
-
-            function displayConfirmationBox(message, onConfirm) {
-                const confirmationBox = document.createElement('div');
-                confirmationBox.style.position = 'fixed';
-                confirmationBox.style.top = '50%';
-                confirmationBox.style.left = '50%';
-                confirmationBox.style.transform = 'translate(-50%, -50%)';
-                confirmationBox.style.backgroundColor = '#fff';
-                confirmationBox.style.color = '#333';
-                confirmationBox.style.padding = '25px';
-                confirmationBox.style.borderRadius = '8px';
-                confirmationBox.style.zIndex = '3000';
-                confirmationBox.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
-                confirmationBox.style.textAlign = 'center';
-                confirmationBox.style.maxWidth = '400px';
-                document.body.appendChild(confirmationBox);
-
-                const text = document.createElement('p');
-                text.textContent = message;
-                text.style.marginBottom = '20px';
-                confirmationBox.appendChild(text);
-
-                const confirmBtn = document.createElement('button');
-                confirmBtn.textContent = 'Yes';
-                confirmBtn.style.backgroundColor = '#4CAF50';
-                confirmBtn.style.color = 'white';
-                confirmBtn.style.border = 'none';
-                confirmBtn.style.padding = '10px 20px';
-                confirmBtn.style.borderRadius = '5px';
-                confirmBtn.style.cursor = 'pointer';
-                confirmBtn.style.marginRight = '10px';
-                confirmBtn.addEventListener('click', () => {
-                    onConfirm();
-                    confirmationBox.remove();
-                });
-                confirmationBox.appendChild(confirmBtn);
-
-                const cancelBtn = document.createElement('button');
-                cancelBtn.textContent = 'No';
-                cancelBtn.style.backgroundColor = '#f44336';
-                cancelBtn.style.color = 'white';
-                cancelBtn.style.border = 'none';
-                cancelBtn.style.padding = '10px 20px';
-                cancelBtn.style.borderRadius = '5px';
-                cancelBtn.style.cursor = 'pointer';
-                cancelBtn.addEventListener('click', () => {
-                    confirmationBox.remove();
-                });
-                confirmationBox.appendChild(cancelBtn);
-            }
-
-            if (!loggedInUserId) {
-                errorMessage.textContent = 'No user logged in. Redirecting to login...';
-                errorMessage.style.display = 'block';
-                loadingMessage.style.display = 'none';
-                setTimeout(() => {
-                    window.location.href = '/index.html';
-                }, 2000);
-                return;
-            }
-
-            try {
-                const response = await fetch(`/api/users/${loggedInUserId}`);
-                let responseData;
-                const contentType = response.headers.get("content-type");
-
-                if (contentType && contentType.includes("application/json")) {
-                    responseData = await response.json();
-                } else {
-                    responseData = { message: await response.text() };
-                }
-
-                if (response.ok) {
-                    document.getElementById('profile-username-sidebar').textContent = responseData.username;
-                    document.getElementById('profile-role-sidebar').textContent = responseData.roleName;
-                    currentUserRole = responseData.roleName;
-
-                    loadingMessage.style.display = 'none';
-                    userProfileSidebarSection.style.display = 'block';
-
-                    notificationBellButton.addEventListener('click', function(event) {
-                        event.preventDefault();
-                        if (currentUserRole === 'Admin') {
-                            fetchWaitingUsers();
-                            userListModal.style.display = 'flex';
-                        } else {
-                            displayMessageBox('No specific notifications for your role at this time. Stay tuned for future alerts!', 'info');
-                        }
-                    });
-
-                    if (currentUserRole === 'Admin') {
-                        fetchWaitingUsers();
-                    } else {
-                        notificationCountSpan.textContent = '0';
-                    }
-
-                } else {
-                    console.error('Failed to fetch user profile:', responseData);
-                    errorMessage.textContent = 'Failed to load profile: ' + (responseData.message || 'Unknown error.');
-                    errorMessage.style.display = 'block';
-                    loadingMessage.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error during profile fetch:', error);
-                errorMessage.textContent = 'An unexpected error occurred while loading profile. Please try again.';
-                errorMessage.style.display = 'block';
-                loadingMessage.style.display = 'none';
-            }
-
-            closeUserListModal.addEventListener('click', function() {
-                userListModal.style.display = 'none';
             });
+        }
 
-            closeUserDetailsModal.addEventListener('click', function() {
+        window.addEventListener('click', function(event) {
+            if (userListModal && event.target == userListModal) {
+                userListModal.style.display = 'none';
+            }
+            if (userDetailsModal && event.target == userDetailsModal) {
                 userDetailsModal.style.display = 'none';
                 if (currentDiplomaProofUrl) {
                     URL.revokeObjectURL(currentDiplomaProofUrl);
                     currentDiplomaProofUrl = null;
                 }
-            });
+            }
+        });
 
-            window.addEventListener('click', function(event) {
-                if (event.target == userListModal) {
-                    userListModal.style.display = 'none';
-                }
-                if (event.target == userDetailsModal) {
-                    userDetailsModal.style.display = 'none';
-                    if (currentDiplomaProofUrl) {
-                        URL.revokeObjectURL(currentDiplomaProofUrl);
-                        currentDiplomaProofUrl = null;
-                    }
-                }
-            });
-
+        if (logoutButtonMainHeader) {
             logoutButtonMainHeader.addEventListener('click', function() {
                 sessionStorage.removeItem('loggedInUserId');
                 window.location.href = '/index.html';
             });
-        });
-    </script>
+        }
+    });
+</script>
 </body>
 </html>

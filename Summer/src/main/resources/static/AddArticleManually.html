@@ -325,7 +325,7 @@
                      <ul>
                         <li><a href="profile.html">Homepage</a></li>
                         <li><a href="AddArticleManually.html">Add article manually</a></li>
-                        <li><a href="ListArticle.html">List of articles</a></li>
+                        <li><a href="sidebar.html">List of articles</a></li>
                     
                     </ul>
                 </nav>
@@ -429,6 +429,13 @@
             const fastSalesThresholdInput = document.getElementById('fast-sales-threshold');
             const mediumSalesThresholdInput = document.getElementById('medium-sales-threshold');
 
+
+            // NEW: This is the container for low-stock articles, we will add it dynamically
+        const lowStockArticlesList = document.createElement('div');
+        lowStockArticlesList.id = 'low-stock-articles-list';
+        lowStockArticlesList.innerHTML = '<h3>Low Stock Articles</h3><ul id="low-stock-list"></ul>';
+
+
             if (dateInput) {
                 const today = new Date();
                 const year = today.getFullYear();
@@ -465,6 +472,79 @@
                     }
                 });
             }
+            
+            // NEW function to fetch low-stock articles
+async function fetchLowStockArticles() {
+    let apiUrl = '';
+    if (currentUserRole === 'Admin') {
+        apiUrl = '/api/users/articles/low-stock/all';
+    } else {
+        apiUrl = `/api/users/articles/low-stock/${loggedInUserId}`;
+    }
+
+    try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const articles = await response.json();
+        const articlesList = lowStockArticlesList.querySelector('ul');
+        articlesList.innerHTML = '';
+        
+        if (articles.length === 0) {
+            articlesList.innerHTML = '<li>No low-stock articles at this time.</li>';
+        } else {
+            articles.forEach(article => {
+                const articleItem = document.createElement('li');
+                articleItem.innerHTML = `<strong>Code: ${article.codeArticle}</strong> - ${article.designation} (Qte: ${article.qte})`;
+                articlesList.appendChild(articleItem);
+            });
+        }
+        return articles.length;
+    } catch (error) {
+        console.error('Error fetching low-stock articles:', error);
+        lowStockArticlesList.querySelector('ul').innerHTML = '<li>Failed to load low-stock articles.</li>';
+        return 0;
+    }
+}
+// NEW: Combined function to fetch all notifications and update the badge
+async function updateNotifications() {
+    let totalNotifications = 0;
+    
+    // Clear the existing content before updating
+    waitingUsersList.innerHTML = '';
+    
+    if (currentUserRole === 'Admin') {
+        const userCount = await fetchWaitingUsers();
+        const articleCount = await fetchLowStockArticles();
+        totalNotifications = userCount + articleCount;
+        
+        // Add the low-stock articles list right after the waiting users list
+        if (!waitingUsersList.parentNode.contains(lowStockArticlesList)) {
+            waitingUsersList.parentNode.appendChild(lowStockArticlesList);
+        }
+        lowStockArticlesList.style.display = 'block';
+    } else {
+        const articleCount = await fetchLowStockArticles();
+        totalNotifications = articleCount;
+        
+        // For non-admins, clear the waitingUsersList and replace its content with the articles list
+        waitingUsersList.innerHTML = '';
+        if (!waitingUsersList.parentNode.contains(lowStockArticlesList)) {
+            waitingUsersList.parentNode.appendChild(lowStockArticlesList);
+        } else {
+            waitingUsersList.parentNode.replaceChild(lowStockArticlesList, waitingUsersList);
+        }
+        lowStockArticlesList.style.display = 'block';
+    }
+    
+    notificationCountSpan.textContent = totalNotifications;
+    if (totalNotifications > 0) {
+        notificationCountSpan.style.display = 'block';
+    } else {
+        notificationCountSpan.style.display = 'none';
+    }
+}
 
             async function initializeRoleDropdown() {
                 if (!loggedInUserId) {
@@ -595,62 +675,62 @@
                 }
             });
 
-            async function fetchWaitingUsers() {
-                try {
-                    const response = await fetch('/api/users/waiting');
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+           async function fetchWaitingUsers() {
+    try {
+        const response = await fetch('/api/users/waiting');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const users = await response.json();
+        
+        // Clear previous content
+        waitingUsersList.innerHTML = '<h3>New User Registrations</h3>';
+        if (users.length === 0) {
+            waitingUsersList.innerHTML += '<p>No new user registrations.</p>';
+        } else {
+            users.forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.classList.add('user-list-item');
+                userItem.innerHTML = `
+                    <div class="user-list-item-info">
+                        <strong>${user.username}</strong> (Role: ${user.roleName})
+                    </div>
+                    <div class="user-list-item-actions">
+                        <button class="accept-button" data-user-id="${user.userId}" data-action="accept">Accept</button>
+                        <button class="deny-button" data-user-id="${user.userId}" data-action="deny">Deny</button>
+                    </div>
+                `;
+                userItem.addEventListener('click', (event) => {
+                    if (event.target.tagName === 'BUTTON') {
+                        return;
                     }
-                    const users = await response.json();
-                    waitingUsersList.innerHTML = '';
-
-                    if (users.length === 0) {
-                        waitingUsersList.innerHTML = '<p>No users with "Waiting" status.</p>';
-                        notificationCountSpan.textContent = '0';
-                    } else {
-                        notificationCountSpan.textContent = users.length;
-                        users.forEach(user => {
-                            const userItem = document.createElement('div');
-                            userItem.classList.add('user-list-item');
-                            userItem.innerHTML = `
-                                <div class="user-list-item-info">
-                                    <strong>${user.username}</strong> (Role: ${user.roleName})
-                                </div>
-                                <div class="user-list-item-actions">
-                                    <button class="accept-button" data-user-id="${user.userId}" data-action="accept">Accept</button>
-                                    <button class="deny-button" data-user-id="${user.userId}" data-action="deny">Deny</button>
-                                </div>
-                            `;
-                            userItem.addEventListener('click', (event) => {
-                                if (event.target.tagName === 'BUTTON') {
-                                    return;
-                                }
-                                showUserDetails(user.userId);
-                            });
-                            waitingUsersList.appendChild(userItem);
-                        });
-
-                        waitingUsersList.querySelectorAll('.accept-button').forEach(button => {
-                            button.addEventListener('click', (event) => {
-                                event.stopPropagation();
-                                const userId = event.target.dataset.userId;
-                                updateStatus(userId, 'Accepted');
-                            });
-                        });
-                        waitingUsersList.querySelectorAll('.deny-button').forEach(button => {
-                            button.addEventListener('click', (event) => {
-                                event.stopPropagation();
-                                const userId = event.target.dataset.userId;
-                                deleteUser(userId);
-                            });
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error fetching waiting users:', error);
-                    waitingUsersList.innerHTML = '<p>Failed to load waiting users.</p>';
-                    notificationCountSpan.textContent = '0';
-                }
-            }
+                    showUserDetails(user.userId);
+                });
+                waitingUsersList.appendChild(userItem);
+            });
+            
+            waitingUsersList.querySelectorAll('.accept-button').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const userId = event.target.dataset.userId;
+                    updateStatus(userId, 'Accepted');
+                });
+            });
+            waitingUsersList.querySelectorAll('.deny-button').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const userId = event.target.dataset.userId;
+                    deleteUser(userId);
+                });
+            });
+        }
+        return users.length;
+    } catch (error) {
+        console.error('Error fetching waiting users:', error);
+        waitingUsersList.innerHTML = '<h3>New User Registrations</h3><p>Failed to load waiting users.</p>';
+        return 0;
+    }
+}
 
             async function showUserDetails(userId) {
                 detailDiplomaProof.style.display = 'none';
@@ -831,6 +911,8 @@
                 confirmationBox.appendChild(cancelBtn);
             }
 
+            
+
             if (!loggedInUserId) {
                 errorMessage.textContent = 'No user logged in. Redirecting to login...';
                 errorMessage.style.display = 'block';
@@ -852,31 +934,17 @@
                     responseData = { message: await response.text() };
                 }
 
-                if (response.ok) {
-                    document.getElementById('profile-username-sidebar').textContent = responseData.username;
-                    document.getElementById('profile-role-sidebar').textContent = responseData.roleName;
-                    currentUserRole = responseData.roleName;
+               if (response.ok) {
+    document.getElementById('profile-username-sidebar').textContent = responseData.username;
+    document.getElementById('profile-role-sidebar').textContent = responseData.roleName;
+    currentUserRole = responseData.roleName;
 
-                    loadingMessage.style.display = 'none';
-                    userProfileSidebarSection.style.display = 'block';
-
-                    notificationBellButton.addEventListener('click', function(event) {
-                        event.preventDefault();
-                        if (currentUserRole.toLowerCase() === 'admin') {
-                            fetchWaitingUsers();
-                            userListModal.style.display = 'flex';
-                        } else {
-                            displayMessageBox('No specific notifications for your role at this time. Stay tuned for future alerts!', 'info');
-                        }
-                    });
-
-                    if (currentUserRole.toLowerCase() === 'admin') {
-                        fetchWaitingUsers();
-                    } else {
-                        notificationCountSpan.textContent = '0';
-                    }
-
-                } else {
+    loadingMessage.style.display = 'none';
+    userProfileSidebarSection.style.display = 'block';
+    
+    
+    await updateNotifications();
+}else {
                     console.error('Failed to fetch user profile:', responseData);
                     errorMessage.textContent = 'Failed to load profile: ' + (responseData.message || 'Unknown error.');
                     errorMessage.style.display = 'block';
@@ -888,6 +956,13 @@
                 errorMessage.style.display = 'block';
                 loadingMessage.style.display = 'none';
             }
+
+             // Event listener for the notification bell
+        notificationBellButton.addEventListener('click', async function(event) {
+            event.preventDefault();
+            await updateNotifications();
+            userListModal.style.display = 'flex';
+        });
 
             closeUserListModal.addEventListener('click', function() {
                 userListModal.style.display = 'none';
