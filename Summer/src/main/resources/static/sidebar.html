@@ -565,6 +565,9 @@
         userInfoDisplay = document.getElementById('user-info-display');
         logoutButtonMainHeader = document.getElementById('logout-button-main-header');
 
+
+      
+
          document.getElementById('toggle-roles-button').addEventListener('click', function() {
             var dropdown = document.getElementById('roles-dropdown');
             if (dropdown.style.display === 'none' || dropdown.style.display === '') {
@@ -576,90 +579,260 @@
 
          await fetchUserRole();
     await fetchArticles();
-    setupArticlesEventListeners();
+    setupArticlesEventListeners2();
     
     // Initial call to update all notifications
     await updateNotifications();
 
         // Global functions for handling user actions (from first script)
-        window.handleSellArticle = async function(articleId, currentQte, userCin) {
-            if (currentQte <= 0) {
-                alert('Cannot sell an article with a quantity of 0.');
-                return;
-            }
+window.handleSellArticle = async function(articleId, currentQte, userCin) {
+    if (currentQte <= 0) {
+        alert('Cannot sell an article with a quantity of 0.');
+        return;
+    }
 
-            if (!userCin) {
-                alert('User information not available. Please refresh and try again.');
-                return;
-            }
+    if (!userCin) {
+        alert('User information not available. Please refresh and try again.');
+        return;
+    }
 
-            const quantityToSell = prompt(`Enter quantity to sell (current: ${currentQte}):`);
-            if (quantityToSell === null || quantityToSell === '') {
-                return;
-            }
+    // Function to show the complete sell form in a modal
+    const showSellForm = (currentQuantity) => {
+        return new Promise((resolve) => {
+            const tunisianStates = [
+                "Ariana", "Beja", "Ben Arous", "Bizerte", "Gabes", "Gafsa",
+                "Jendouba", "Kairouan", "Kasserine", "Kebili", "Kef", "Mahdia",
+                "Manouba", "Medenine", "Monastir", "Nabeul", "Sfax", "Sidi Bouzid",
+                "Siliana", "Sousse", "Tataouine", "Tozeur", "Tunis", "Zaghouan"
+            ];
+
+            // Create modal container
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            modal.style.zIndex = '1000';
+
+            // Create form container
+            const formContainer = document.createElement('div');
+            formContainer.style.backgroundColor = 'white';
+            formContainer.style.padding = '20px';
+            formContainer.style.borderRadius = '8px';
+            formContainer.style.width = '400px';
+            formContainer.style.maxWidth = '90%';
+
+            // Create form title
+            const title = document.createElement('h3');
+            title.textContent = 'Sell Article';
+            title.style.marginTop = '0';
+            title.style.textAlign = 'center';
+            formContainer.appendChild(title);
+
+            // Create form element
+            const form = document.createElement('form');
             
-            const client = prompt('Enter client name:');
-            if (client === null || client === '') {
-                alert('Client name cannot be empty.');
-                return;
-            }
-
-            const clientZone = prompt('Enter client zone:');
-            if (clientZone === null || clientZone === '') {
-                alert('Client zone cannot be empty.');
-                return;
-            }
-
-            const clientActivityDomain = prompt('Enter client activity domain:');
-            if (clientActivityDomain === null || clientActivityDomain === '') {
-                alert('Client activity domain cannot be empty.');
-                return;
-            }
+            // Quantity field
+            const quantityGroup = document.createElement('div');
+            quantityGroup.style.marginBottom = '15px';
             
-            const priseEnCharge = prompt('Enter prise en charge:');
-            if (priseEnCharge === null || priseEnCharge === '') {
-                alert('Prise en charge cannot be empty.');
-                return;
-            }
+            const quantityLabel = document.createElement('label');
+            quantityLabel.textContent = `Quantity (max: ${currentQuantity}):`;
+            quantityLabel.style.display = 'block';
+            quantityLabel.style.marginBottom = '5px';
+            
+            const quantityInput = document.createElement('input');
+            quantityInput.type = 'number';
+            quantityInput.min = '1';
+            quantityInput.max = currentQuantity;
+            quantityInput.value = '1';
+            quantityInput.style.width = '100%';
+            quantityInput.style.padding = '8px';
+            quantityInput.style.boxSizing = 'border-box';
+            quantityInput.required = true;
+            
+            quantityGroup.appendChild(quantityLabel);
+            quantityGroup.appendChild(quantityInput);
+            form.appendChild(quantityGroup);
 
-            const qte = parseInt(quantityToSell, 10);
+            // Client name field
+            const clientGroup = document.createElement('div');
+            clientGroup.style.marginBottom = '15px';
+            
+            const clientLabel = document.createElement('label');
+            clientLabel.textContent = 'Client Name:';
+            clientLabel.style.display = 'block';
+            clientLabel.style.marginBottom = '5px';
+            
+            const clientInput = document.createElement('input');
+            clientInput.type = 'text';
+            clientInput.style.width = '100%';
+            clientInput.style.padding = '8px';
+            clientInput.style.boxSizing = 'border-box';
+            clientInput.required = true;
+            
+            clientGroup.appendChild(clientLabel);
+            clientGroup.appendChild(clientInput);
+            form.appendChild(clientGroup);
 
-            if (isNaN(qte) || qte <= 0 || qte > currentQte) {
-                alert(`Invalid quantity. Please enter a positive number not greater than ${currentQte}.`);
-                return;
-            }
+            // Client zone field
+            const zoneGroup = document.createElement('div');
+            zoneGroup.style.marginBottom = '15px';
+            
+            const zoneLabel = document.createElement('label');
+            zoneLabel.textContent = 'Client Zone:';
+            zoneLabel.style.display = 'block';
+            zoneLabel.style.marginBottom = '5px';
+            
+            const zoneSelect = document.createElement('select');
+            zoneSelect.style.width = '100%';
+            zoneSelect.style.padding = '8px';
+            zoneSelect.style.boxSizing = 'border-box';
+            zoneSelect.required = true;
+            
+            tunisianStates.forEach(state => {
+                const option = document.createElement('option');
+                option.value = state;
+                option.textContent = state;
+                zoneSelect.appendChild(option);
+            });
+            
+            zoneGroup.appendChild(zoneLabel);
+            zoneGroup.appendChild(zoneSelect);
+            form.appendChild(zoneGroup);
 
-            const payload = {
-                quantityChange: qte,
-                recordedBy: userCin,
-                client: client,
-                clientZone: clientZone,
-                clientActivityDomain: clientActivityDomain,
-                priseEnCharge: priseEnCharge
+            // Activity domain field
+            const activityGroup = document.createElement('div');
+            activityGroup.style.marginBottom = '15px';
+            
+            const activityLabel = document.createElement('label');
+            activityLabel.textContent = 'Activity Domain:';
+            activityLabel.style.display = 'block';
+            activityLabel.style.marginBottom = '5px';
+            
+            const activityInput = document.createElement('input');
+            activityInput.type = 'text';
+            activityInput.style.width = '100%';
+            activityInput.style.padding = '8px';
+            activityInput.style.boxSizing = 'border-box';
+            activityInput.required = true;
+            
+            activityGroup.appendChild(activityLabel);
+            activityGroup.appendChild(activityInput);
+            form.appendChild(activityGroup);
+
+            // Prise en charge field
+            const chargeGroup = document.createElement('div');
+            chargeGroup.style.marginBottom = '20px';
+            
+            const chargeLabel = document.createElement('label');
+            chargeLabel.textContent = 'Prise en Charge:';
+            chargeLabel.style.display = 'block';
+            chargeLabel.style.marginBottom = '5px';
+            
+            const chargeInput = document.createElement('input');
+            chargeInput.type = 'text';
+            chargeInput.style.width = '100%';
+            chargeInput.style.padding = '8px';
+            chargeInput.style.boxSizing = 'border-box';
+            chargeInput.required = true;
+            
+            chargeGroup.appendChild(chargeLabel);
+            chargeGroup.appendChild(chargeInput);
+            form.appendChild(chargeGroup);
+
+            // Buttons container
+            const buttonsGroup = document.createElement('div');
+            buttonsGroup.style.display = 'flex';
+            buttonsGroup.style.justifyContent = 'flex-end';
+            buttonsGroup.style.gap = '10px';
+
+            // Cancel button
+            const cancelBtn = document.createElement('button');
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.type = 'button';
+            cancelBtn.style.padding = '8px 16px';
+            cancelBtn.onclick = () => {
+                document.body.removeChild(modal);
+                resolve(null);
             };
 
-            try {
-                const response = await fetch(`/api/users/${articleId}/sell`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
+            // Submit button
+            const submitBtn = document.createElement('button');
+            submitBtn.textContent = 'Sell';
+            submitBtn.type = 'submit';
+            submitBtn.style.padding = '8px 16px';
+            submitBtn.style.backgroundColor = '#4CAF50';
+            submitBtn.style.color = 'white';
+            submitBtn.style.border = 'none';
+            submitBtn.style.borderRadius = '4px';
+
+            buttonsGroup.appendChild(cancelBtn);
+            buttonsGroup.appendChild(submitBtn);
+            form.appendChild(buttonsGroup);
+
+            // Form submission handler
+            form.onsubmit = (e) => {
+                e.preventDefault();
+                document.body.removeChild(modal);
+                resolve({
+                    quantity: parseInt(quantityInput.value),
+                    client: clientInput.value,
+                    clientZone: zoneSelect.value,
+                    clientActivityDomain: activityInput.value,
+                    priseEnCharge: chargeInput.value
                 });
+            };
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+            formContainer.appendChild(form);
+            modal.appendChild(formContainer);
+            document.body.appendChild(modal);
 
-                alert(`Successfully sold ${qte} units of the article.`);
-                await fetchArticles();
-                await updateNotifications(); // Update notifications after selling
-            } catch (error) {
-                console.error('Error selling article:', error);
-                alert('Failed to sell article. Please try again.');
-            }
+            // Focus on first input
+            quantityInput.focus();
+        });
+    };
+
+    try {
+        const formData = await showSellForm(currentQte);
+        if (!formData) return; // User canceled
+
+        // Validate quantity again (in case user modified DOM)
+        if (formData.quantity <= 0 || formData.quantity > currentQte) {
+            alert(`Invalid quantity. Please enter a positive number not greater than ${currentQte}.`);
+            return;
         }
 
+        const payload = {
+            quantityChange: formData.quantity,
+            recordedBy: userCin,
+            client: formData.client,
+            clientZone: formData.clientZone,
+            clientActivityDomain: formData.clientActivityDomain,
+            priseEnCharge: formData.priseEnCharge
+        };
+
+        const response = await fetch(`/api/users/${articleId}/sell`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        alert(`Successfully sold ${formData.quantity} units of the article.`);
+        fetchArticles();
+    } catch (error) {
+        console.error('Error selling article:', error);
+        alert('Failed to sell article. Please try again.');
+    }
+};
+        
         window.handleChangeDepo = async function(articleId, currentQte, userCin) {
             if (currentQte <= 0) {
                 alert('Cannot change depot for an article with a quantity of 0.');
@@ -961,6 +1134,9 @@
     }
 }
 
+
+
+
         // Setup event listeners for articles functionality
         function setupArticlesEventListeners() {
     if (!articlesListBody) return; // Guard clause
@@ -1001,6 +1177,36 @@
             rolesDropdown.style.display = rolesDropdown.style.display === 'none' ? 'block' : 'none';
         });
     }
+}
+
+
+
+function setupArticlesEventListeners2() {
+
+    // Handle search input
+
+    if (searchInput) {
+
+        searchInput.addEventListener('keyup', filterAndRenderArticles);
+
+    }
+
+    
+
+    // Handle role filter toggle
+
+    if (toggleRolesButton && rolesDropdown) {
+
+        toggleRolesButton.addEventListener('click', (e) => {
+
+            e.preventDefault();
+
+            rolesDropdown.style.display = rolesDropdown.style.display === 'none' ? 'block' : 'none';
+
+        });
+
+    }
+
 }
 
         // Notification functions from second script
@@ -1387,13 +1593,13 @@
 
                 if (loadingMessage) loadingMessage.style.display = 'none';
                 if (userProfileSidebarSection) userProfileSidebarSection.style.display = 'block';
-                
+                await fetchUserRole()
                 // Initialize articles functionality if elements exist
                 if (currentUserRole === 'Admin' && roleFilterContainer) {
                     await fetchRolesAndPopulateDropdown();
                 }
                 await fetchArticles();
-                setupArticlesEventListeners();
+               setupArticlesEventListeners();
                 
                 // Initial call to update all notifications
                 await updateNotifications();
