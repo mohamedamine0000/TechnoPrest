@@ -6,140 +6,6 @@
     <title>Edit Article</title>
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>
-        /* Specific styles for the sidebar profile section, as requested */
-        .sidebar-profile-summary {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1em 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .sidebar-profile-summary .profile-info h3 {
-            margin: 0 0 0.25em 0;
-            color: darkgreen;
-            font-size: 1.25em;
-        }
-
-        .sidebar-profile-summary .profile-info p {
-            margin: 0;
-            color: darkgrey;
-            font-size: 0.9em;
-        }
-
-        .notification-bell-wrapper {
-            position: relative;
-            flex-shrink: 0;
-            margin-top: 0.2em;
-        }
-
-        .notification-bell-wrapper .notification-icon-link {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            color: #555;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 2.2em;
-            transition: color 0.3s ease;
-        }
-
-        .notification-bell-wrapper .notification-icon-link:hover {
-            color: #007bff;
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: -8px;
-            right: -10px;
-            background-color: #dc3545;
-            color: white;
-            border-radius: 50%;
-            padding: 4px 8px;
-            font-size: 0.75em;
-            font-weight: bold;
-            min-width: 15px;
-            text-align: center;
-            line-height: 1;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-            z-index: 1;
-        }
-
-        /* Modal specific styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.6);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 600px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            position: relative;
-            color: #333;
-        }
-
-        .close-button {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            cursor: pointer;
-        }
-
-        .close-button:hover,
-        .close-button:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        /* This is kept to style the user list within the modal, which is not part of the main template's default styles */
-        .user-list-item {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-        .user-list-item:last-child {
-            border-bottom: none;
-        }
-        .user-list-item:hover {
-            background-color: #f5f5f5;
-        }
-        .user-list-item-info {
-            flex-grow: 1;
-        }
-        .user-list-item-actions button {
-            margin-left: 10px;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-        }
-    </style>
 </head>
 <body class="is-preload">
     <div id="wrapper">
@@ -267,85 +133,7 @@
                             </div>
                         </div>
                     </form>
-
                 </section>
-
-                <div id="loading-message" class="loading-message">
-                    Loading profile data...
-                </div>
-                <div id="error-message" class="error-message" style="display: none;">
-                    Could not load profile. Please try logging in again.
-                </div>
-            </div>
-        </div>
-
-        <div id="sidebar">
-            <div class="inner">
-                <section id="user-profile-sidebar-section" style="display: none;">
-                    <div class="sidebar-profile-summary">
-                        <div class="profile-info">
-                            <h3 id="profile-username-sidebar"></h3>
-                            <p>Role: <span id="profile-role-sidebar"></span></p>
-                        </div>
-                        <div class="notification-bell-wrapper">
-                            <a href="#" class="notification-icon-link" id="notification-bell-button">
-                                <i class="fas fa-bell"></i>
-                            </a>
-                            <span class="notification-badge" id="notification-count"></span>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="search" class="alt">
-                    <form method="post" action="#">
-                        <input type="text" name="query" id="query" placeholder="Search" />
-                    </form>
-                </section>
-
-                <nav id="menu">
-                    <header class="major">
-                        <h2>Menu</h2>
-                    </header>
-                     <ul>
-                        <li><a href="profile.html">Homepage</a></li>
-                        <li><a href="AddArticleManually.html">Add article manually</a></li>
-                        <li><a href="sidebar.html">List of articles</a></li>
-                    
-                    </ul>
-                </nav>
-
-               
-            </div>
-        </div>
-    </div>
-
-    <div id="userListModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" id="closeUserListModal">&times;</span>
-            <h2>Users with 'Waiting' Status</h2>
-            <div id="waitingUsersList">
-                </div>
-        </div>
-    </div>
-
-    <div id="userDetailsModal" class="modal">
-        <div class="modal-content user-detail-modal-content">
-            <span class="close-button" id="closeUserDetailsModal">&times;</span>
-            <h3 id="detail-username"></h3>
-            <p><strong>CIN:</strong> <span id="detail-cin"></span></p>
-            <p><strong>Email:</strong> <span id="detail-email"></span></p>
-            <p><strong>Role:</strong> <span id="detail-role"></span></p>
-            <p><strong>Status:</strong> <span id="detail-status"></span></p>
-
-            <div class="diploma-proof-container">
-                <h4>Diploma Proof:</h4>
-                <img id="detail-diploma-proof" src="" alt="Diploma Proof" style="display: none;">
-                <p id="no-diploma-proof-message" style="display: none;">No diploma proof available.</p>
-            </div>
-
-            <div class="user-detail-actions">
-                <button class="accept-button" id="detail-accept-button">Accept</button>
-                <button class="deny-button" id="detail-deny-button">Deny</button>
             </div>
         </div>
     </div>
@@ -357,37 +145,10 @@
     <script src="assets/js/main.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
-            // Your original script's DOMContentLoaded function starts here
             const loggedInUserId = sessionStorage.getItem('loggedInUserId');
-            const userProfileSidebarSection = document.getElementById('user-profile-sidebar-section');
-            const loadingMessage = document.getElementById('loading-message');
-            const errorMessage = document.getElementById('error-message');
             const logoutButtonMainHeader = document.getElementById('logout-button-main-header');
-            const notificationCountSpan = document.getElementById('notification-count');
-            const notificationBellButton = document.getElementById('notification-bell-button');
-            const notificationBellWrapper = document.querySelector('.notification-bell-wrapper');
 
-            const userListModal = document.getElementById('userListModal');
-            const closeUserListModal = document.getElementById('closeUserListModal');
-            const waitingUsersList = document.getElementById('waitingUsersList');
-
-            const userDetailsModal = document.getElementById('userDetailsModal');
-            const closeUserDetailsModal = document.getElementById('closeUserDetailsModal');
-            const detailUsername = document.getElementById('detail-username');
-            const detailCin = document.getElementById('detail-cin');
-            const detailEmail = document.getElementById('detail-email');
-            const detailRole = document.getElementById('detail-role');
-            const detailStatus = document.getElementById('detail-status');
-            const detailDiplomaProof = document.getElementById('detail-diploma-proof');
-            const noDiplomaProofMessage = document.getElementById('no-diploma-proof-message');
-            const detailAcceptButton = document.getElementById('detail-accept-button');
-            const detailDenyButton = document.getElementById('detail-deny-button');
-
-            let currentDiplomaProofUrl = null;
-            let currentUserRole = '';
-            let currentUserCin = '';
-
-            // ------------------ MODIFIED SCRIPT SECTION FOR EDITING ------------------
+            // Get article ID from URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const articleId = urlParams.get('id');
 
@@ -397,8 +158,8 @@
                 return;
             }
 
+            // Form elements
             const articleForm = document.getElementById('edit-article-form');
-            
             const codeArticleInput = document.getElementById('codeArticle');
             const designationInput = document.getElementById('designation');
             const umInput = document.getElementById('um');
@@ -412,10 +173,8 @@
             const roleSelect = document.getElementById('role');
             const roleErrorSpan = document.getElementById('role-error');
 
-          
             const fromLocationContainer = document.getElementById('from-location-container');
             const fromLocationInput = document.getElementById('fromLocation');
-
             const reservedByWhoInput = document.getElementById('reservedByWho');
             const reservedToWhoInput = document.getElementById('reservedToWho');
             const reserveFieldsContainer = document.getElementById('reserve-fields-container');
@@ -424,151 +183,9 @@
             const fastSalesThresholdInput = document.getElementById('fast-sales-threshold');
             const mediumSalesThresholdInput = document.getElementById('medium-sales-threshold');
 
-            // Container for low-stock articles
-const lowStockArticlesList = document.createElement('div');
-lowStockArticlesList.id = 'low-stock-articles-list';
-lowStockArticlesList.innerHTML = '<h3>Low Stock Articles</h3><ul id="low-stock-list"></ul>';
+            let currentUserRole = '';
 
-async function fetchWaitingUsers() {
-            try {
-                const response = await fetch('/api/users/waiting');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const users = await response.json();
-                
-                waitingUsersList.innerHTML = '<h3>New User Registrations</h3>';
-                if (users.length === 0) {
-                    waitingUsersList.innerHTML += '<p>No new user registrations.</p>';
-                } else {
-                    users.forEach(user => {
-                        const userItem = document.createElement('div');
-                        userItem.classList.add('user-list-item');
-                        userItem.innerHTML = `
-                            <div class="user-list-item-info">
-                                <strong>${user.username}</strong> (Role: ${user.roleName})
-                            </div>
-                            <div class="user-list-item-actions">
-                                <button class="accept-button" data-user-id="${user.userId}" data-action="accept">Accept</button>
-                                <button class="deny-button" data-user-id="${user.userId}" data-action="deny">Deny</button>
-                            </div>
-                        `;
-                        userItem.addEventListener('click', (event) => {
-                            if (event.target.tagName === 'BUTTON') {
-                                return;
-                            }
-                            showUserDetails(user.userId);
-                        });
-                        waitingUsersList.appendChild(userItem);
-                    });
-                    
-                    waitingUsersList.querySelectorAll('.accept-button').forEach(button => {
-                        button.addEventListener('click', (event) => {
-                            event.stopPropagation();
-                            const userId = event.target.dataset.userId;
-                            updateStatus(userId, 'Accepted');
-                        });
-                    });
-                    waitingUsersList.querySelectorAll('.deny-button').forEach(button => {
-                        button.addEventListener('click', (event) => {
-                            event.stopPropagation();
-                            const userId = event.target.dataset.userId;
-                            deleteUser(userId);
-                        });
-                    });
-                }
-                return users.length;
-            } catch (error) {
-                console.error('Error fetching waiting users:', error);
-                waitingUsersList.innerHTML = '<h3>New User Registrations</h3><p>Failed to load waiting users.</p>';
-                return 0;
-            }
-        }
-        
-        // NEW function to fetch low-stock articles
-      async function fetchLowStockArticles() {
-    let apiUrl = '';
-    if (currentUserRole === 'Admin') {
-        // CORRECTED URL to match your backend API
-        apiUrl = '/api/users/articles/low-stock/all';
-    } else {
-        // CORRECTED URL to match your backend API, passing the userId
-        apiUrl = `/api/users/articles/low-stock/${loggedInUserId}`;
-    }
-
-    try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const articles = await response.json();
-        const articlesList = lowStockArticlesList.querySelector('ul');
-        articlesList.innerHTML = '';
-        
-        if (articles.length === 0) {
-            articlesList.innerHTML = '<li>No low-stock articles at this time.</li>';
-        } else {
-            articles.forEach(article => {
-                const articleItem = document.createElement('li');
-                // Displaying article code, designation, and quantity
-                articleItem.innerHTML = `<strong>Code: ${article.codeArticle}</strong> - ${article.designation} (Qte: ${article.qte})`;
-                articlesList.appendChild(articleItem);
-            });
-        }
-        return articles.length;
-    } catch (error) {
-        console.error('Error fetching low-stock articles:', error);
-        lowStockArticlesList.querySelector('ul').innerHTML = '<li>Failed to load low-stock articles.</li>';
-        return 0;
-    }
-}
-
-
-     // NEW: Combined function to fetch all notifications and update the badge
-       async function updateNotifications() {
-    let totalNotifications = 0;
-    
-    // Clear the existing content before updating
-    waitingUsersList.innerHTML = '';
-    
-    if (currentUserRole === 'Admin') {
-        const userCount = await fetchWaitingUsers();
-        const articleCount = await fetchLowStockArticles();
-        totalNotifications = userCount + articleCount;
-        
-        // Ensure both lists are visible
-        waitingUsersList.style.display = 'block';
-        lowStockArticlesList.style.display = 'block';
-
-        // Append the low-stock list after the waiting users list
-        if (!waitingUsersList.parentNode.contains(lowStockArticlesList)) {
-            waitingUsersList.parentNode.appendChild(lowStockArticlesList);
-        }
-    } else {
-        const articleCount = await fetchLowStockArticles();
-        totalNotifications = articleCount;
-        
-        // Hide the waiting users list for non-admins
-        waitingUsersList.style.display = 'none';
-
-        // Ensure only the low-stock list is visible
-        if (!waitingUsersList.parentNode.contains(lowStockArticlesList)) {
-            // Append the low-stock list to the modal body
-            waitingUsersList.parentNode.appendChild(lowStockArticlesList);
-        }
-        lowStockArticlesList.style.display = 'block';
-    }
-    
-    notificationCountSpan.textContent = totalNotifications;
-    if (totalNotifications > 0) {
-        notificationCountSpan.style.display = 'block';
-    } else {
-        notificationCountSpan.style.display = 'none';
-    }
-}
-
-
-
+            // Initialize role dropdown
             async function initializeRoleDropdown(articleRole) {
                 if (!loggedInUserId) {
                     console.error('No logged in user ID found in session storage.');
@@ -624,6 +241,14 @@ async function fetchWaitingUsers() {
                 }
             }
 
+            // Check if user is logged in
+            if (!loggedInUserId) {
+                alert('No user logged in. Redirecting to login...');
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 2000);
+                return;
+            }
 
             // Fetch and populate article data
             try {
@@ -643,10 +268,9 @@ async function fetchWaitingUsers() {
                 etagereInput.value = article.etagere || '';
                 etatInput.value = article.etat || 'Disponible';
                 
-                // Corrected date formatting
+                // Format date correctly
                 if (article.date) {
                     const dateObj = new Date(article.date);
-                    // Ensure the date is in YYYY-MM-DD format
                     const formattedDate = dateObj.toISOString().split('T')[0];
                     dateInput.value = formattedDate;
                 } else {
@@ -672,6 +296,7 @@ async function fetchWaitingUsers() {
                 return;
             }
 
+            // Handle state change for Reserve option
             if (etatInput) {
                 etatInput.addEventListener('change', function() {
                     if (this.value === 'Reserve') {
@@ -684,14 +309,7 @@ async function fetchWaitingUsers() {
                 });
             }
 
-          
-              // Event listener for the notification bell
-        notificationBellButton.addEventListener('click', async function(event) {
-            event.preventDefault();
-            await updateNotifications();
-            userListModal.style.display = 'flex';
-        });
-
+            // Handle form submission
             articleForm.addEventListener('submit', async function(event) {
                 event.preventDefault();
 
@@ -719,9 +337,7 @@ async function fetchWaitingUsers() {
                     role: {
                         id: parseInt(roleSelect.value, 10)
                     },
-                    
                     fromLocation: null,
-                    
                     movementTimeframe: movementTimeframeInput.value,
                     fastSalesThreshold: parseInt(fastSalesThresholdInput.value, 10),
                     mediumSalesThreshold: parseInt(mediumSalesThresholdInput.value, 10),
@@ -753,113 +369,13 @@ async function fetchWaitingUsers() {
                 }
             });
 
-            // ------------------ END OF MODIFIED SCRIPT SECTION ------------------
+            // Logout functionality
+            logoutButtonMainHeader.addEventListener('click', function() {
+                sessionStorage.removeItem('loggedInUserId');
+                window.location.href = '/index.html';
+            });
 
-
-        
-
-            async function showUserDetails(userId) {
-                detailDiplomaProof.style.display = 'none';
-                detailDiplomaProof.src = '';
-                noDiplomaProofMessage.style.display = 'none';
-
-                if (currentDiplomaProofUrl) {
-                    URL.revokeObjectURL(currentDiplomaProofUrl);
-                    currentDiplomaProofUrl = null;
-                }
-
-                try {
-                    const userResponse = await fetch(`/api/users/${userId}`);
-                    if (!userResponse.ok) {
-                        throw new Error(`HTTP error! status: ${userResponse.status}`);
-                    }
-                    const user = await userResponse.json();
-
-                    detailUsername.textContent = user.username;
-                    detailCin.textContent = user.userCin;
-                    detailEmail.textContent = user.userEmail;
-                    detailRole.textContent = user.roleName;
-                    detailStatus.textContent = user.userStatus;
-
-                    try {
-                        const diplomaResponse = await fetch(`/api/users/${userId}/diploma-proof`);
-                        if (diplomaResponse.ok) {
-                            const imageBlob = await diplomaResponse.blob();
-                            if (imageBlob.size > 0) {
-                                currentDiplomaProofUrl = URL.createObjectURL(imageBlob);
-                                detailDiplomaProof.src = currentDiplomaProofUrl;
-                                detailDiplomaProof.style.display = 'block';
-                            } else {
-                                noDiplomaProofMessage.style.display = 'block';
-                            }
-                        } else {
-                            noDiplomaProofMessage.style.display = 'block';
-                            console.warn(`No diploma proof found or error fetching for user ${userId}: Status ${diplomaResponse.status}`);
-                        }
-                    } catch (diplomaError) {
-                        console.error('Error fetching diploma proof:', diplomaError);
-                        noDiplomaProofMessage.style.display = 'block';
-                    }
-
-                    detailAcceptButton.onclick = () => updateStatus(user.userId, 'Accepted');
-                    detailDenyButton.onclick = () => deleteUser(user.userId);
-
-                    userListModal.style.display = 'none';
-                    userDetailsModal.style.display = 'flex';
-                } catch (error) {
-                    console.error('Error fetching user details:', error);
-                    displayMessageBox('Failed to load user details.', 'error');
-                }
-            }
-
-            async function updateStatus(userId, newStatus) {
-                displayConfirmationBox(`Are you sure you want to set this user's status to ${newStatus}?`, async () => {
-                    try {
-                        const response = await fetch(`/api/users/${userId}/status`, {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ status: newStatus })
-                        });
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        displayMessageBox(`User status updated to ${newStatus}!`, 'success');
-                        userDetailsModal.style.display = 'none';
-                        userListModal.style.display = 'none';
-                        if (currentUserRole.toLowerCase() === 'admin') {
-                            fetchWaitingUsers();
-                        }
-                    } catch (error) {
-                        console.error('Error updating status:', error);
-                        displayMessageBox('Failed to update user status.', 'error');
-                    }
-                });
-            }
-
-            async function deleteUser(userId) {
-                displayConfirmationBox('Are you sure you want to deny and delete this user?', async () => {
-                    try {
-                        const response = await fetch(`/api/users/delete/${userId}`, {
-                            method: 'DELETE'
-                        });
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        displayMessageBox('User denied and deleted successfully!', 'success');
-                        userDetailsModal.style.display = 'none';
-                        userListModal.style.display = 'none';
-                        if (currentUserRole.toLowerCase() === 'admin') {
-                            fetchWaitingUsers();
-                        }
-                    } catch (error) {
-                        console.error('Error deleting user:', error);
-                        displayMessageBox('Failed to delete user.', 'error');
-                    }
-                });
-            }
-
+            // Utility functions
             function displayMessageBox(message, type = 'info') {
                 const messageBox = document.createElement('div');
                 messageBox.style.position = 'fixed';
@@ -886,138 +402,6 @@ async function fetchWaitingUsers() {
                     messageBox.addEventListener('transitionend', () => messageBox.remove());
                 }, 3000);
             }
-
-            function displayConfirmationBox(message, onConfirm) {
-                const confirmationBox = document.createElement('div');
-                confirmationBox.style.position = 'fixed';
-                confirmationBox.style.top = '50%';
-                confirmationBox.style.left = '50%';
-                confirmationBox.style.transform = 'translate(-50%, -50%)';
-                confirmationBox.style.backgroundColor = '#fff';
-                confirmationBox.style.color = '#333';
-                confirmationBox.style.padding = '25px';
-                confirmationBox.style.borderRadius = '8px';
-                confirmationBox.style.zIndex = '3000';
-                confirmationBox.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
-                confirmationBox.style.textAlign = 'center';
-                confirmationBox.style.maxWidth = '400px';
-                document.body.appendChild(confirmationBox);
-
-                const text = document.createElement('p');
-                text.textContent = message;
-                text.style.marginBottom = '20px';
-                confirmationBox.appendChild(text);
-
-                const confirmBtn = document.createElement('button');
-                confirmBtn.textContent = 'Yes';
-                confirmBtn.style.backgroundColor = '#4CAF50';
-                confirmBtn.style.color = 'white';
-                confirmBtn.style.border = 'none';
-                confirmBtn.style.padding = '10px 20px';
-                confirmBtn.style.borderRadius = '5px';
-                confirmBtn.style.cursor = 'pointer';
-                confirmBtn.style.marginRight = '10px';
-                confirmBtn.addEventListener('click', () => {
-                    onConfirm();
-                    confirmationBox.remove();
-                });
-                confirmationBox.appendChild(confirmBtn);
-
-                const cancelBtn = document.createElement('button');
-                cancelBtn.textContent = 'No';
-                cancelBtn.style.backgroundColor = '#f44336';
-                cancelBtn.style.color = 'white';
-                cancelBtn.style.border = 'none';
-                cancelBtn.style.padding = '10px 20px';
-                cancelBtn.style.borderRadius = '5px';
-                cancelBtn.style.cursor = 'pointer';
-                cancelBtn.addEventListener('click', () => {
-                    confirmationBox.remove();
-                });
-                confirmationBox.appendChild(cancelBtn);
-            }
-
-            if (!loggedInUserId) {
-                errorMessage.textContent = 'No user logged in. Redirecting to login...';
-                errorMessage.style.display = 'block';
-                loadingMessage.style.display = 'none';
-                setTimeout(() => {
-                    window.location.href = '/index.html';
-                }, 2000);
-                return;
-            }
-
-            try {
-                const response = await fetch(`/api/users/${loggedInUserId}`);
-                let responseData;
-                const contentType = response.headers.get("content-type");
-
-                if (contentType && contentType.includes("application/json")) {
-                    responseData = await response.json();
-                } else {
-                    responseData = { message: await response.text() };
-                }
-
-                if (response.ok) {
-                    document.getElementById('profile-username-sidebar').textContent = responseData.username;
-                    document.getElementById('profile-role-sidebar').textContent = responseData.roleName;
-                    currentUserRole = responseData.roleName;
-
-                    loadingMessage.style.display = 'none';
-                    userProfileSidebarSection.style.display = 'block';
-
-                    // Initial call to update all notifications
-                await updateNotifications();
-
-                    notificationBellButton.addEventListener('click', async function(event) {
-            event.preventDefault();
-            await updateNotifications();
-            userListModal.style.display = 'flex';
-        });
-
-
-                } else {
-                    console.error('Failed to fetch user profile:', responseData);
-                    errorMessage.textContent = 'Failed to load profile: ' + (responseData.message || 'Unknown error.');
-                    errorMessage.style.display = 'block';
-                    loadingMessage.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error during profile fetch:', error);
-                errorMessage.textContent = 'An unexpected error occurred while loading profile. Please try again.';
-                errorMessage.style.display = 'block';
-                loadingMessage.style.display = 'none';
-            }
-
-            closeUserListModal.addEventListener('click', function() {
-                userListModal.style.display = 'none';
-            });
-
-            closeUserDetailsModal.addEventListener('click', function() {
-                userDetailsModal.style.display = 'none';
-                if (currentDiplomaProofUrl) {
-                    URL.revokeObjectURL(currentDiplomaProofUrl);
-                    currentDiplomaProofUrl = null;
-                }
-            });
-
-            window.addEventListener('click', function(event) {
-                if (event.target == userListModal) {
-                    userListModal.style.display = 'none';
-                }
-                if (event.target == userDetailsModal) {
-                    userDetailsModal.style.display = 'none';
-                    if (currentDiplomaProofUrl) {
-                        URL.revokeObjectURL(currentDiplomaProofUrl);
-                        currentDiplomaProofUrl = null;
-                    }
-                }
-            });
-
-            logoutButtonMainHeader.addEventListener('click', function() {
-                sessionStorage.removeItem('loggedInUserId');
-                window.location.href = '/index.html';
-            });
         });
     </script>
 </body>

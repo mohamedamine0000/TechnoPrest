@@ -1,4 +1,5 @@
 package com.esprit.summer.Entities;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import lombok.*;
 import jakarta.persistence.*;

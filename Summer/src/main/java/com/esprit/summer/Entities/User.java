@@ -1,4 +1,5 @@
 package com.esprit.summer.Entities;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,6 +18,7 @@ public class User {
     private Long userId;
     private String username;
     private String password;
+    @JsonProperty("email")
     private String email;
 
 
@@ -32,6 +34,7 @@ public class User {
     @Column(name = "diploma_proof", columnDefinition = "LONGBLOB")
     private byte[] diplomaProof;
     @Column(unique = true, length = 8)
+
     private String cin;
 
     public UserRole getRole() {

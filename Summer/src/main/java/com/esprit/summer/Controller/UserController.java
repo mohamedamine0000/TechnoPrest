@@ -6,6 +6,7 @@ import com.esprit.summer.Repositories.ArticleRepo;
 import com.esprit.summer.Repositories.UserRepo;
 import com.esprit.summer.Repositories.UserRoleRepo;
 import com.esprit.summer.Services.ArticleService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -355,15 +356,20 @@ public class UserController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    // API to delete an article
-    @DeleteMapping("/articles/{id}")
-    public ResponseEntity<Void> deleteArticle(@PathVariable Long id) {
-        String recordedBy = "admin"; // Replace with actual user
-        boolean isDeleted = articleService.deleteArticle(id, recordedBy);
-        if (isDeleted) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    @DeleteMapping("/articles/{articleId}")
+    @Transactional
+    public ResponseEntity<?> deleteArticle(@PathVariable Long articleId) {
+        try {
+            // First delete all related movements
+            articleMovementRepo.deleteAllByArticleId(articleId);
+
+            // Then delete the article
+            articleRepo.deleteById(articleId);
+
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting article: " + e.getMessage());
         }
     }
 
