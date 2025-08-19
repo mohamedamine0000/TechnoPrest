@@ -248,4 +248,28 @@ public class ArticleService {
     public List<Article> getLowStockArticlesForAllRoles() {
         return articleRepo.findAllLowStock();
     }
+
+    @Transactional
+    public void CommandeEnCours(Long articleId, int quantityToAdd, String reservedTo, String reservedBy, String recordedBy) {
+        Optional<Article> articleOptional = articleRepo.findById(articleId);
+        if (articleOptional.isEmpty()) {
+            throw new IllegalArgumentException("Article not found with ID: " + articleId);
+        }
+
+        Article article = articleOptional.get();
+
+        ArticleMovement movement = ArticleMovement.builder()
+                .article(article)
+                .quantityChange(quantityToAdd)
+                .reason(Reason.CommandeEnCours)
+                .reservedTo(reservedTo)
+                .reservedBy(reservedBy)
+                .fromLocation(article.getLocation() != null ? article.getLocation() : "")
+                .toLocation(article.getLocation() != null ? article.getLocation() : "")
+                .recordedBy(recordedBy)
+                .timestamp(LocalDateTime.now())
+            
+                .build();
+        articleMovementRepo.save(movement);
+    }
 }

@@ -546,4 +546,37 @@ public class UserController {
         List<Article> articles = articleService.getLowStockArticlesForAllRoles();
         return new ResponseEntity<>(articles, HttpStatus.OK);
     }
+
+
+    @PutMapping("/articles/{articleId}/CommandeEnCours")
+    public ResponseEntity<?> CommandeEnCours(@PathVariable Long articleId, @RequestBody Map<String, Object> payload) {
+        try {
+            Number quantityNumber = (Number) payload.get("quantityChange");
+            if (quantityNumber == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantity is required.");
+            }
+            int quantityToAdd = quantityNumber.intValue();
+            String reservedBy = (String) payload.get("reservedBy");
+            String reservedTo= (String) payload.get("reservedTo");
+            String recordedBy = (String) payload.get("recordedBy");
+
+            if (reservedBy == null || reservedBy.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("reservedBy is required.");
+            }
+
+            if (reservedTo == null || reservedTo.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("reservedTo is required.");
+            }
+
+            articleService.CommandeEnCours(articleId, quantityToAdd, reservedTo,reservedBy, recordedBy);
+            return ResponseEntity.ok("Article Commande En cours :) ");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+
+    } catch (Exception e) {
+        e.printStackTrace(); // 👈 add this so you can see the root cause in your console
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("An error occurred: " + e.getMessage());
+    }
+    }
 }

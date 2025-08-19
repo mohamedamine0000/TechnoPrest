@@ -24,7 +24,7 @@ public class ArticleMovement {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Reason reason; // Why the movement happened (Bought, Sold, ChangeDepo)
+    private Reason reason;
 
     private String fromLocation; // Optional: The location before the movement
     private String toLocation;   // Optional: The location after the movement
@@ -39,11 +39,25 @@ public class ArticleMovement {
     private String clientActivityDomain;
     private String priseEnCharge;
 
+    private String reservedTo;
+    private String reservedBy;
 
 
+    public String getReservedTo() {
+        return reservedTo;
+    }
 
+    public void setReservedTo(String reservedTo) {
+        this.reservedTo = reservedTo;
+    }
 
+    public String getReservedBy() {
+        return reservedBy;
+    }
 
+    public void setReservedBy(String reservedBy) {
+        this.reservedBy = reservedBy;
+    }
 
     public String getClient() {
         return client;
