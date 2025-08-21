@@ -560,13 +560,7 @@ public class UserController {
             String reservedTo= (String) payload.get("reservedTo");
             String recordedBy = (String) payload.get("recordedBy");
 
-            if (reservedBy == null || reservedBy.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("reservedBy is required.");
-            }
-
-            if (reservedTo == null || reservedTo.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("reservedTo is required.");
-            }
+            
 
             articleService.CommandeEnCours(articleId, quantityToAdd, reservedTo,reservedBy, recordedBy);
             return ResponseEntity.ok("Article Commande En cours :) ");
