@@ -579,4 +579,20 @@ public class UserController {
                 .body("An error occurred: " + e.getMessage());
     }
     }
+
+
+    @GetMapping("/articles/CommandeEnCours/all")
+    public ResponseEntity<List<ArticleMovement>> getAllCommandeEnCours() {
+        List<ArticleMovement> articlesM = articleService.ListCommandeEnCours();
+        return new ResponseEntity<>(articlesM, HttpStatus.OK);
+    }
+
+
+    @GetMapping("/articles/CommandeEnCours/byUser/{userId}")
+    public ResponseEntity<List<ArticleMovement>> getCommandeEnCoursByUser(@PathVariable Long userId) {
+        List<ArticleMovement> movements = articleService.getCommandeEnCoursForUser(userId);
+        return new ResponseEntity<>(movements, HttpStatus.OK);
+    }
+
+
 }

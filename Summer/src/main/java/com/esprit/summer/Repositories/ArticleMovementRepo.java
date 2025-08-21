@@ -5,6 +5,7 @@ import java.util.List;
 import com.esprit.summer.Entities.Article;
 import com.esprit.summer.Entities.ArticleMovement;
 import com.esprit.summer.Entities.Reason;
+import com.esprit.summer.Entities.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,4 +21,15 @@ public interface ArticleMovementRepo extends JpaRepository<ArticleMovement, Long
     @Modifying
     @Query("DELETE FROM ArticleMovement m WHERE m.article.articleId = :articleId")
     void deleteAllByArticleId(@Param("articleId") Long articleId);
+    List<ArticleMovement> findByReason(Reason reason);
+
+    @Query("SELECT am FROM ArticleMovement am " +
+            "JOIN am.article a " +
+            "JOIN a.role r " +
+            "JOIN User u ON u.role.id = r.id " +
+            "WHERE am.reason = :reason AND u.id = :userId")
+    List<ArticleMovement> findByReasonAndUserId(@Param("reason") Reason reason,
+                                                @Param("userId") Long userId);
+
+
 }
