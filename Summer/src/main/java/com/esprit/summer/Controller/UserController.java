@@ -1,10 +1,7 @@
 package com.esprit.summer.Controller;
 
 import com.esprit.summer.Entities.*;
-import com.esprit.summer.Repositories.ArticleMovementRepo;
-import com.esprit.summer.Repositories.ArticleRepo;
-import com.esprit.summer.Repositories.UserRepo;
-import com.esprit.summer.Repositories.UserRoleRepo;
+import com.esprit.summer.Repositories.*;
 import com.esprit.summer.Services.ArticleService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +31,9 @@ public class UserController {
     private ArticleMovementRepo articleMovementRepo;
     @Autowired
     private ArticleService articleService;
+
+    @Autowired
+    private CommandeArticleRepo commandeArticleRepo;
 
 
     @PostMapping
@@ -586,6 +586,13 @@ public class UserController {
     public ResponseEntity<List<ArticleMovement>> getCommandeEnCoursByUser(@PathVariable Long userId) {
         List<ArticleMovement> movements = articleService.getCommandeEnCoursForUser(userId);
         return new ResponseEntity<>(movements, HttpStatus.OK);
+    }
+
+    @PostMapping("/reserved-articles/add-and-delete")
+    public ResponseEntity<CommandeArticleMV> addReservedArticleAndRemoveMovement(@RequestBody CommandeArticleMV reservedArticle, @RequestParam Long movementIdToDelete) {
+        CommandeArticleMV result = articleService.addReservedArticleAndDeleteMovement(reservedArticle, movementIdToDelete);
+
+        return ResponseEntity.ok(result);
     }
 
 

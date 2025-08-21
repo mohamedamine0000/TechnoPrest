@@ -1,11 +1,9 @@
 package com.esprit.summer.Services;
 
-import com.esprit.summer.Entities.Article;
-import com.esprit.summer.Entities.ArticleMovement;
-import com.esprit.summer.Entities.Reason;
-import com.esprit.summer.Entities.UserRole;
+import com.esprit.summer.Entities.*;
 import com.esprit.summer.Repositories.ArticleMovementRepo;
 import com.esprit.summer.Repositories.ArticleRepo;
+import com.esprit.summer.Repositories.CommandeArticleRepo;
 import com.esprit.summer.Repositories.UserRoleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +24,9 @@ public class ArticleService {
 
     @Autowired
     private UserRoleRepo userRoleRepo;
+
+    @Autowired
+    private CommandeArticleRepo commandeArticleRepo;
 
     // Method to add a new article (initial stock)
     @Transactional
@@ -284,6 +285,14 @@ public class ArticleService {
 
     public List<ArticleMovement> getCommandeEnCoursForUser(Long userId) {
         return articleMovementRepo.findByReasonAndUserId(Reason.CommandeEnCours, userId);
+    }
+
+
+    @Transactional
+    public CommandeArticleMV addReservedArticleAndDeleteMovement(CommandeArticleMV reservedArticle, Long movementIdToDelete) {
+        CommandeArticleMV savedReservedArticle = commandeArticleRepo.save(reservedArticle);
+        articleMovementRepo.deleteById(movementIdToDelete);
+        return savedReservedArticle;
     }
 
 }
