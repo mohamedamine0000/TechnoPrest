@@ -595,5 +595,38 @@ public class UserController {
         return ResponseEntity.ok(result);
     }
 
+    @PutMapping("/articles/{articleId}/add-from-bought")
+    public ResponseEntity<?> addFromBoughtAndIncreaseQuantity(@PathVariable Long articleId, @RequestBody Map<String, Object> payload) {
+        try {
+            Number quantityNumber = (Number) payload.get("quantityChange");
+            if (quantityNumber == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantity is required.");
+            }
+            int quantityToAdd = quantityNumber.intValue();
+            String newLocation = (String) payload.get("newLocation");
+            String recordedBy = (String) payload.get("recordedBy");
+
+
+
+            articleService.addFromBoughtAndIncreaseQuantity(articleId, quantityToAdd, newLocation, recordedBy);
+            return ResponseEntity.ok("Article quantity updated successfully.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while updating the article.");
+        }
+    }
+
+    @DeleteMapping("/articles/movements/{movementIdToDelete}")
+    public ResponseEntity<String> deleteMovement(@PathVariable Long movementIdToDelete) {
+        try {
+            articleService.DeleteMovement(movementIdToDelete);
+            return ResponseEntity.ok("Article movement deleted successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error deleting article movement: " + e.getMessage());
+        }
+    }
+
+
 
 }

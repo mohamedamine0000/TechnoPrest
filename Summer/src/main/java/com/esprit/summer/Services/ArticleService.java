@@ -295,4 +295,34 @@ public class ArticleService {
         return savedReservedArticle;
     }
 
+    @Transactional
+    public void addFromBoughtAndIncreaseQuantity(Long articleId, int quantityToAdd, String fromLocation, String recordedBy) {
+        Optional<Article> articleOptional = articleRepo.findById(articleId);
+        if (articleOptional.isEmpty()) {
+            throw new IllegalArgumentException("Article not found with ID: " + articleId);
+        }
+
+        Article article = articleOptional.get();
+
+        int newQuantity = article.getQte() + quantityToAdd;
+        article.setQte(newQuantity);
+
+        articleRepo.save(article);
+        ArticleMovement movement = ArticleMovement.builder()
+                .article(article)
+                .quantityChange(quantityToAdd)
+                .reason(Reason.Bought)
+                .fromLocation(fromLocation)
+                .toLocation(article.getLocation())
+                .recordedBy(recordedBy)
+                .timestamp(LocalDateTime.now())
+                .build();
+        articleMovementRepo.save(movement);
+    }
+
+    @Transactional
+    public void DeleteMovement(Long movementIdToDelete) {
+        articleMovementRepo.deleteById(movementIdToDelete);
+    }
+
 }
