@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ArticleService {
@@ -148,37 +149,96 @@ public class ArticleService {
     @Transactional
     public Optional<Article> sellArticle(Long articleId, int quantityToSell, String recordedBy, String client, String clientZone, String clientActivityDomain, String priseEnCharge) {
         Optional<Article> articleOptional = articleRepo.findById(articleId);
-        if (articleOptional.isPresent()) {
-            Article article = articleOptional.get();
-            int currentQuantity = article.getQte();
+        if (articleOptional.isEmpty()) {
+            throw new IllegalArgumentException("Article not found with ID: " + articleId);
+        }
 
-            if (quantityToSell <= 0 || quantityToSell > currentQuantity) {
-                throw new IllegalArgumentException("Invalid quantity for sale.");
+        Article article = articleOptional.get();
+        int currentQuantity = article.getQte();
+
+        // Check for invalid quantity at the start
+        if (quantityToSell <= 0 || quantityToSell > currentQuantity) {
+            throw new IllegalArgumentException("Invalid quantity for sale.");
+        }
+
+        // 1. Fetch all reservations for this article
+        List<CommandeArticleMV> reservations = commandeArticleRepo.findByArticle_ArticleId(articleId);
+
+        // 2. Find the total quantity reserved across all reservations
+        int totalReservedQuantity = reservations.stream()
+                .mapToInt(CommandeArticleMV::getQuantity)
+                .sum();
+
+        // 3. Check if the client matches any reservation
+        List<CommandeArticleMV> matchingReservations = reservations.stream()
+                .filter(res -> res.getReservedTo().equals(client))
+                .collect(Collectors.toList());
+
+        if (!matchingReservations.isEmpty()) {
+            // Case 1: Selling to a reserved client
+            int soldFromReservation = 0;
+            int remainingToSell = quantityToSell;
+
+            // Iterate through the matching reservations and fulfill the sale
+            for (CommandeArticleMV reservation : matchingReservations) {
+                if (remainingToSell <= 0) break;
+
+                int quantityToFulfill = Math.min(remainingToSell, reservation.getQuantity());
+
+                reservation.setQuantity(reservation.getQuantity() - quantityToFulfill);
+                remainingToSell -= quantityToFulfill;
+
+                if (reservation.getQuantity() <= 0) {
+                    commandeArticleRepo.delete(reservation);
+                } else {
+                    commandeArticleRepo.save(reservation);
+                }
+
+                soldFromReservation += quantityToFulfill;
             }
 
-            int newQuantity = currentQuantity - quantityToSell;
-            article.setQte(newQuantity);
-            Article updatedArticle = articleRepo.save(article);
 
-            // Record the movement with all the new fields
-            ArticleMovement movement = ArticleMovement.builder()
-                    .article(updatedArticle)
-                    .quantityChange(-quantityToSell)
-                    .reason(Reason.Sold)
-                    .fromLocation(updatedArticle.getLocation())
-                    .toLocation(updatedArticle.getLocation())
-                    .timestamp(LocalDateTime.now())
-                    .recordedBy(recordedBy)
-                    .client(client)
-                    .clientZone(clientZone)
-                    .clientActivityDomain(clientActivityDomain)
-                    .priseEnCharge(priseEnCharge)
-                    .build();
-            articleMovementRepo.save(movement);
+        } else {
+            // Case 2: Selling to a non-reserved client
+            // Check if selling this quantity would violate the overall reservation constraint
+            int availableForSale = currentQuantity - totalReservedQuantity;
 
-            return Optional.of(updatedArticle);
+
+            if (quantityToSell > availableForSale) {
+                String reservedClients = reservations.stream()
+                        .map(CommandeArticleMV::getReservedTo)
+                        .distinct()
+                        .collect(Collectors.joining(", "));
+
+                String errorMessage = "Not enough unreserved stock available. The following clients have a total of " +
+                        totalReservedQuantity + " units reserved: " + reservedClients + ".";
+
+                throw new IllegalArgumentException(errorMessage);
+            }
         }
-        return Optional.empty();
+
+        // 4. Perform the stock reduction and movement record
+        int newQuantity = currentQuantity - quantityToSell;
+        article.setQte(newQuantity);
+        Article updatedArticle = articleRepo.save(article);
+
+        // Record the movement with all the new fields
+        ArticleMovement movement = ArticleMovement.builder()
+                .article(updatedArticle)
+                .quantityChange(-quantityToSell)
+                .reason(Reason.Sold)
+                .fromLocation(updatedArticle.getLocation())
+                .toLocation(updatedArticle.getLocation())
+                .timestamp(LocalDateTime.now())
+                .recordedBy(recordedBy)
+                .client(client)
+                .clientZone(clientZone)
+                .clientActivityDomain(clientActivityDomain)
+                .priseEnCharge(priseEnCharge)
+                .build();
+        articleMovementRepo.save(movement);
+
+        return Optional.of(updatedArticle);
     }
     @Transactional
     public Optional<Article> changeDepoAndReduceQuantity(Long articleId, int quantityToChange, String newLocation, String recordedBy) {
