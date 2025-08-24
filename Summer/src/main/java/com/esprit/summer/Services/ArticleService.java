@@ -1,10 +1,7 @@
 package com.esprit.summer.Services;
 
 import com.esprit.summer.Entities.*;
-import com.esprit.summer.Repositories.ArticleMovementRepo;
-import com.esprit.summer.Repositories.ArticleRepo;
-import com.esprit.summer.Repositories.CommandeArticleRepo;
-import com.esprit.summer.Repositories.UserRoleRepo;
+import com.esprit.summer.Repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,24 +27,57 @@ public class ArticleService {
     @Autowired
     private CommandeArticleRepo commandeArticleRepo;
 
+    @Autowired
+    private ArticleBatchRepository articleBatchRepo;
+
     // Method to add a new article (initial stock)
     @Transactional
     public Article addArticle(Article article, String addedBy, Reason reason, String fromLocation) {
         article.setAddedBy(addedBy);
-        // Save the article first
         Article savedArticle = articleRepo.save(article);
 
-        // Record the initial purchase/addition movement
         ArticleMovement initialMovement = ArticleMovement.builder()
                 .article(savedArticle)
-                .quantityChange(savedArticle.getQte()) // Initial quantity is the change
-                .reason(reason) // Use the reason provided in the request
-                .fromLocation(fromLocation) // Use the fromLocation provided in the request
+                .quantityChange(savedArticle.getQte())
+                .reason(reason)
+                .fromLocation(fromLocation)
                 .toLocation(savedArticle.getLocation())
                 .timestamp(LocalDateTime.now())
                 .recordedBy(addedBy)
                 .build();
         articleMovementRepo.save(initialMovement);
+
+        // NEW LOGIC: Check if the article has a date limit and create an ArticleBatch
+        if (savedArticle.getDatelimitNumber() != null && savedArticle.getDatelimitUnit() != null) {
+            LocalDate purchaseDate = LocalDate.now();
+
+            LocalDate expiryDate = calculateDate(
+                    purchaseDate,
+                    savedArticle.getDatelimitNumber(),
+                    savedArticle.getDatelimitUnit()
+            );
+
+            LocalDate expiryAlert = null;
+            if (savedArticle.getAlertBeforeDatelimitNumber() != null && savedArticle.getAlertBeforeDatelimitUnit() != null) {
+                expiryAlert = calculateDate(
+                        expiryDate,
+                        -savedArticle.getAlertBeforeDatelimitNumber(),
+                        savedArticle.getAlertBeforeDatelimitUnit()
+                );
+            }
+
+            ArticleBatch batch = ArticleBatch.builder()
+                    .article(savedArticle)
+                    .quantity(savedArticle.getQte())
+                    .purchaseDate(purchaseDate)
+                    .expiryDate(expiryDate)
+                    .expiryAlert(expiryAlert)
+                    .build();
+
+            articleBatchRepo.save(batch);
+        }
+
+
 
         return savedArticle;
     }
@@ -387,7 +417,7 @@ public class ArticleService {
     }
 
 
-    private LocalDate calculateExpiryDate(LocalDate baseDate, Integer number, TimeUnit unit) {
+    private LocalDate calculateDate(LocalDate baseDate, Integer number, TimeUnit unit) {
         if (number == null || unit == null) {
             return null;
         }

@@ -277,6 +277,37 @@ public class UserController {
             article.setMediumSalesThreshold((Integer) articleData.get("mediumSalesThreshold"));
         }
 
+
+        // --- NEW LOGIC TO HANDLE DATE LIMITS ---
+        if (articleData.get("datelimitNumber") != null) {
+            article.setDatelimitNumber(((Number) articleData.get("datelimitNumber")).intValue());
+        }
+
+        if (articleData.get("datelimitUnit") != null) {
+            try {
+                String unitString = (String) articleData.get("datelimitUnit");
+                article.setDatelimitUnit(TimeUnit.valueOf(unitString));
+            } catch (IllegalArgumentException e) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        if (articleData.get("alertBeforeDatelimitNumber") != null) {
+            article.setAlertBeforeDatelimitNumber(((Number) articleData.get("alertBeforeDatelimitNumber")).intValue());
+        }
+
+        if (articleData.get("alertBeforeDatelimitUnit") != null) {
+            try {
+                String unitString = (String) articleData.get("alertBeforeDatelimitUnit");
+                article.setAlertBeforeDatelimitUnit(TimeUnit.valueOf(unitString));
+            } catch (IllegalArgumentException e) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+        }
+        // ---------------------------------------
+
+
+
         Map<String, Object> roleData = (Map<String, Object>) articleData.get("role");
         if (roleData == null || roleData.get("id") == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
