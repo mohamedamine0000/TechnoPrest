@@ -41,7 +41,48 @@ public class Article {
     private Integer mediumSalesThreshold;
 
 
+    private Integer datelimitNumber;
+    @Enumerated(EnumType.STRING)
+    private TimeUnit datelimitUnit;
+    private Integer alertBeforeDatelimitNumber;
+    @Enumerated(EnumType.STRING)
+    private TimeUnit alertBeforeDatelimitUnit;
 
+
+
+
+
+    public Integer getDatelimitNumber() {
+        return datelimitNumber;
+    }
+
+    public void setDatelimitNumber(Integer datelimitNumber) {
+        this.datelimitNumber = datelimitNumber;
+    }
+
+    public TimeUnit getDatelimitUnit() {
+        return datelimitUnit;
+    }
+
+    public void setDatelimitUnit(TimeUnit datelimitUnit) {
+        this.datelimitUnit = datelimitUnit;
+    }
+
+    public Integer getAlertBeforeDatelimitNumber() {
+        return alertBeforeDatelimitNumber;
+    }
+
+    public void setAlertBeforeDatelimitNumber(Integer alertBeforeDatelimitNumber) {
+        this.alertBeforeDatelimitNumber = alertBeforeDatelimitNumber;
+    }
+
+    public TimeUnit getAlertBeforeDatelimitUnit() {
+        return alertBeforeDatelimitUnit;
+    }
+
+    public void setAlertBeforeDatelimitUnit(TimeUnit alertBeforeDatelimitUnit) {
+        this.alertBeforeDatelimitUnit = alertBeforeDatelimitUnit;
+    }
 
     public Timeframe getMovementTimeframe() {
         return movementTimeframe;

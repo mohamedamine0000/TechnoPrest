@@ -3,6 +3,8 @@ package com.esprit.summer.Entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Data
@@ -23,6 +25,7 @@ public class CommandeArticleMV {
 
     @ManyToOne
     @JoinColumn(name = "article_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)   // Hibernate-specific
     private Article article;
     private Long originalMovementId;
 

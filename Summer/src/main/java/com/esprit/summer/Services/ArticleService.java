@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -383,6 +384,25 @@ public class ArticleService {
     @Transactional
     public void DeleteMovement(Long movementIdToDelete) {
         articleMovementRepo.deleteById(movementIdToDelete);
+    }
+
+
+    private LocalDate calculateExpiryDate(LocalDate baseDate, Integer number, TimeUnit unit) {
+        if (number == null || unit == null) {
+            return null;
+        }
+        switch (unit) {
+            case DAYS:
+                return baseDate.plusDays(number);
+            case WEEKS:
+                return baseDate.plusWeeks(number);
+            case MONTHS:
+                return baseDate.plusMonths(number);
+            case YEARS:
+                return baseDate.plusYears(number);
+            default:
+                return baseDate;
+        }
     }
 
 }
