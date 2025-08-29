@@ -324,6 +324,36 @@ public class ArticleService {
         // Save the updated article. Note: The article's location is NOT changed here.
         articleRepo.save(article);
 
+        // NEW LOGIC: Create a new ArticleBatch if the article has a date limit
+        if (article.getDatelimitNumber() != null && article.getDatelimitUnit() != null) {
+            LocalDate purchaseDate = LocalDate.now();
+
+            LocalDate expiryDate = calculateDate(
+                    purchaseDate,
+                    article.getDatelimitNumber(),
+                    article.getDatelimitUnit()
+            );
+
+            LocalDate expiryAlert = null;
+            if (article.getAlertBeforeDatelimitNumber() != null && article.getAlertBeforeDatelimitUnit() != null) {
+                expiryAlert = calculateDate(
+                        expiryDate,
+                        -article.getAlertBeforeDatelimitNumber(),
+                        article.getAlertBeforeDatelimitUnit()
+                );
+            }
+
+            ArticleBatch batch = ArticleBatch.builder()
+                    .article(article)
+                    .quantity(quantityToAdd) // Use the quantity being added, not the total quantity
+                    .purchaseDate(purchaseDate)
+                    .expiryDate(expiryDate)
+                    .expiryAlert(expiryAlert)
+                    .build();
+
+            articleBatchRepo.save(batch);
+        }
+
         // Create and save an ArticleMovement entry with the correct locations.
         ArticleMovement movement = ArticleMovement.builder()
                 .article(article)
@@ -399,6 +429,35 @@ public class ArticleService {
         article.setQte(newQuantity);
 
         articleRepo.save(article);
+        // NEW LOGIC: Create a new ArticleBatch if the article has a date limit
+        if (article.getDatelimitNumber() != null && article.getDatelimitUnit() != null) {
+            LocalDate purchaseDate = LocalDate.now();
+
+            LocalDate expiryDate = calculateDate(
+                    purchaseDate,
+                    article.getDatelimitNumber(),
+                    article.getDatelimitUnit()
+            );
+
+            LocalDate expiryAlert = null;
+            if (article.getAlertBeforeDatelimitNumber() != null && article.getAlertBeforeDatelimitUnit() != null) {
+                expiryAlert = calculateDate(
+                        expiryDate,
+                        -article.getAlertBeforeDatelimitNumber(),
+                        article.getAlertBeforeDatelimitUnit()
+                );
+            }
+
+            ArticleBatch batch = ArticleBatch.builder()
+                    .article(article)
+                    .quantity(quantityToAdd) // Use the quantity being added
+                    .purchaseDate(purchaseDate)
+                    .expiryDate(expiryDate)
+                    .expiryAlert(expiryAlert)
+                    .build();
+
+            articleBatchRepo.save(batch);
+        }
         ArticleMovement movement = ArticleMovement.builder()
                 .article(article)
                 .quantityChange(quantityToAdd)
