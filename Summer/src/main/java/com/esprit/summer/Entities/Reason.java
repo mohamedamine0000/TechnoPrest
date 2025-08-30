@@ -1,5 +1,5 @@
 package com.esprit.summer.Entities;
 
 public enum Reason {
-    ChangeDepo , Bought ,Sold, CommandeEnCours
+    ChangeDepo , Bought ,Sold, CommandeEnCours,Poubelle
 }

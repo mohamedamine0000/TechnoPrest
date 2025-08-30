@@ -660,4 +660,32 @@ public class UserController {
 
 
 
+    @GetMapping("/expired-or-alert")
+    public ResponseEntity<List<ArticleBatch>> getExpiredOrAlertBatchesForAdmin() {
+        List<ArticleBatch> batch = articleService.getExpiredOrAlertBatchesForAdmin();
+        return new ResponseEntity<>(batch, HttpStatus.OK);
+    }
+    @GetMapping("/expired-or-alert/role/{roleName}")
+    public ResponseEntity<List<ArticleBatch>> getExpiredAlertsByRole(@PathVariable String roleName) {
+        List<ArticleBatch> batches = articleService.getExpiredOrAlertBatchesForUser(roleName);
+        return new ResponseEntity<>(batches, HttpStatus.OK);
+    }
+
+
+
+    @PostMapping("/reduce-by-batch/{batchId}")
+    public ResponseEntity<Void> reduceArticleQuantityByBatch(
+            @PathVariable Long batchId,
+            @RequestBody String recordedBy
+    ) {
+        try {
+            articleService.reduceQuantityByBatch(batchId, recordedBy);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException ex) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+
 }

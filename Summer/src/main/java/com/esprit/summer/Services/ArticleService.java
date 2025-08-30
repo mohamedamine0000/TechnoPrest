@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -493,5 +494,52 @@ public class ArticleService {
                 return baseDate;
         }
     }
+    public List<ArticleBatch> getExpiredOrAlertBatchesForAdmin() {
+        return articleBatchRepo.findExpiredOrAlertBatches(LocalDate.now());
+    }
 
+    public List<ArticleBatch> getExpiredOrAlertBatchesForUser(String roleName) {
+        Optional<UserRole> userRoleOptional = userRoleRepo.findByName(roleName);
+
+        if (userRoleOptional.isPresent()) {
+            return articleBatchRepo.findExpiredOrAlertBatchesByRole(userRoleOptional.get(), LocalDate.now());
+        } else {
+            // Return an empty list if the role name is not found
+            return Collections.emptyList();
+        }
+    }
+
+
+    @Transactional
+    public void reduceQuantityByBatch(Long batchId, String recordedBy) {
+        Optional<ArticleBatch> batchOptional = articleBatchRepo.findById(batchId);
+        if (batchOptional.isPresent()) {
+            ArticleBatch batch = batchOptional.get();
+            Article article = batch.getArticle();
+
+            int quantityToRemove = batch.getQuantity();
+
+            if (quantityToRemove > article.getQte()) {
+                quantityToRemove = article.getQte();
+            }
+
+            int newQuantity = article.getQte() - quantityToRemove;
+            article.setQte(newQuantity);
+            articleRepo.save(article);
+
+            ArticleMovement movement = ArticleMovement.builder()
+                    .article(article)
+                    .quantityChange(-quantityToRemove)
+                    .reason(Reason.Poubelle)
+                    .fromLocation(article.getLocation())
+                    .toLocation(null)
+                    .recordedBy(recordedBy)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+            articleMovementRepo.save(movement);
+            articleBatchRepo.delete(batch);
+        } else {
+            throw new IllegalArgumentException("Article batch not found with ID: " + batchId);
+        }
+    }
 }
