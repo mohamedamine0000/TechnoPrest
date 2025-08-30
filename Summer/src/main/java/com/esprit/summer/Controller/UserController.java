@@ -555,6 +555,11 @@ public class UserController {
         existingArticle.setDate(updatedArticle.getDate());
         existingArticle.setRole(updatedArticle.getRole());
 
+        existingArticle.setDatelimitNumber(updatedArticle.getDatelimitNumber());
+        existingArticle.setDatelimitUnit(updatedArticle.getDatelimitUnit());
+        existingArticle.setAlertBeforeDatelimitNumber(updatedArticle.getAlertBeforeDatelimitNumber());
+        existingArticle.setAlertBeforeDatelimitUnit(updatedArticle.getAlertBeforeDatelimitUnit());
+        
         Article savedArticle = articleRepo.save(existingArticle);
         return new ResponseEntity<>(savedArticle, HttpStatus.OK);
     }
