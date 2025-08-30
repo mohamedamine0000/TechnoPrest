@@ -1,5 +1,6 @@
 package com.esprit.summer.Repositories;
 
+import com.esprit.summer.Entities.Article;
 import com.esprit.summer.Entities.ArticleBatch;
 import com.esprit.summer.Entities.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,4 +17,7 @@ public interface ArticleBatchRepository extends JpaRepository<ArticleBatch, Long
 
     @Query("SELECT ab FROM ArticleBatch ab WHERE ab.article.role = :userRole AND :today >= ab.expiryAlert")
     List<ArticleBatch> findExpiredOrAlertBatchesByRole(@Param("userRole") UserRole userRole, @Param("today") LocalDate today);
+
+    List<ArticleBatch> findByArticleAndExpiryDateGreaterThan(Article article, LocalDate date);
+
 }

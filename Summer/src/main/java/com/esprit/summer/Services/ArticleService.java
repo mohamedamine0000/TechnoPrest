@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -188,10 +189,20 @@ public class ArticleService {
         Article article = articleOptional.get();
         int currentQuantity = article.getQte();
 
+        List<ArticleBatch> nonExpiredBatches = articleBatchRepo.findByArticleAndExpiryDateGreaterThan(article, LocalDate.now());
+        int totalNonExpiredQuantity = nonExpiredBatches.stream().mapToInt(ArticleBatch::getQuantity).sum();
+
+        if (quantityToSell > totalNonExpiredQuantity) {
+            throw new IllegalArgumentException("Cannot sell " + quantityToSell + " units. Only " + totalNonExpiredQuantity + " units of non-expired stock are available.");
+        }
+
+
         // Check for invalid quantity at the start
         if (quantityToSell <= 0 || quantityToSell > currentQuantity) {
             throw new IllegalArgumentException("Invalid quantity for sale.");
         }
+
+
 
         // 1. Fetch all reservations for this article
         List<CommandeArticleMV> reservations = commandeArticleRepo.findByArticle_ArticleId(articleId);
@@ -253,6 +264,7 @@ public class ArticleService {
         int newQuantity = currentQuantity - quantityToSell;
         article.setQte(newQuantity);
         Article updatedArticle = articleRepo.save(article);
+        reduceArticleBatchQuantity(article, quantityToSell);
 
         // Record the movement with all the new fields
         ArticleMovement movement = ArticleMovement.builder()
@@ -272,6 +284,39 @@ public class ArticleService {
 
         return Optional.of(updatedArticle);
     }
+
+
+    @Transactional
+    public void reduceArticleBatchQuantity(Article article, int quantityToSell) {
+        List<ArticleBatch> nonExpiredBatches = articleBatchRepo.findByArticleAndExpiryDateGreaterThan(article, LocalDate.now());
+
+        // Sort batches from oldest to newest based on purchase date
+        nonExpiredBatches.sort(Comparator.comparing(ArticleBatch::getPurchaseDate));
+
+        int remainingToSell = quantityToSell;
+
+        for (ArticleBatch batch : nonExpiredBatches) {
+            if (remainingToSell <= 0) {
+                break; // All quantity has been sold
+            }
+
+            int quantityInBatch = batch.getQuantity();
+
+            if (remainingToSell >= quantityInBatch) {
+                // Sell the entire batch and move to the next one
+                remainingToSell -= quantityInBatch;
+                articleBatchRepo.delete(batch);
+            } else {
+                // Sell only a portion of this batch
+                batch.setQuantity(quantityInBatch - remainingToSell);
+                articleBatchRepo.save(batch);
+                remainingToSell = 0; // The sale is complete
+            }
+        }
+    }
+
+
+
     @Transactional
     public Optional<Article> changeDepoAndReduceQuantity(Long articleId, int quantityToChange, String newLocation, String recordedBy) {
         Optional<Article> articleOptional = articleRepo.findById(articleId);
