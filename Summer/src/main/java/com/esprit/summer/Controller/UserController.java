@@ -559,7 +559,7 @@ public class UserController {
         existingArticle.setDatelimitUnit(updatedArticle.getDatelimitUnit());
         existingArticle.setAlertBeforeDatelimitNumber(updatedArticle.getAlertBeforeDatelimitNumber());
         existingArticle.setAlertBeforeDatelimitUnit(updatedArticle.getAlertBeforeDatelimitUnit());
-        
+
         Article savedArticle = articleRepo.save(existingArticle);
         return new ResponseEntity<>(savedArticle, HttpStatus.OK);
     }
