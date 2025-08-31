@@ -38,6 +38,23 @@ public class ArticleService {
         article.setAddedBy(addedBy);
         Article savedArticle = articleRepo.save(article);
 
+        if (article.getEtat() == EtatArticle.Reserve) {
+            CommandeArticleMV commande = CommandeArticleMV.builder()
+                    .article(savedArticle)
+                    .quantity(savedArticle.getQte())
+                    .reservedTo(savedArticle.getReservedToWho())
+                    .reservedBy(savedArticle.getReservedByWho())
+                    .build();
+            commandeArticleRepo.save(commande);
+            savedArticle.setEtat(EtatArticle.Disponible);
+            savedArticle.setReservedToWho(null);
+            savedArticle.setReservedByWho(null);
+            articleRepo.save(savedArticle);
+        }
+
+
+
+
         ArticleMovement initialMovement = ArticleMovement.builder()
                 .article(savedArticle)
                 .quantityChange(savedArticle.getQte())
@@ -189,13 +206,18 @@ public class ArticleService {
         Article article = articleOptional.get();
         int currentQuantity = article.getQte();
 
-        List<ArticleBatch> nonExpiredBatches = articleBatchRepo.findByArticleAndExpiryDateGreaterThan(article, LocalDate.now());
-        int totalNonExpiredQuantity = nonExpiredBatches.stream().mapToInt(ArticleBatch::getQuantity).sum();
+        if (article.getDatelimitNumber() != null && article.getDatelimitUnit() != null) {
+            List<ArticleBatch> nonExpiredBatches = articleBatchRepo.findByArticleAndExpiryDateGreaterThan(article, LocalDate.now());
+            int totalNonExpiredQuantity = nonExpiredBatches.stream().mapToInt(ArticleBatch::getQuantity).sum();
 
-        if (quantityToSell > totalNonExpiredQuantity) {
-            throw new IllegalArgumentException("Cannot sell " + quantityToSell + " units. Only " + totalNonExpiredQuantity + " units of non-expired stock are available.");
+            if (quantityToSell > totalNonExpiredQuantity) {
+                throw new IllegalArgumentException("Cannot sell " + quantityToSell + " units. Only " + totalNonExpiredQuantity + " units of non-expired stock are available.");
+            }
+        } else {
+            if (quantityToSell > article.getQte()) {
+                throw new IllegalArgumentException("Cannot sell " + quantityToSell + " units. Only " + article.getQte() + " units are available.");
+            }
         }
-
 
         // Check for invalid quantity at the start
         if (quantityToSell <= 0 || quantityToSell > currentQuantity) {
