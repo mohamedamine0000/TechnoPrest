@@ -40,9 +40,14 @@ public class ArticleService {
         if (existingArticle.isPresent()) {
             throw new ResourceAlreadyExistsException("An article with this code already exists. Please choose a unique code.");
         }
+        int originalQuantity = article.getQte();
+        if (article.getEtat() == EtatArticle.CommandeEnCours) {
+            article.setQte(0);
+        }
 
         article.setAddedBy(addedBy);
         Article savedArticle = articleRepo.save(article);
+
 
         if (article.getEtat() == EtatArticle.Reserve) {
             CommandeArticleMV commande = CommandeArticleMV.builder()
@@ -60,19 +65,20 @@ public class ArticleService {
 
 
 
-
+        if (article.getEtat() == EtatArticle.CommandeEnCours) {
+            CommandeEnCours(savedArticle.getArticleId(), originalQuantity, article.getReservedToWho(), article.getReservedByWho(), addedBy);
+        }else {
         ArticleMovement initialMovement = ArticleMovement.builder()
                 .article(savedArticle)
-                .quantityChange(savedArticle.getQte())
+                .quantityChange(originalQuantity)
                 .reason(reason)
                 .fromLocation(fromLocation)
                 .toLocation(savedArticle.getLocation())
                 .timestamp(LocalDateTime.now())
                 .recordedBy(addedBy)
                 .build();
-        articleMovementRepo.save(initialMovement);
+        articleMovementRepo.save(initialMovement);}
 
-        // NEW LOGIC: Check if the article has a date limit and create an ArticleBatch
         if (savedArticle.getDatelimitNumber() != null && savedArticle.getDatelimitUnit() != null) {
             LocalDate purchaseDate = LocalDate.now();
 
