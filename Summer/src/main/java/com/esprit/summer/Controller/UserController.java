@@ -2,6 +2,7 @@ package com.esprit.summer.Controller;
 
 import com.esprit.summer.Entities.*;
 import com.esprit.summer.Repositories.*;
+import com.esprit.summer.ResourceAlreadyExistsException;
 import com.esprit.summer.Services.ArticleService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -329,8 +330,13 @@ public class UserController {
         User user = userOptional.get();
         String addedBy = user.getCin();
 
-        Article newArticle = articleService.addArticle(article, addedBy, reason, fromLocation);
-        return new ResponseEntity<>(newArticle, HttpStatus.CREATED);
+        try {
+            Article newArticle = articleService.addArticle(article, addedBy, reason, fromLocation);
+            return new ResponseEntity<>(newArticle, HttpStatus.CREATED);
+        } catch (ResourceAlreadyExistsException e) {
+            // Return a 409 Conflict status with the updated, more concise message
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        }
     }
 
     // API to get an article by ID

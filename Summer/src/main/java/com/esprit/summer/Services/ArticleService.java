@@ -2,6 +2,7 @@ package com.esprit.summer.Services;
 
 import com.esprit.summer.Entities.*;
 import com.esprit.summer.Repositories.*;
+import com.esprit.summer.ResourceAlreadyExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +36,11 @@ public class ArticleService {
     // Method to add a new article (initial stock)
     @Transactional
     public Article addArticle(Article article, String addedBy, Reason reason, String fromLocation) {
+        Optional<Article> existingArticle = articleRepo.findByCodeArticle(article.getCodeArticle());
+        if (existingArticle.isPresent()) {
+            throw new ResourceAlreadyExistsException("An article with this code already exists. Please choose a unique code.");
+        }
+
         article.setAddedBy(addedBy);
         Article savedArticle = articleRepo.save(article);
 

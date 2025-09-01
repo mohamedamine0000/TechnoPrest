@@ -19,4 +19,7 @@ public interface ArticleRepo extends JpaRepository<Article, Long> {
     @Query("SELECT a FROM Article a WHERE a.qte <= a.minmumStock")
     List<Article> findAllLowStock();
 
+
+    Optional<Article> findByCodeArticle(String codeArticle);
+
 }
