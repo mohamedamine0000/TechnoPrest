@@ -637,10 +637,12 @@ public class ArticleService {
         User currentUser = userOptional.get();
 
         if (currentUser.getRole().getName().equalsIgnoreCase("admin")) {
-            return articleMovementRepo.findAll();
+            // Use the new method to get all movements, sorted by timestamp descending
+            return articleMovementRepo.findAllByOrderByTimestampDesc();
         }
         else {
-            return articleMovementRepo.findByArticleRole_Id(currentUser.getRole().getId());
+            // Use the new method to get movements for a specific role, sorted by timestamp descending
+            return articleMovementRepo.findByArticle_Role_IdOrderByTimestampDesc(currentUser.getRole().getId());
         }
     }
 

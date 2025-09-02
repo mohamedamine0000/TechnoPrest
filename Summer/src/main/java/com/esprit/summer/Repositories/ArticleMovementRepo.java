@@ -34,4 +34,11 @@ public interface ArticleMovementRepo extends JpaRepository<ArticleMovement, Long
     @Query("SELECT am FROM ArticleMovement am JOIN am.article a WHERE a.role.id = :roleId")
     List<ArticleMovement> findByArticleRole_Id(@Param("roleId") Long roleId);
 
+
+
+    // FIX: The method name was changed to use nested property traversal correctly.
+    List<ArticleMovement> findByArticle_Role_IdOrderByTimestampDesc(Long roleId);
+
+    // This method will find all movements and sort by timestamp descending
+    List<ArticleMovement> findAllByOrderByTimestampDesc();
 }
