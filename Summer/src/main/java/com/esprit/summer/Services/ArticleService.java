@@ -470,8 +470,8 @@ public class ArticleService {
                 .reason(Reason.CommandeEnCours)
                 .reservedTo(reservedTo)
                 .reservedBy(reservedBy)
-                .fromLocation(article.getLocation() != null ? article.getLocation() : "")
-                .toLocation(article.getLocation() != null ? article.getLocation() : "")
+                .fromLocation(article.getLocation())
+                .toLocation(article.getLocation())
                 .recordedBy(recordedBy)
                 .timestamp(LocalDateTime.now())
             
