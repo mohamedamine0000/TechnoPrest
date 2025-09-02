@@ -58,6 +58,7 @@ public class ArticleService {
                     .quantity(savedArticle.getQte())
                     .reservedTo(savedArticle.getReservedToWho())
                     .reservedBy(savedArticle.getReservedByWho())
+                    .timestamp(LocalDateTime.now())
                     .build();
             commandeArticleRepo.save(commande);
             savedArticle.setEtat(EtatArticle.Disponible);
@@ -646,4 +647,23 @@ public class ArticleService {
         }
     }
 
+
+    public List<CommandeArticleMV> getReservationHistory(Long userId) {
+        Optional<User> userOptional = userRepo.findById(userId);
+
+        if (userOptional.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        User currentUser = userOptional.get();
+
+        // Check if the user is an admin
+        if (currentUser.getRole().getName().equalsIgnoreCase("admin")) {
+            // Admin can see all reservations
+            return commandeArticleRepo.findAllByOrderByTimestampDesc();
+        } else {
+            // Non-admin can only see reservations for articles with their role
+            return commandeArticleRepo.findByArticle_Role_IdOrderByTimestampDesc(currentUser.getRole().getId());
+        }
+    }
 }

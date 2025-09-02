@@ -704,6 +704,11 @@ public class UserController {
         return ResponseEntity.ok(movements);
     }
 
+    @GetMapping("/history")
+    public ResponseEntity<List<CommandeArticleMV>> getReservationHistory(@RequestParam Long userId) {
+        List<CommandeArticleMV> reservations = articleService.getReservationHistory(userId);
+        return ResponseEntity.ok(reservations);
+    }
 
 
 }
