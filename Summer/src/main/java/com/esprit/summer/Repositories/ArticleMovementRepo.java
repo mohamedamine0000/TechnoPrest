@@ -31,5 +31,7 @@ public interface ArticleMovementRepo extends JpaRepository<ArticleMovement, Long
     List<ArticleMovement> findByReasonAndUserId(@Param("reason") Reason reason,
                                                 @Param("userId") Long userId);
 
+    @Query("SELECT am FROM ArticleMovement am JOIN am.article a WHERE a.role.id = :roleId")
+    List<ArticleMovement> findByArticleRole_Id(@Param("roleId") Long roleId);
 
 }

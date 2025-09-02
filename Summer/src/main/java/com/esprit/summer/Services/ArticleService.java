@@ -33,6 +33,9 @@ public class ArticleService {
     @Autowired
     private ArticleBatchRepository articleBatchRepo;
 
+    @Autowired
+    private UserRepo userRepo;
+
     // Method to add a new article (initial stock)
     @Transactional
     public Article addArticle(Article article, String addedBy, Reason reason, String fromLocation) {
@@ -621,4 +624,24 @@ public class ArticleService {
             throw new IllegalArgumentException("Article batch not found with ID: " + batchId);
         }
     }
+
+
+
+    public List<ArticleMovement> getMovementHistory(Long userId) {
+        Optional<User> userOptional = userRepo.findById(userId);
+
+        if (userOptional.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        User currentUser = userOptional.get();
+
+        if (currentUser.getRole().getName().equalsIgnoreCase("admin")) {
+            return articleMovementRepo.findAll();
+        }
+        else {
+            return articleMovementRepo.findByArticleRole_Id(currentUser.getRole().getId());
+        }
+    }
+
 }

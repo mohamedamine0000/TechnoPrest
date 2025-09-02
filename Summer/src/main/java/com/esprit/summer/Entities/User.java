@@ -3,6 +3,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
+
+
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -110,4 +114,6 @@ public class User {
     public void setCIN(String CIN) {
         this.cin = CIN;
     }
+
+
 }

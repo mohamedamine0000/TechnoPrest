@@ -698,5 +698,12 @@ public class UserController {
     }
 
 
+    @GetMapping("/history/movements/{userId}")
+    public ResponseEntity<List<ArticleMovement>> getArticleMovementHistory(@PathVariable Long userId) {
+        List<ArticleMovement> movements = articleService.getMovementHistory(userId);
+        return ResponseEntity.ok(movements);
+    }
+
+
 
 }
