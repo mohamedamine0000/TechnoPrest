@@ -711,4 +711,9 @@ public class UserController {
     }
 
 
+    @GetMapping("/batches/{userId}")
+    public ResponseEntity<List<ArticleBatch>> getArticleBatchesByUserId(@PathVariable Long userId) {
+        List<ArticleBatch> batch = articleService.getArticleBatchesByUserId(userId);
+        return ResponseEntity.ok(batch);
+    }
 }

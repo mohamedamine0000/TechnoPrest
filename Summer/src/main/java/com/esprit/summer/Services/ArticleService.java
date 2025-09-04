@@ -495,6 +495,7 @@ public class ArticleService {
 
     @Transactional
     public CommandeArticleMV addReservedArticleAndDeleteMovement(CommandeArticleMV reservedArticle, Long movementIdToDelete) {
+        reservedArticle.setTimestamp(LocalDateTime.now());
         CommandeArticleMV savedReservedArticle = commandeArticleRepo.save(reservedArticle);
         articleMovementRepo.deleteById(movementIdToDelete);
         return savedReservedArticle;
@@ -666,4 +667,21 @@ public class ArticleService {
             return commandeArticleRepo.findByArticle_Role_IdOrderByTimestampDesc(currentUser.getRole().getId());
         }
     }
+
+
+    public List<ArticleBatch> getArticleBatchesByUserId(Long userId) {
+        Optional<User> userOptional = userRepo.findByUserId(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            if ("ADMIN".equalsIgnoreCase(user.getRole().getName())) {
+                return articleBatchRepo.findAll();
+            } else {
+                return articleBatchRepo.findAllArticleBatchesByUserRole(user.getRole());
+            }
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
 }

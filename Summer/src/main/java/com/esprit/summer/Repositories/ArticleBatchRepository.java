@@ -20,4 +20,11 @@ public interface ArticleBatchRepository extends JpaRepository<ArticleBatch, Long
 
     List<ArticleBatch> findByArticleAndExpiryDateGreaterThan(Article article, LocalDate date);
 
+
+    List<ArticleBatch> findAll();
+
+    @Query("SELECT ab FROM ArticleBatch ab WHERE ab.article.role = :userRole")
+    List<ArticleBatch> findAllArticleBatchesByUserRole(@Param("userRole") UserRole userRole);
+
+
 }
