@@ -9,10 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -684,4 +681,19 @@ public class ArticleService {
         }
     }
 
+    public Optional<User> updateUser(Long userId, Map<String, Object> updatedData) {
+        return userRepo.findById(userId).map(existingUser -> {
+            if (updatedData.containsKey("username")) {
+                existingUser.setUsername((String) updatedData.get("username"));
+            }
+            if (updatedData.containsKey("userEmail")) {
+                existingUser.setEmail((String) updatedData.get("userEmail"));
+            }
+            if (updatedData.containsKey("password")) {
+                existingUser.setPassword((String) updatedData.get("password"));
+            }
+
+            return userRepo.save(existingUser);
+        });
+    }
 }

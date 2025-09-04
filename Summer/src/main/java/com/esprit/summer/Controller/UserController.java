@@ -77,15 +77,7 @@ public class UserController {
         }
 
 
-        if (registrationDto.getDiplomaProof() != null && !registrationDto.getDiplomaProof().isEmpty()) {
-            try {
-                byte[] decodedBytes = Base64.getDecoder().decode(registrationDto.getDiplomaProof());
-                newUser.setDiplomaProof(decodedBytes);
-            } catch (IllegalArgumentException e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Collections.singletonMap("message", "Invalid Base64 image data."));
-            }
-        }
+
 
         newUser.setStatus(Status.Waiting);
 
@@ -96,17 +88,7 @@ public class UserController {
                 .body(Collections.singletonMap("message", "User registered successfully!"));
     }
 
-    @GetMapping("/{userId}/diploma-proof")
-    public ResponseEntity<byte[]> getDiplomaProof(@PathVariable Long userId) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isPresent() && userOptional.get().getDiplomaProof() != null) {
-            byte[] imageData = userOptional.get().getDiplomaProof();
-            return ResponseEntity.ok()
-                    .header("Content-Type", "image/jpeg")
-                    .body(imageData);
-        }
-        return ResponseEntity.notFound().build();
-    }
+
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Map<String, String> loginRequest) {
@@ -168,7 +150,7 @@ public class UserController {
             userData.put("userCin",user.getCin());
             userData.put("userEmail",user.getEmail());
             userData.put("userStatus",user.getStatus());
-
+            userData.put("password",user.getPassword());
             return ResponseEntity.ok(userData); // Return 200 OK with user data
         } else {
             return ResponseEntity.notFound().build(); // Return 404 Not Found if user doesn't exist
@@ -187,6 +169,7 @@ public class UserController {
                     userData.put("userCin",user.getCin());
                     userData.put("userEmail",user.getEmail());
                     userData.put("userStatus",user.getStatus());
+                    userData.put("password",user.getPassword());
 
 
                     return userData;
@@ -716,4 +699,24 @@ public class UserController {
         List<ArticleBatch> batch = articleService.getArticleBatchesByUserId(userId);
         return ResponseEntity.ok(batch);
     }
+
+    @PutMapping("/{userId}")
+    public ResponseEntity<Map<String, Object>> updateUser(@PathVariable Long userId, @RequestBody Map<String, Object> updatedData) {
+        Optional<User> userOptional = articleService.updateUser(userId, updatedData);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            Map<String, Object> userData = new HashMap<>();
+            userData.put("userId", user.getUserId());
+            userData.put("username", user.getUsername());
+            userData.put("roleName", user.getRole() != null ? user.getRole().getName() : "N/A");
+            userData.put("userCin", user.getCin());
+            userData.put("userEmail", user.getEmail());
+            userData.put("userStatus", user.getStatus());
+            return ResponseEntity.ok(userData);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }

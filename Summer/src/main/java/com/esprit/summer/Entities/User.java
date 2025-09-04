@@ -22,7 +22,6 @@ public class User {
     private Long userId;
     private String username;
     private String password;
-    @JsonProperty("email")
     private String email;
 
 
@@ -34,10 +33,6 @@ public class User {
     @Column(nullable = false)
     private Status status;
 
-    @Lob
-    @Column(name = "diploma_proof", columnDefinition = "LONGBLOB")
-    private byte[] diplomaProof;
-    @Column(unique = true, length = 8)
 
     private String cin;
 
@@ -99,13 +94,7 @@ public class User {
 
 
 
-    public byte[] getDiplomaProof() {
-        return diplomaProof;
-    }
 
-    public void setDiplomaProof(byte[] diplomaProof) {
-        this.diplomaProof = diplomaProof;
-    }
 
     public String getCIN() {
         return cin;
