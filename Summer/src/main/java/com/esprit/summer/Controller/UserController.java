@@ -64,18 +64,13 @@ public class UserController {
 
 
 
-        if (registrationDto.getRoleId() != null) {
-            Optional<UserRole> roleOptional = roleRepo.findById(registrationDto.getRoleId());
-            if (roleOptional.isPresent()) {
-                newUser.setRole(roleOptional.get());
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Collections.singletonMap("message", "Invalid Role ID provided."));
-            }
+        Optional<UserRole> adminRoleOptional = roleRepo.findById(1L);
+        if (adminRoleOptional.isPresent()) {
+            newUser.setRole(adminRoleOptional.get());
         } else {
-
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("message", "Admin role not found. Please contact support."));
         }
-
 
 
 
@@ -239,7 +234,6 @@ public class UserController {
         article.setUm((String) articleData.get("um"));
         article.setQte((Integer) articleData.get("qte"));
         article.setMinmumStock((Integer) articleData.get("minmumStock"));
-        article.setUnite((String) articleData.get("unite"));
         article.setLocation((String) articleData.get("location"));
         article.setEtagere((String) articleData.get("etagere"));
         article.setEtat(com.esprit.summer.Entities.EtatArticle.valueOf((String) articleData.get("etat")));
@@ -530,7 +524,6 @@ public class UserController {
         existingArticle.setUm(updatedArticle.getUm());
         existingArticle.setQte(updatedArticle.getQte());
         existingArticle.setMinmumStock(updatedArticle.getMinmumStock());
-        existingArticle.setUnite(updatedArticle.getUnite());
         existingArticle.setLocation(updatedArticle.getLocation());
         existingArticle.setEtagere(updatedArticle.getEtagere());
         existingArticle.setEtat(updatedArticle.getEtat());

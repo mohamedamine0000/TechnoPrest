@@ -28,7 +28,6 @@ public class Article {
     private EtatArticle etat;
     private int minmumStock;
     private String addedBy;
-    private String unite;
     @ManyToOne
     @JoinColumn(name = "role")
     private UserRole role;
@@ -154,14 +153,6 @@ public class Article {
 
     public void setDesignation(String designation) {
         this.designation = designation;
-    }
-
-    public String getUnite() {
-        return unite;
-    }
-
-    public void setUnite(String unite) {
-        this.unite = unite;
     }
 
     public String getAddedBy() {

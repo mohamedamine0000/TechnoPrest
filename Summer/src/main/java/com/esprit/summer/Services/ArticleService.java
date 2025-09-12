@@ -114,7 +114,6 @@ public class ArticleService {
         return savedArticle;
     }
 
-    // Method to update an article's quantity (e.g., after a sale or purchase)
     @Transactional
     public Optional<Article> updateArticleQuantity(Long articleId, int quantityChange, Reason reason, String recordedBy) {
         Optional<Article> articleOptional = articleRepo.findById(articleId);
